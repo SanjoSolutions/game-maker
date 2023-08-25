@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "esbuild main.js --bundle --watch --outdir=build --target=chrome116 --format=esm",
+    "build": "esbuild main.js --bundle --outdir=build --target=chrome116 --format=esm",
+    "serve": "python3 -m http.server"
   },
   "dependencies": {
     "@pixi/display": "^7.2.4",
