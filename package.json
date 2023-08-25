@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "dev": "esbuild index.js --bundle --watch --outdir=build",
-    "build": "esbuild index.js --bundle --outdir=build"
+    "dev": "vite",
+    "build": "vite build"
   },
   "dependencies": {
     "@pixi/display": "^7.2.4",
@@ -9,6 +9,7 @@
     "pixi.js": "^7.2.4"
   },
   "devDependencies": {
-    "esbuild": "^0.19.2"
+    "esbuild": "^0.19.2",
+    "vite": "^4.4.5"
   }
 }
