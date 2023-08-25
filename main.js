@@ -41,7 +41,24 @@ makeMountain({
   },
 })
 
+makeRivers()
 plantTrees()
+
+function makeRivers() {
+  for (let i = 1; i <= 10; i++) {
+    makeRiver(tileMap, {
+      width: generateRandomInteger(64, 128),
+      from: {
+        x: generateRandomInteger(0, mapWidth),
+        y: generateRandomInteger(0, mapHeight),
+      },
+      to: {
+        x: generateRandomInteger(0, mapWidth),
+        y: generateRandomInteger(0, mapHeight),
+      },
+    })
+  }
+}
 
 function plantTrees() {
   const howMuchOfMapToCoverWithTrees = 0.5
