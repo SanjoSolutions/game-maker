@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "dev": "esbuild index.js --bundle --watch --outdir=build"
+  },
+  "dependencies": {
+    "@pixi/display": "^7.2.4",
+    "@pixi/tilemap": "^4.0.0",
+    "pixi.js": "^7.2.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.2"
+  }
+}
