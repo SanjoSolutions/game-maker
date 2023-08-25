@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "dev": "esbuild index.js --bundle --watch --outdir=build"
+    "dev": "esbuild index.js --bundle --watch --outdir=build",
+    "build": "esbuild index.js --bundle --outdir=build"
   },
   "dependencies": {
     "@pixi/display": "^7.2.4",
