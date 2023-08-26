@@ -2,8 +2,7 @@ import { Sprite } from 'pixi.js'
 import { last } from './array'
 
 export function serializeSprite(sprite) {
-  return {
-    id: sprite.id,
+  const serializedSprite = {
     x: sprite.x,
     y: sprite.y,
     texture: last(sprite.texture.textureCacheIds),
@@ -12,6 +11,10 @@ export function serializeSprite(sprite) {
       y: sprite.anchor.y,
     },
   }
+  if (sprite.id) {
+    serializedSprite.id = sprite.id
+  }
+  return serializedSprite
 }
 
 export function deserializeSprite(object) {
