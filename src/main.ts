@@ -3,6 +3,9 @@ import { CompositeTilemap } from '@pixi/tilemap'
 import { makeRiver } from './makeRiver.js'
 import { TILE_WIDTH, TILE_HEIGHT } from './config.js'
 import { saveState, loadState, saveObject } from './persistence.js'
+import type { SpriteWithId } from './serialization.js'
+import type { Point2D } from './Point2D.js'
+import type { Mountain } from './Mountain.js'
 
 const mapWidth = 64 * TILE_WIDTH
 const mapHeight = 64 * TILE_HEIGHT
@@ -47,14 +50,14 @@ makeMountain({
 
 makeRivers()
 
-let man
-let objectInHand: DisplayObject | null = null
+let man: Sprite | undefined | null = null
+let objectInHand: Sprite | undefined | null = null
 
 if (hasStateBeenLoaded) {
   man = app.stage.children.find(
     object =>
       object instanceof Sprite && object.texture.textureCacheIds.includes('man')
-  )
+  ) as SpriteWithId
 } else {
   plantTrees()
 
@@ -111,25 +114,25 @@ app.ticker.add(delta => {
   const down = keyStates.get('ArrowDown')
   let hasPositionChanged = false
   if (left && !right) {
-    man.x -= delta
+    man!.x -= delta
     hasPositionChanged = true
   } else if (right && !left) {
-    man.x += delta
+    man!.x += delta
     hasPositionChanged = true
   }
   if (up && !down) {
-    man.y -= delta
+    man!.y -= delta
     hasPositionChanged = true
     updateManAndObjectInHandIndex()
   } else if (down && !up) {
-    man.y += delta
+    man!.y += delta
     hasPositionChanged = true
     updateManAndObjectInHandIndex()
   }
   if (hasPositionChanged) {
     updateObjectInHandPosition()
     updateViewport()
-    saveObject(man)
+    saveObject(man!)
   }
 })
 
@@ -184,23 +187,23 @@ function plantTrees() {
   }
 }
 
-function compareTrees(a, b) {
+function compareTrees(a: Point2D, b: Point2D): number {
   return a.y - b.y
 }
 
-function generateRandomInteger(from, to) {
+function generateRandomInteger(from: number, to: number): number {
   return Math.floor(from + Math.random() * (to - from))
 }
 
-function adjustXToStep(x) {
+function adjustXToStep(x: number): number {
   return Math.floor(x / TILE_WIDTH) * TILE_WIDTH
 }
 
-function adjustYToStep(y) {
+function adjustYToStep(y: number): number {
   return Math.floor(y / TILE_HEIGHT) * TILE_HEIGHT
 }
 
-function makeMountain(mountain) {
+function makeMountain(mountain: Mountain): void {
   for (let y = mountain.from.y; y <= mountain.to.y; y += TILE_HEIGHT) {
     for (let x = mountain.from.x; x <= mountain.to.x; x += TILE_WIDTH) {
       const tileType = determineTileType(mountain, { x, y })
@@ -209,7 +212,11 @@ function makeMountain(mountain) {
   }
 }
 
-function determineTileType(mountain, { x, y }) {
+function determineTileType(
+  mountain: Mountain,
+  tileCoordinates: Point2D
+): string {
+  const { x, y } = tileCoordinates
   return Math.abs(x - mountain.from.x) < 1 * TILE_WIDTH ||
     Math.abs(mountain.to.x - x) < 1 * TILE_WIDTH ||
     Math.abs(mountain.to.y - y) < 1 * TILE_HEIGHT
@@ -218,8 +225,8 @@ function determineTileType(mountain, { x, y }) {
 }
 
 function updateViewport() {
-  app.stage.x = 0.5 * app.view.width - man.x
-  app.stage.y = 0.5 * app.view.height - man.y
+  app.stage.x = 0.5 * app.view.width - man!.x
+  app.stage.y = 0.5 * app.view.height - man!.y
 }
 
 function updateManAndObjectInHandIndex() {
@@ -228,23 +235,23 @@ function updateManAndObjectInHandIndex() {
     index < app.stage.children.length - 1 &&
     (app.stage.getChildAt(index) === man ||
       (objectInHand && app.stage.getChildAt(index) === objectInHand) ||
-      app.stage.getChildAt(index).y <= man.y)
+      app.stage.getChildAt(index).y <= man!.y)
   ) {
     index++
   }
-  app.stage.setChildIndex(man, index)
+  app.stage.setChildIndex(man!, index)
   if (objectInHand) {
     app.stage.setChildIndex(objectInHand, index + 1)
   }
 }
 
-function findCloseByBranch() {
+function findCloseByBranch(): Sprite | null {
   const close = 50
   let closestBranch: Sprite | null = null
   let closestDistanceSoFar: number | null = null
   const manPoint = {
-    x: man.x,
-    y: man.y - 50,
+    x: man!.x,
+    y: man!.y - 50,
   }
   for (const object of app.stage.children) {
     if (
@@ -264,19 +271,19 @@ function findCloseByBranch() {
   return closestBranch
 }
 
-function calculateDistance(a, b) {
+function calculateDistance(a: Point2D, b: Point2D): number {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
 }
 
-function setObjectInHand(object: DisplayObject): void {
+function setObjectInHand(object: Sprite): void {
   objectInHand = object
   updateObjectInHandPosition()
 }
 
-function updateObjectInHandPosition() {
+function updateObjectInHandPosition(): void {
   if (objectInHand) {
-    objectInHand.x = man.x + 5
-    objectInHand.y = man.y - 50
+    objectInHand.x = man!.x + 5
+    objectInHand.y = man!.y - 50
     saveObject(objectInHand)
   }
 }
