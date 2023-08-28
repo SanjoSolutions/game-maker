@@ -1,7 +1,8 @@
 import { Sprite } from 'pixi.js'
-import { deserializeSprite, serializeSprite } from './serialization'
+import { deserializeSprite, serializeSprite } from './serialization.js'
+import type { Application } from 'pixi.js'
 
-export async function saveState(app) {
+export async function saveState(app: Application): Promise<void> {
   const database = await openDatabase()
   const transaction = database.transaction('objects', 'readwrite')
   const objectStore = transaction.objectStore('objects')
@@ -14,7 +15,7 @@ export async function saveState(app) {
   )
 }
 
-export async function loadState(app) {
+export async function loadState(app: Application) {
   const database = await openDatabase()
   const transaction = database.transaction('objects', 'readonly')
   const objectStore = transaction.objectStore('objects')
@@ -25,17 +26,17 @@ export async function loadState(app) {
   return objects.length >= 1
 }
 
-export async function saveObject(object) {
+export async function saveObject(object: Sprite): Promise<void> {
   const database = await openDatabase()
   const transaction = database.transaction('objects', 'readwrite')
   const objectStore = transaction.objectStore('objects')
-  return await convertRequestToPromise(objectStore.put(serializeSprite(object)))
+  await convertRequestToPromise(objectStore.put(serializeSprite(object)))
 }
 
-async function convertRequestToPromise(request) {
+async function convertRequestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.addEventListener('success', function (event) {
-      resolve(event.target.result)
+      resolve(event.target!.result)
     })
     request.addEventListener('error', function () {
       reject()
@@ -43,11 +44,11 @@ async function convertRequestToPromise(request) {
   })
 }
 
-async function openDatabase() {
+async function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('generative-game')
     request.onupgradeneeded = function (event) {
-      const database = event.target.result
+      const database = event.target!.result
       const objectStore = database.createObjectStore('objects', {
         keyPath: 'id',
         autoIncrement: true,
@@ -58,7 +59,7 @@ async function openDatabase() {
       reject(event)
     }
     request.onsuccess = function (event) {
-      const database = event.target.result
+      const database = event.target!.result
       resolve(database)
     }
   })

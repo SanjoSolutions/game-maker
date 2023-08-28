@@ -1,6 +1,6 @@
-import { Application, Assets, Sprite } from 'pixi.js'
+import { Application, Assets, DisplayObject, Sprite } from 'pixi.js'
 import { CompositeTilemap } from '@pixi/tilemap'
-import { makeRiver } from './makeRiver'
+import { makeRiver } from './makeRiver.js'
 import { TILE_WIDTH, TILE_HEIGHT } from './config.js'
 import { saveState, loadState, saveObject } from './persistence.js'
 
@@ -11,7 +11,7 @@ const app = new Application({
   resizeTo: window,
 })
 const tileMap = new CompositeTilemap()
-document.body.appendChild(app.view)
+document.body.appendChild(app.view as any)
 app.stage.addChild(tileMap)
 
 Assets.add('tileset', 'tileset.json')
@@ -48,11 +48,12 @@ makeMountain({
 makeRivers()
 
 let man
-let objectInHand = null
+let objectInHand: DisplayObject | null = null
 
 if (hasStateBeenLoaded) {
-  man = app.stage.children.find(object =>
-    object.texture?.textureCacheIds.includes('man')
+  man = app.stage.children.find(
+    object =>
+      object instanceof Sprite && object.texture.textureCacheIds.includes('man')
   )
 } else {
   plantTrees()
@@ -239,17 +240,20 @@ function updateManAndObjectInHandIndex() {
 
 function findCloseByBranch() {
   const close = 50
-  let closestBranch = null
-  let closestDistanceSoFar = null
+  let closestBranch: Sprite | null = null
+  let closestDistanceSoFar: number | null = null
   const manPoint = {
     x: man.x,
     y: man.y - 50,
   }
   for (const object of app.stage.children) {
-    if (object.texture?.textureCacheIds?.includes('branch')) {
+    if (
+      object instanceof Sprite &&
+      object.texture.textureCacheIds?.includes('branch')
+    ) {
       const distance = calculateDistance(object, manPoint)
       if (
-        (!closestBranch || distance < closestDistanceSoFar) &&
+        (!closestBranch || distance < closestDistanceSoFar!) &&
         distance <= close
       ) {
         closestDistanceSoFar = distance
@@ -264,7 +268,7 @@ function calculateDistance(a, b) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
 }
 
-function setObjectInHand(object) {
+function setObjectInHand(object: DisplayObject): void {
   objectInHand = object
   updateObjectInHandPosition()
 }

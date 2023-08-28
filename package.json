@@ -1,7 +1,8 @@
 {
+  "type": "module",
   "scripts": {
-    "dev": "esbuild main.js --bundle --watch --outdir=build --target=chrome116 --format=esm",
-    "build": "esbuild main.js --bundle --outdir=build --target=chrome116 --format=esm",
+    "dev": "esbuild src/main.ts --bundle --watch --outdir=public --target=chrome116 --format=esm",
+    "build": "esbuild src/main.ts --bundle --outdir=public --target=chrome116 --format=esm",
     "serve": "python3 -m http.server"
   },
   "dependencies": {
@@ -10,6 +11,7 @@
     "pixi.js": "^7.2.4"
   },
   "devDependencies": {
-    "esbuild": "^0.19.2"
+    "esbuild": "^0.19.2",
+    "typescript": "^5.2.2"
   }
 }
