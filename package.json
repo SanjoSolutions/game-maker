@@ -1,16 +1,30 @@
 {
-  "type": "module",
+  "type": "commonjs",
+  "version": "0.0.0",
+  "main": "public/server.js",
   "scripts": {
     "dev": "esbuild src/main.ts --bundle --watch --outdir=public --target=chrome116 --format=esm",
     "build": "esbuild src/main.ts --bundle --outdir=public --target=chrome116 --format=esm",
-    "serve": "cd public && python3 -m http.server"
+    "serve": "cd public && python3 -m http.server",
+    "electron-start": "electron-forge start",
+    "electron-package": "electron-forge package",
+    "electron-make": "electron-forge make",
+    "electron-publish": "electron-forge publish"
   },
   "dependencies": {
     "@pixi/display": "^7.2.4",
     "@pixi/tilemap": "^4.0.0",
-    "pixi.js": "^7.2.4"
+    "pixi.js": "^7.2.4",
+    "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^6.4.1",
+    "@electron-forge/maker-deb": "^6.4.1",
+    "@electron-forge/maker-rpm": "^6.4.1",
+    "@electron-forge/maker-squirrel": "^6.4.1",
+    "@electron-forge/maker-zip": "^6.4.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^6.4.1",
+    "electron": "26.1.0",
     "esbuild": "^0.19.2",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^3.2.3",

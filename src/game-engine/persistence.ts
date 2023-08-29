@@ -72,10 +72,10 @@ async function convertRequestToPromise<T>(request: IDBRequest<T>): Promise<T> {
 
 async function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("generative-game")
+    const request = window.indexedDB.open("generative-game")
     request.onupgradeneeded = function (event) {
       const database = event.target!.result
-      const objectStore = database.createObjectStore("objects", {
+      database.createObjectStore("objects", {
         keyPath: "id",
         autoIncrement: true,
       })
