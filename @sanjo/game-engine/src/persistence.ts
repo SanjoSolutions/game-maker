@@ -8,7 +8,7 @@ import {
 } from "./serialization.js"
 
 export class Database {
-  #database: IDBDatabase | null
+  #database: IDBDatabase | null = null
 
   async open(): Promise<void> {
     this.#database = await openDatabase()
@@ -37,7 +37,7 @@ export class Database {
 
   async saveObject(
     object: SpriteWithId,
-    transaction: IDBTransaction = null,
+    transaction?: IDBTransaction,
   ): Promise<void> {
     if (!transaction) {
       this.checkIfDatabaseHasBeenOpened()
@@ -62,7 +62,7 @@ export class Database {
 async function convertRequestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.addEventListener("success", function (event) {
-      resolve(event.target!.result)
+      resolve((event.target as any).result)
     })
     request.addEventListener("error", function () {
       reject()
@@ -74,7 +74,7 @@ async function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = window.indexedDB.open("generative-game")
     request.onupgradeneeded = function (event) {
-      const database = event.target!.result
+      const database = (event.target as any).result
       database.createObjectStore("objects", {
         keyPath: "id",
         autoIncrement: true,
@@ -85,7 +85,7 @@ async function openDatabase(): Promise<IDBDatabase> {
       reject(event)
     }
     request.onsuccess = function (event) {
-      const database = event.target!.result
+      const database = (event.target as any).result
       resolve(database)
     }
   })

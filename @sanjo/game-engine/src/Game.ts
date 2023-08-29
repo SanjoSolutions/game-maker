@@ -75,9 +75,9 @@ export class Game {
         if (this.#objectInHand) {
           this.#objectInHand = null
         } else {
-          const branch = this.findClosestInteractableObject()
-          if (branch) {
-            this.#objectInHand = branch
+          const object = this.findClosestInteractableObject()
+          if (object) {
+            this.objectInHand = object
           }
         }
       }
@@ -118,7 +118,7 @@ export class Game {
   }
 
   set objectInHand(object: Sprite | null) {
-    this.objectInHand = object
+    this.#objectInHand = object
     this.updateObjectInHandPosition()
   }
 

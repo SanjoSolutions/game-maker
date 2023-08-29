@@ -107,8 +107,9 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src/**/*",
+    "@sanjo/game-engine/src/**/*",
     "node_modules/@pixi/**/*",
-    "node_modules/pixi.js/**/*"
+    "node_modules/pixi.js/**/*",
+    "demo/src/main.mts"
   ]
 }

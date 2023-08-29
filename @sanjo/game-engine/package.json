@@ -1,0 +1,29 @@
+{
+  "name": "@sanjo/game-engine",
+  "type": "module",
+  "version": "0.0.0",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@pixi/display": "^7.2.4",
+    "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
+    "pixi.js": "^7.2.4"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.2",
+    "prettier-plugin-organize-imports": "^3.2.3",
+    "typescript": "^5.2.2",
+    "esbuild": "^0.19.2"
+  }
+}

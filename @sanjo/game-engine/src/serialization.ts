@@ -40,9 +40,7 @@ export function deserializeSprite(
   game: Game,
   object: SerializedSprite,
 ): SpriteWithId {
-  const classes = new Map(
-    [Branch].map((klass) => [klass.constructor.name, klass]),
-  )
+  const classes = new Map([Branch].map((klass) => [klass.name, klass]))
   const klass = classes.get(object.class) ?? Sprite
   const sprite = klass.from(object.texture) as SpriteWithId
   ;(sprite as any).game = game

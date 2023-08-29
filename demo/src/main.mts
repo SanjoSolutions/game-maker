@@ -1,13 +1,24 @@
-import { CompositeTilemap } from "@pixi/tilemap"
-import { Assets } from "pixi.js"
-import { Game, mapHeight, mapWidth } from "./game-engine/Game.js"
-import { adjustXToStep } from "./game-engine/adjustXToStep.js"
-import { adjustYToStep } from "./game-engine/adjustYToStep.js"
-import { TILE_HEIGHT, TILE_WIDTH } from "./game-engine/config.js"
-import { makeMountain } from "./game-engine/makeMountain.js"
-import { makeRiver } from "./game-engine/makeRiver.js"
-import { makeRivers } from "./game-engine/makeRivers.js"
-import { Database } from "./game-engine/persistence.js"
+import {
+  Assets,
+  CompositeTilemap,
+  Database,
+  Game,
+  TILE_HEIGHT,
+  TILE_WIDTH,
+  adjustXToStep,
+  adjustYToStep,
+  makeMountain,
+  makeRiver,
+  makeRivers,
+  mapHeight,
+  mapWidth,
+} from "@sanjo/game-engine"
+
+if (window.IS_DEVELOPMENT) {
+  new EventSource("/esbuild").addEventListener("change", () =>
+    location.reload(),
+  )
+}
 
 async function main() {
   const database = new Database()

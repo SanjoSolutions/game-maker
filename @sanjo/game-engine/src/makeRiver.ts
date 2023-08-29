@@ -1,9 +1,9 @@
-import { intersect, polygonArea } from './polygonIntersection'
-import { TILE_WIDTH, TILE_HEIGHT } from './config.js'
-import type { CompositeTilemap } from '@pixi/tilemap'
-import type { River } from './River.js'
-import type { Polygon } from './Polygon.js'
-import type { Tile } from './Tile.js'
+import type { CompositeTilemap } from "@pixi/tilemap"
+import type { Polygon } from "./Polygon.js"
+import type { River } from "./River.js"
+import type { Tile } from "./Tile.js"
+import { TILE_HEIGHT, TILE_WIDTH } from "./config.js"
+import { intersect, polygonArea } from "./polygonIntersection.js"
 
 const TILE_AREA = TILE_WIDTH * TILE_HEIGHT
 
@@ -13,7 +13,7 @@ export function makeRiver(tileMap: CompositeTilemap, river: River): void {
     for (let x = 0; x < 16 * TILE_WIDTH; x += TILE_WIDTH) {
       const tile = { x, y }
       if (doesIntersect50PercentOrMore(tile, riverPolygon)) {
-        tileMap.tile('water.png', x, y)
+        tileMap.tile("water.png", x, y)
       }
     }
   }
@@ -60,7 +60,7 @@ function makeRiverPolygon(river: River): Polygon {
 
 function doesIntersect50PercentOrMore(
   tile: Tile,
-  riverPolygon: Polygon
+  riverPolygon: Polygon,
 ): boolean {
   const tilePolygon = [
     {
@@ -81,7 +81,9 @@ function doesIntersect50PercentOrMore(
     },
   ]
   const intersectionPolygons = intersect(tilePolygon, riverPolygon)
-  return sum(intersectionPolygons.map(polygonArea)) >= 0.5 * TILE_AREA
+  return intersectionPolygons
+    ? sum(intersectionPolygons.map(polygonArea)) >= 0.5 * TILE_AREA
+    : false
 }
 
 function sum(values: number[]): number {

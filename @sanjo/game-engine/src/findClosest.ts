@@ -1,9 +1,9 @@
-import { calculateDistance } from './calculateDistance.js'
-import type { Point2D } from './Point2D.js'
+import { calculateDistance } from "./calculateDistance.js"
+import type { Point2D } from "./Point2D.js"
 
-export async function findClosest<T extends Point2D, K extends Point2D>(
+export function findClosest<T extends Point2D, K extends Point2D>(
   aPoint: T,
-  points: K[]
+  points: K[],
 ): K | null {
   let closest: K | null = null
   let closestDistanceSoFar: number | null = null
