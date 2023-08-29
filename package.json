@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "esbuild src/main.ts --bundle --watch --outdir=public --target=chrome116 --format=esm",
     "build": "esbuild src/main.ts --bundle --outdir=public --target=chrome116 --format=esm",
-    "serve": "python3 -m http.server"
+    "serve": "cd public && python3 -m http.server"
   },
   "dependencies": {
     "@pixi/display": "^7.2.4",
@@ -12,6 +12,8 @@
   },
   "devDependencies": {
     "esbuild": "^0.19.2",
+    "prettier": "^3.0.2",
+    "prettier-plugin-organize-imports": "^3.2.3",
     "typescript": "^5.2.2"
   }
 }
