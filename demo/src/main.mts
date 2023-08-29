@@ -5,7 +5,6 @@ import {
   Game,
   TILE_HEIGHT,
   TILE_WIDTH,
-  WalkableInFrom,
   adjustXToStep,
   adjustYToStep,
   makeMountain,
@@ -62,6 +61,49 @@ async function main() {
   makeRivers(tileMap, { width: mapWidth, height: mapHeight })
 
   await game.load()
+
+  window.addEventListener("keydown", function (event) {
+    if (event.code === "Escape") {
+      event.preventDefault()
+      toggleMenu()
+    }
+  })
+
+  let isMenuShown = false
+
+  function toggleMenu(): void {
+    if (isMenuShown) {
+      hideMenu()
+    } else {
+      showMenu()
+    }
+  }
+
+  function showMenu(): void {
+    const menuFragment = (
+      document.querySelector("#menu") as HTMLTemplateElement
+    ).content.cloneNode(true) as DocumentFragment
+
+    const menu = menuFragment.querySelector(".menu")!
+    const menuContainer = menuFragment.querySelector(".menu-container")!
+
+    menuContainer.addEventListener("click", function () {
+      hideMenu()
+    })
+
+    menu.addEventListener("click", function (event) {
+      event.stopPropagation()
+    })
+
+    document.body.appendChild(menuFragment)
+
+    isMenuShown = true
+  }
+
+  function hideMenu(): void {
+    document.querySelector(".menu-container")?.remove()
+    isMenuShown = false
+  }
 }
 
 main()
