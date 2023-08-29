@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["interacter"],
+  "cSpell.words": ["interacter", "pixi"],
   "yaml.schemas": {
     "https://raw.githubusercontent.com/awslabs/goformation/master/schema/cloudformation.schema.json": "file:///Users/Self/generative-game/%40sanjo/game-engine-dynamodb/setup.yml"
   }
