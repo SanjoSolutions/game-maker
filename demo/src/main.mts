@@ -5,6 +5,7 @@ import {
   Game,
   TILE_HEIGHT,
   TILE_WIDTH,
+  WalkableInFrom,
   adjustXToStep,
   adjustYToStep,
   makeMountain,
@@ -35,8 +36,8 @@ async function main() {
   Assets.add("branch", "sprites/branch.png")
   await Assets.load(["tileset", "man", "tree", "branch"])
 
-  for (let y = 0; y < 64 * TILE_HEIGHT; y += TILE_HEIGHT) {
-    for (let x = 0; x < 64 * TILE_WIDTH; x += TILE_WIDTH) {
+  for (let y = 0; y < mapHeight; y += TILE_HEIGHT) {
+    for (let x = 0; x < mapWidth; x += TILE_WIDTH) {
       tileMap.tile("grass.png", x, y)
     }
   }

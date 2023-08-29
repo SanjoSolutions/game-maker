@@ -1,28 +1,44 @@
 import { Application, Sprite } from "pixi.js"
 import { Branch } from "./Branch.js"
 import { Interactable } from "./Interactable.js"
+import type { Point2D } from "./Point2D.js"
+import { Side } from "./Side.js"
+import type { TilePosition } from "./TilePosition.js"
 import { calculateDistance } from "./calculateDistance.js"
 import { compareTrees } from "./compareTrees.js"
 import { TILE_HEIGHT, TILE_WIDTH } from "./config.js"
 import { findClosest } from "./findClosest.js"
 import { generateRandomInteger } from "./generateRandomInteger.js"
+import { isFlagSet } from "./isFlagSet.js"
 import type { Database } from "./persistence.js"
 import type { SpriteWithId } from "./serialization.js"
 
-export const mapWidth = 64 * TILE_WIDTH
-export const mapHeight = 64 * TILE_HEIGHT
+export const numberOfTilesPerRow = 64
+export const numberOfTilesPerColumn = 65
+export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
+export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
 export class Game {
   man: Sprite | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
   database: Database
+  #walkableInFrom: Side[]
 
   constructor(database: Database) {
     this.database = database
     this.app = new Application({
       resizeTo: window,
     })
+
+    this.#walkableInFrom = new Array(mapWidth * mapHeight)
+
+    for (let y = 0; y < numberOfTilesPerColumn; y++) {
+      for (let x = 0; x < numberOfTilesPerRow; x++) {
+        this.#walkableInFrom[this.calculateIndex({ row: y, column: x })] =
+          Side.Top | Side.Right | Side.Bottom | Side.Left
+      }
+    }
   }
 
   async load(): Promise<void> {
@@ -89,21 +105,46 @@ export class Game {
       const up = keyStates.get("ArrowUp")
       const down = keyStates.get("ArrowDown")
       let hasPositionChanged = false
+      const from = this.man!
       if (left && !right) {
-        this.man!.x -= delta
-        hasPositionChanged = true
+        const to = {
+          x: this.man!.x - delta,
+          y: this.man!.y,
+        }
+        if (this.canMoveThere(from, to)) {
+          this.man!.x -= delta
+          hasPositionChanged = true
+        }
       } else if (right && !left) {
-        this.man!.x += delta
-        hasPositionChanged = true
+        const to = {
+          x: this.man!.x + delta,
+          y: this.man!.y,
+        }
+        if (this.canMoveThere(from, to)) {
+          this.man!.x += delta
+          hasPositionChanged = true
+        }
       }
       if (up && !down) {
-        this.man!.y -= delta
-        hasPositionChanged = true
-        this.updateManAndObjectInHandIndex()
+        const to = {
+          x: this.man!.x,
+          y: this.man!.y - delta,
+        }
+        if (this.canMoveThere(from, to)) {
+          this.man!.y -= delta
+          hasPositionChanged = true
+          this.updateManAndObjectInHandIndex()
+        }
       } else if (down && !up) {
-        this.man!.y += delta
-        hasPositionChanged = true
-        this.updateManAndObjectInHandIndex()
+        const to = {
+          x: this.man!.x,
+          y: this.man!.y + delta,
+        }
+        if (this.canMoveThere(from, to)) {
+          this.man!.y += delta
+          hasPositionChanged = true
+          this.updateManAndObjectInHandIndex()
+        }
       }
       if (hasPositionChanged) {
         this.updateObjectInHandPosition()
@@ -111,6 +152,83 @@ export class Game {
         this.database.saveObject(this.man!)
       }
     })
+  }
+
+  private canMoveThere(from: Point2D, to: Point2D) {
+    if (this.isEnteringNewTile(from, to)) {
+      const tile = this.retrieveTileEntered(from, to)!
+      const enteringFromDirection = this.retrieveEnteringFromDirection(
+        from,
+        to,
+      )!
+      return this.canEnterTileFromDirection(tile, enteringFromDirection)
+    } else {
+      return true
+    }
+  }
+
+  private isEnteringNewTile(from: Point2D, to: Point2D) {
+    return Boolean(this.retrieveEnteringFromDirection(from, to))
+  }
+
+  private retrieveTileEntered(from: Point2D, to: Point2D) {
+    return this.retrieveEnteringInformation(from, to)?.tile ?? null
+  }
+
+  private retrieveEnteringFromDirection(
+    from: Point2D,
+    to: Point2D,
+  ): Side | null {
+    return this.retrieveEnteringInformation(from, to)?.direction ?? null
+  }
+
+  private retrieveEnteringInformation(
+    from: Point2D,
+    to: Point2D,
+  ): EnteringInformation | null {
+    if (isMovingToTheRight(from, to)) {
+      const tileA = determineTile({
+        x: from.x + 0.5 * this.man!.width,
+        y: from.y,
+      })
+      const tileB = determineTile({
+        x: to.x + 0.5 * this.man!.width,
+        y: to.y,
+      })
+      if (areDifferentTiles(tileA, tileB)) {
+        return { direction: Side.Left, tile: tileB }
+      }
+    } else if (isMovingToTheLeft(from, to)) {
+      const tileA = determineTile({
+        x: from.x - 0.5 * this.man!.width,
+        y: from.y,
+      })
+      const tileB = determineTile({
+        x: to.x - 0.5 * this.man!.width,
+        y: to.y,
+      })
+      if (areDifferentTiles(tileA, tileB)) {
+        return { direction: Side.Right, tile: tileB }
+      }
+    }
+    if (isMovingToTheTop(from, to)) {
+      const tileA = determineTile(from)
+      const tileB = determineTile(to)
+      if (areDifferentTiles(tileA, tileB)) {
+        return { direction: Side.Bottom, tile: tileB }
+      }
+    } else if (isMovingToTheBottom(from, to)) {
+      const tileA = determineTile(from)
+      const tileB = determineTile(to)
+      if (areDifferentTiles(tileA, tileB)) {
+        return { direction: Side.Top, tile: tileB }
+      }
+    }
+    return null
+  }
+
+  private canEnterTileFromDirection(tile: TilePosition, direction: Side) {
+    return isFlagSet(this.#walkableInFrom[this.calculateIndex(tile)], direction)
   }
 
   public get objectInHand(): Sprite | undefined | null {
@@ -204,4 +322,40 @@ export class Game {
       }
     }
   }
+
+  private calculateIndex(tile: TilePosition): number {
+    return tile.row * numberOfTilesPerRow + tile.column
+  }
+}
+
+function isMovingToTheRight(from: Point2D, to: Point2D): boolean {
+  return to.x > from.x
+}
+
+function isMovingToTheLeft(from: Point2D, to: Point2D): boolean {
+  return to.x < from.x
+}
+
+function isMovingToTheTop(from: Point2D, to: Point2D): boolean {
+  return to.y < from.y
+}
+
+function isMovingToTheBottom(from: Point2D, to: Point2D): boolean {
+  return to.y > from.y
+}
+
+function determineTile(point: Point2D): TilePosition {
+  return {
+    row: Math.floor(point.x / TILE_WIDTH),
+    column: Math.floor(point.y / TILE_HEIGHT),
+  }
+}
+
+function areDifferentTiles(a: TilePosition, b: TilePosition): boolean {
+  return a.row !== b.row || a.column !== b.column
+}
+
+export interface EnteringInformation {
+  direction: Side
+  tile: TilePosition
 }

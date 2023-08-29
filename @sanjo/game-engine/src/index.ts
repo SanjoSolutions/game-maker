@@ -24,3 +24,5 @@ export { makeRivers } from "./makeRivers.js"
 export { Database } from "./persistence.js"
 export { deserializeSprite, serializeSprite } from "./serialization.js"
 export type { SerializedSprite, SpriteWithId } from "./serialization.js"
+export { WalkableInFrom } from './WalkableInFrom.js'
+export { FromDirection } from './FromDirection.js'
