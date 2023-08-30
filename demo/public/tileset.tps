@@ -50,7 +50,7 @@
         <key>dxtCompressionMode</key>
         <enum type="SettingsBase::DxtCompressionMode">DXT_PERCEPTUAL</enum>
         <key>ditherType</key>
-        <enum type="SettingsBase::DitherType">NearestNeighbour</enum>
+        <enum type="SettingsBase::DitherType">PngQuantLow</enum>
         <key>backgroundColor</key>
         <uint>0</uint>
         <key>libGdx</key>
@@ -169,17 +169,34 @@
             <key>defaultPivotPoint</key>
             <point_f>0,0</point_f>
             <key>writePivotPoints</key>
-            <true/>
+            <false/>
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">../tilemap-editor/tiles/grass.png</key>
-            <key type="filename">../tilemap-editor/tiles/rock.png</key>
-            <key type="filename">../tilemap-editor/tiles/rock_top.png</key>
-            <key type="filename">../tilemap-editor/tiles/water.png</key>
+            <key type="filename">../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_11.png</key>
+            <key type="filename">../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_16.png</key>
+            <key type="filename">../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_17.png</key>
+            <key type="filename">../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_18.png</key>
+            <key type="filename">../../../tilemap-editor/tiles/rock.png</key>
+            <key type="filename">../../../tilemap-editor/tiles/rock_top.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,8,16,16</rect>
+                <key>scale9Paddings</key>
+                <rect>8,8,16,16</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/water_11.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0,0</point_f>
                 <key>spriteScale</key>
                 <double>1</double>
                 <key>scale9Enabled</key>
@@ -198,10 +215,13 @@
             <struct type="SpriteSheet">
                 <key>files</key>
                 <array>
-                    <filename>../tilemap-editor/tiles/grass.png</filename>
-                    <filename>../tilemap-editor/tiles/rock.png</filename>
-                    <filename>../tilemap-editor/tiles/rock_top.png</filename>
-                    <filename>../tilemap-editor/tiles/water.png</filename>
+                    <filename>../../../tilemap-editor/tiles/rock.png</filename>
+                    <filename>../../../tilemap-editor/tiles/rock_top.png</filename>
+                    <filename>../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_11.png</filename>
+                    <filename>../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_16.png</filename>
+                    <filename>../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_17.png</filename>
+                    <filename>../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/grass_18.png</filename>
+                    <filename>../../@sanjo/assets/tileset/original/Sharm/outdoor/PNG/water_11.png</filename>
                 </array>
             </struct>
         </map>

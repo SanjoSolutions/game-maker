@@ -1,4 +1,4 @@
-import { Application, Sprite } from "pixi.js"
+import { Application, Sprite, Texture } from "pixi.js"
 import { Branch } from "./Branch.js"
 import { Interactable } from "./Interactable.js"
 import type { Point2D } from "./Point2D.js"
@@ -48,12 +48,14 @@ export class Game {
       this.man = this.app.stage.children.find(
         (object) =>
           object instanceof Sprite &&
-          object.texture.textureCacheIds.includes("man"),
+          object.texture.textureCacheIds.some((name) =>
+            name.startsWith("walk_"),
+          ),
       ) as SpriteWithId
     } else {
       this.plantTrees()
 
-      this.man = Sprite.from("man")
+      this.man = Sprite.from("walk_down_0")
       this.man.anchor.set(0.5, 1)
       this.man.x = 0.5 * this.man.width + 0.5 * TILE_WIDTH
       this.man.y = this.man.height + 0.5 * TILE_HEIGHT
@@ -99,7 +101,13 @@ export class Game {
       }
     })
 
+    let elapsed = 0
+
     this.app.ticker.add((delta) => {
+      elapsed += delta
+      const threshold = 5
+      const nextFrame = elapsed >= threshold
+      elapsed %= threshold
       const left = keyStates.get("ArrowLeft")
       const right = keyStates.get("ArrowRight")
       const up = keyStates.get("ArrowUp")
@@ -112,6 +120,14 @@ export class Game {
           y: this.man!.y,
         }
         if (this.canMoveThere(from, to)) {
+          const match = /^walk_.+?_(\d)$/.exec(
+            this.man!.texture.textureCacheIds[0],
+          )
+          let frameNumber = Number(match![1])
+          if (nextFrame) {
+            frameNumber = (frameNumber + 1) % 8
+          }
+          this.man!.texture = Texture.from("walk_left_" + frameNumber)
           this.man!.x -= delta
           hasPositionChanged = true
         }
@@ -121,6 +137,14 @@ export class Game {
           y: this.man!.y,
         }
         if (this.canMoveThere(from, to)) {
+          const match = /^walk_.+?_(\d)$/.exec(
+            this.man!.texture.textureCacheIds[0],
+          )
+          let frameNumber = Number(match![1])
+          if (nextFrame) {
+            frameNumber = (frameNumber + 1) % 8
+          }
+          this.man!.texture = Texture.from("walk_right_" + frameNumber)
           this.man!.x += delta
           hasPositionChanged = true
         }
@@ -131,6 +155,14 @@ export class Game {
           y: this.man!.y - delta,
         }
         if (this.canMoveThere(from, to)) {
+          const match = /^walk_.+?_(\d)$/.exec(
+            this.man!.texture.textureCacheIds[0],
+          )
+          let frameNumber = Number(match![1])
+          if (!hasPositionChanged && nextFrame) {
+            frameNumber = (frameNumber + 1) % 8
+          }
+          this.man!.texture = Texture.from("walk_up_" + frameNumber)
           this.man!.y -= delta
           hasPositionChanged = true
           this.updateManAndObjectInHandIndex()
@@ -141,6 +173,14 @@ export class Game {
           y: this.man!.y + delta,
         }
         if (this.canMoveThere(from, to)) {
+          const match = /^walk_.+?_(\d)$/.exec(
+            this.man!.texture.textureCacheIds[0],
+          )
+          let frameNumber = Number(match![1])
+          if (!hasPositionChanged && nextFrame) {
+            frameNumber = (frameNumber + 1) % 8
+          }
+          this.man!.texture = Texture.from("walk_down_" + frameNumber)
           this.man!.y += delta
           hasPositionChanged = true
           this.updateManAndObjectInHandIndex()

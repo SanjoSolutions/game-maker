@@ -30,14 +30,26 @@ async function main() {
   game.app.stage.addChild(tileMap)
 
   Assets.add("tileset", "tileset.json")
-  Assets.add("man", "sprites/man.png")
+  Assets.add("walk", "sprites/walk.json")
   Assets.add("tree", "sprites/tree.png")
   Assets.add("branch", "sprites/branch.png")
-  await Assets.load(["tileset", "man", "tree", "branch"])
+  await Assets.load(["tileset", "walk", "tree", "branch"])
 
   for (let y = 0; y < mapHeight; y += TILE_HEIGHT) {
     for (let x = 0; x < mapWidth; x += TILE_WIDTH) {
-      tileMap.tile("grass.png", x, y)
+      const a = 0.2
+      const value = Math.random()
+      let textureName
+      if (value < a / 3) {
+        textureName = "grass_16.png"
+      } else if (value < (a / 3) * 2) {
+        textureName = "grass_17.png"
+      } else if (value < a) {
+        textureName = "grass_18.png"
+      } else {
+        textureName = "grass_11.png"
+      }
+      tileMap.tile(textureName, x, y)
     }
   }
 

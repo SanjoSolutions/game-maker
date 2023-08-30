@@ -13,7 +13,7 @@ export function makeRiver(tileMap: CompositeTilemap, river: River): void {
     for (let x = 0; x < 16 * TILE_WIDTH; x += TILE_WIDTH) {
       const tile = { x, y }
       if (doesIntersect50PercentOrMore(tile, riverPolygon)) {
-        tileMap.tile("water.png", x, y)
+        tileMap.tile("water_11.png", x, y)
       }
     }
   }
