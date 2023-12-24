@@ -1,4 +1,5 @@
 export { CompositeTilemap } from "@pixi/tilemap"
+export * as PIXI from "pixi.js"
 export { Assets } from "pixi.js"
 export { Branch } from "./Branch.js"
 export type { Dimensions } from "./Dimensions.js"

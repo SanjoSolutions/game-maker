@@ -3,16 +3,17 @@ import {
   CompositeTilemap,
   Database,
   Game,
+  PIXI,
   TILE_HEIGHT,
   TILE_WIDTH,
   adjustXToStep,
   adjustYToStep,
   makeMountain,
-  makeRiver,
   makeRivers,
   mapHeight,
   mapWidth,
 } from "@sanjo/game-engine"
+import { TileMap } from "../../tilemap-editor/src/TileMap.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -26,51 +27,43 @@ async function main() {
   const game = new Game(database)
   document.body.appendChild(game.app.view as any)
 
-  const tileMap = new CompositeTilemap()
-  game.app.stage.addChild(tileMap)
+  const map = await loadMap("maps/map.json.gz")
 
-  Assets.add("tileset", "tileset.json")
-  Assets.add("walk", "sprites/walk.json")
-  Assets.add("tree", "sprites/tree.png")
-  Assets.add("branch", "sprites/branch.png")
-  await Assets.load(["tileset", "walk", "tree", "branch"])
+  const tileSetToTexture = new Map<number, PIXI.BaseTexture>()
 
-  for (let y = 0; y < mapHeight; y += TILE_HEIGHT) {
-    for (let x = 0; x < mapWidth; x += TILE_WIDTH) {
-      const a = 0.2
-      const value = Math.random()
-      let textureName
-      if (value < a / 3) {
-        textureName = "grass_16.png"
-      } else if (value < (a / 3) * 2) {
-        textureName = "grass_17.png"
-      } else if (value < a) {
-        textureName = "grass_18.png"
-      } else {
-        textureName = "grass_11.png"
+  const tileSets = []
+
+  for (const [index, tileSet] of Object.entries(map.tileSets)) {
+    const image = await createImage(tileSet.content)
+    const baseTexture = new PIXI.BaseTexture(image)
+    tileSets.push(baseTexture)
+    tileSetToTexture.set(parseInt(index, 10), baseTexture)
+  }
+
+  for (const level of map.tiles) {
+    const tileMap = new CompositeTilemap()
+    tileMap.tileset(tileSets)
+    game.app.stage.addChild(tileMap)
+    for (const [position, tile] of level.entries()) {
+      if (tile) {
+        const texture = tileSetToTexture.get(tile.tileSet)
+        tileMap.tile(
+          texture,
+          Number(position.column) * map.tileSize.width,
+          Number(position.row) * map.tileSize.height,
+          {
+            u: tile.x,
+            v: tile.y,
+            tileWidth: map.tileSize.width,
+            tileHeight: map.tileSize.height
+          }
+        )
       }
-      tileMap.tile(textureName, x, y)
     }
   }
 
-  makeRiver(tileMap, {
-    width: 64,
-    from: { x: 0.6 * mapWidth, y: 0 },
-    to: { x: 0.7 * mapWidth, y: mapHeight },
-  })
-
-  makeMountain(tileMap, {
-    from: {
-      x: adjustXToStep(1 * TILE_WIDTH),
-      y: adjustYToStep(0.6 * mapHeight),
-    },
-    to: {
-      x: adjustXToStep(0.45 * mapWidth),
-      y: adjustYToStep(0.9 * mapHeight),
-    },
-  })
-
-  makeRivers(tileMap, { width: mapWidth, height: mapHeight })
+  Assets.add("walk", "sprites/walk.json")
+  await Assets.load(["walk"])
 
   await game.load()
 
@@ -116,6 +109,47 @@ async function main() {
     document.querySelector(".menu-container")?.remove()
     isMenuShown = false
   }
+}
+
+async function loadMap(path: string) {
+  const response = await fetch(path)
+  const stream = createDecompressedStream(response.body)
+  const content = await readReadableStreamAsUTF8(stream)
+  return parseJSONTileMap(content)
+}
+
+function createDecompressedStream(stream: ReadableStream): ReadableStream {
+  return stream.pipeThrough(new DecompressionStream("gzip"))
+}
+
+async function readReadableStreamAsUTF8(
+  stream: ReadableStream,
+): Promise<string> {
+  const reader = stream.getReader()
+  let content = ""
+  let result = await reader.read()
+  const textDecoder = new TextDecoder()
+  while (!result.done) {
+    content += textDecoder.decode(result.value)
+    result = await reader.read()
+  }
+  return content
+}
+
+function parseJSONTileMap(content: string): TileMap {
+  const rawObjectTileMap = JSON.parse(content)
+  return TileMap.fromRawObject(rawObjectTileMap)
+}
+
+function createImage(content: string) {
+  return new Promise((resolve, onError) => {
+    const image = new Image()
+    image.src = content
+    image.onload = function () {
+      resolve(image)
+    }
+    image.onerror = onError
+  })
 }
 
 main()
