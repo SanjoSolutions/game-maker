@@ -18,8 +18,13 @@ export const numberOfTilesPerColumn = 65
 export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
+interface Man extends Sprite {
+  destinationX?: number | null
+  destinationY?: number | null
+}
+
 export class Game {
-  man: Sprite | undefined | null = null
+  man: Man | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
   database: Database
@@ -53,8 +58,6 @@ export class Game {
           ),
       ) as SpriteWithId
     } else {
-      this.plantTrees()
-
       this.man = Sprite.from("walk_down_0")
       this.man.anchor.set(0.5, 1)
       this.man.x = 0.5 * this.man.width + 0.5 * TILE_WIDTH
@@ -66,6 +69,7 @@ export class Game {
     }
 
     this.updateViewport()
+    // this.updateObjectInHandPosition()
 
     const keyStates = new Map([
       ["ArrowLeft", false],
@@ -102,6 +106,7 @@ export class Game {
     })
 
     let elapsed = 0
+    let direction: Side = null
 
     this.app.ticker.add((delta) => {
       elapsed += delta
@@ -112,14 +117,56 @@ export class Game {
       const right = keyStates.get("ArrowRight")
       const up = keyStates.get("ArrowUp")
       const down = keyStates.get("ArrowDown")
+      if (direction === Side.Left && !left || direction === Side.Right && !right || direction === Side.Top && !up || direction === Side.Bottom && !down) {
+        direction = null
+      }
       let hasPositionChanged = false
       const from = this.man!
-      if (left && !right) {
-        const to = {
-          x: this.man!.x - delta,
-          y: this.man!.y,
+      const isStandingStill = Boolean(!this.man!.destinationX && !this.man!.destinationY)
+      if (isStandingStill) {
+        if ((!direction || direction === Side.Left) && left && !right) {
+          const to = {
+            x: (Math.ceil((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) - 1) * TILE_WIDTH + 0.5 * TILE_WIDTH,
+            y: this.man!.destinationY ?? this.man!.y,
+          }
+          if (this.canMoveThere(from, to)) {
+            this.man!.destinationX = to.x
+            direction = Side.Left
+          }
+        } else if ((!direction || direction === Side.Right) && right && !left) {
+          const to = {
+            x: (Math.floor((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) + 1) * TILE_WIDTH + 0.5 * TILE_WIDTH,
+            y: this.man!.destinationY || this.man!.y,
+          }
+          if (this.canMoveThere(from, to)) {
+            this.man!.destinationX = to.x
+            direction = Side.Right
+          }
         }
-        if (this.canMoveThere(from, to)) {
+        if ((!direction || direction === Side.Top) && up && !down) {
+          const to = {
+            x: this.man!.destinationX ?? this.man!.x,
+            y: (Math.ceil((this.man!.y - 0.5 * TILE_HEIGHT) / TILE_HEIGHT) - 1) * TILE_HEIGHT + 0.5 * TILE_HEIGHT,
+          }
+          if (this.canMoveThere(from, to)) {
+            this.man!.destinationY = to.y
+            direction = Side.Top
+          }
+        } else if ((!direction || direction === Side.Bottom) && down && !up) {
+          const to = {
+            x: this.man!.x,
+            y: this.man!.y + TILE_HEIGHT,
+          }
+          if (this.canMoveThere(from, to)) {
+            this.man!.destinationY = to.y
+            direction = Side.Bottom
+          }
+        }
+      }
+
+      if (this.man!.destinationX && this.man!.x !== this.man!.destinationX) {
+        const delta2 = this.man!.destinationX > this.man!.x ? delta : -delta
+        if (delta2 <= 0) {
           const match = /^walk_.+?_(\d)$/.exec(
             this.man!.texture.textureCacheIds[0],
           )
@@ -128,15 +175,7 @@ export class Game {
             frameNumber = (frameNumber + 1) % 8
           }
           this.man!.texture = Texture.from("walk_left_" + frameNumber)
-          this.man!.x -= delta
-          hasPositionChanged = true
-        }
-      } else if (right && !left) {
-        const to = {
-          x: this.man!.x + delta,
-          y: this.man!.y,
-        }
-        if (this.canMoveThere(from, to)) {
+        } else {
           const match = /^walk_.+?_(\d)$/.exec(
             this.man!.texture.textureCacheIds[0],
           )
@@ -145,16 +184,21 @@ export class Game {
             frameNumber = (frameNumber + 1) % 8
           }
           this.man!.texture = Texture.from("walk_right_" + frameNumber)
-          this.man!.x += delta
-          hasPositionChanged = true
         }
+        this.man!.x += delta2
+        if (delta2 > 0 && this.man!.x > this.man!.destinationX) {
+          this.man!.x = this.man!.destinationX
+        } else if (delta2 < 0 && this.man!.x < this.man!.destinationX) {
+          this.man!.x = this.man!.destinationX
+        }
+        if (this.man!.x === this.man!.destinationX) {
+          this.man!.destinationX = null
+        }
+        hasPositionChanged = true
       }
-      if (up && !down) {
-        const to = {
-          x: this.man!.x,
-          y: this.man!.y - delta,
-        }
-        if (this.canMoveThere(from, to)) {
+      if (this.man!.destinationY && this.man!.y !== this.man!.destinationY) {
+        const delta2 = this.man!.destinationY > this.man!.y ? delta : -delta
+        if (delta2 <= 0) {
           const match = /^walk_.+?_(\d)$/.exec(
             this.man!.texture.textureCacheIds[0],
           )
@@ -163,16 +207,7 @@ export class Game {
             frameNumber = (frameNumber + 1) % 8
           }
           this.man!.texture = Texture.from("walk_up_" + frameNumber)
-          this.man!.y -= delta
-          hasPositionChanged = true
-          this.updateManAndObjectInHandIndex()
-        }
-      } else if (down && !up) {
-        const to = {
-          x: this.man!.x,
-          y: this.man!.y + delta,
-        }
-        if (this.canMoveThere(from, to)) {
+        } else {
           const match = /^walk_.+?_(\d)$/.exec(
             this.man!.texture.textureCacheIds[0],
           )
@@ -181,11 +216,20 @@ export class Game {
             frameNumber = (frameNumber + 1) % 8
           }
           this.man!.texture = Texture.from("walk_down_" + frameNumber)
-          this.man!.y += delta
-          hasPositionChanged = true
-          this.updateManAndObjectInHandIndex()
         }
+        this.man!.y += delta2
+        if (delta2 > 0 && this.man!.y > this.man!.destinationY) {
+          this.man!.y = this.man!.destinationY
+        } else if (delta2 < 0 && this.man!.y < this.man!.destinationY) {
+          this.man!.y = this.man!.destinationY
+        }
+        if (this.man!.y === this.man!.destinationY) {
+          this.man!.destinationY = null
+        }
+        this.updateManAndObjectInHandIndex()
+        hasPositionChanged = true
       }
+
       if (hasPositionChanged) {
         this.updateObjectInHandPosition()
         this.updateViewport()
@@ -268,7 +312,8 @@ export class Game {
   }
 
   private canEnterTileFromDirection(tile: TilePosition, direction: Side) {
-    return isFlagSet(this.#walkableInFrom[this.calculateIndex(tile)], direction)
+    // return isFlagSet(this.#walkableInFrom[this.calculateIndex(tile)], direction)
+    return true
   }
 
   public get objectInHand(): Sprite | undefined | null {
@@ -325,42 +370,6 @@ export class Game {
   public updateViewport() {
     this.app.stage.x = 0.5 * this.app.view.width - this.man!.x
     this.app.stage.y = 0.5 * this.app.view.height - this.man!.y
-  }
-
-  plantTrees() {
-    const howMuchOfMapToCoverWithTrees = 0.5
-    const mapArea = mapWidth * mapHeight
-    const treeForArea = Sprite.from("tree")
-    const treeArea = treeForArea.width * treeForArea.height
-    const howMany = Math.round(
-      (howMuchOfMapToCoverWithTrees * mapArea) / treeArea,
-    )
-
-    const trees = new Array(howMany)
-    for (let i = 1; i <= howMany; i++) {
-      const tree = Sprite.from("tree")
-      tree.anchor.set(0.5, 1)
-      tree.x = generateRandomInteger(
-        0.5 * treeForArea.width + 0.5 * TILE_WIDTH,
-        mapWidth - 0.5 * treeForArea.width + 0.5 * TILE_WIDTH,
-      )
-      tree.y = generateRandomInteger(
-        treeForArea.height + 0.5 * TILE_HEIGHT,
-        mapHeight - 0.5 * TILE_HEIGHT,
-      )
-      trees[i - 1] = tree
-    }
-    trees.sort(compareTrees)
-    for (const tree of trees) {
-      this.app.stage.addChild(tree)
-      if (Math.random() < 0.5) {
-        const branch = Branch.from("branch")
-        branch.game = this
-        branch.x = tree.x + 10
-        branch.y = tree.y - 70
-        this.app.stage.addChild(branch)
-      }
-    }
   }
 
   private calculateIndex(tile: TilePosition): number {
