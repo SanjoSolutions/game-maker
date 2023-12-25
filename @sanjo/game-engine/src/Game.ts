@@ -12,19 +12,16 @@ import { generateRandomInteger } from "./generateRandomInteger.js"
 import { isFlagSet } from "./isFlagSet.js"
 import type { Database } from "./persistence.js"
 import type { SpriteWithId } from "./serialization.js"
+import { Character } from "./Character.js"
+import { Direction } from "./Direction.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
 export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
-interface Man extends Sprite {
-  destinationX?: number | null
-  destinationY?: number | null
-}
-
 export class Game {
-  man: Man | undefined | null = null
+  man: Character | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
   database: Database
@@ -47,26 +44,12 @@ export class Game {
   }
 
   async load(): Promise<void> {
-    const hasStateBeenLoaded = await this.database.loadState(this)
+    await Character.loadSpritesheets()
+    this.man = new Character(this.app.stage)
+    this.app.stage.addChild(this.man.sprite)
+    this.updateManAndObjectInHandIndex()
 
-    if (hasStateBeenLoaded) {
-      this.man = this.app.stage.children.find(
-        (object) =>
-          object instanceof Sprite &&
-          object.texture.textureCacheIds.some((name) =>
-            name.startsWith("walk_"),
-          ),
-      ) as SpriteWithId
-    } else {
-      this.man = Sprite.from("walk_down_0")
-      this.man.anchor.set(0.5, 1)
-      this.man.x = 0.5 * this.man.width + 0.5 * TILE_WIDTH
-      this.man.y = this.man.height + 0.5 * TILE_HEIGHT
-      this.app.stage.addChild(this.man)
-      this.updateManAndObjectInHandIndex()
-
-      await this.database.saveState(this.app)
-    }
+    await this.database.saveState(this.app)
 
     this.updateViewport()
     // this.updateObjectInHandPosition()
@@ -106,7 +89,7 @@ export class Game {
     })
 
     let elapsed = 0
-    let direction: Side = null
+    let direction: Side | null = null
 
     this.app.ticker.add((delta) => {
       elapsed += delta
@@ -117,16 +100,26 @@ export class Game {
       const right = keyStates.get("ArrowRight")
       const up = keyStates.get("ArrowUp")
       const down = keyStates.get("ArrowDown")
-      if (direction === Side.Left && !left || direction === Side.Right && !right || direction === Side.Top && !up || direction === Side.Bottom && !down) {
+      if (
+        (direction === Side.Left && !left) ||
+        (direction === Side.Right && !right) ||
+        (direction === Side.Top && !up) ||
+        (direction === Side.Bottom && !down)
+      ) {
         direction = null
       }
       let hasPositionChanged = false
       const from = this.man!
-      const isStandingStill = Boolean(!this.man!.destinationX && !this.man!.destinationY)
+      const isStandingStill = Boolean(
+        !this.man!.destinationX && !this.man!.destinationY,
+      )
       if (isStandingStill) {
         if ((!direction || direction === Side.Left) && left && !right) {
           const to = {
-            x: (Math.ceil((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) - 1) * TILE_WIDTH + 0.5 * TILE_WIDTH,
+            x:
+              (Math.ceil((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) - 1) *
+                TILE_WIDTH +
+              0.5 * TILE_WIDTH,
             y: this.man!.destinationY ?? this.man!.y,
           }
           if (this.canMoveThere(from, to)) {
@@ -135,7 +128,10 @@ export class Game {
           }
         } else if ((!direction || direction === Side.Right) && right && !left) {
           const to = {
-            x: (Math.floor((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) + 1) * TILE_WIDTH + 0.5 * TILE_WIDTH,
+            x:
+              (Math.floor((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) + 1) *
+                TILE_WIDTH +
+              0.5 * TILE_WIDTH,
             y: this.man!.destinationY || this.man!.y,
           }
           if (this.canMoveThere(from, to)) {
@@ -146,7 +142,10 @@ export class Game {
         if ((!direction || direction === Side.Top) && up && !down) {
           const to = {
             x: this.man!.destinationX ?? this.man!.x,
-            y: (Math.ceil((this.man!.y - 0.5 * TILE_HEIGHT) / TILE_HEIGHT) - 1) * TILE_HEIGHT + 0.5 * TILE_HEIGHT,
+            y:
+              (Math.ceil((this.man!.y - 0.5 * TILE_HEIGHT) / TILE_HEIGHT) - 1) *
+                TILE_HEIGHT +
+              0.5 * TILE_HEIGHT,
           }
           if (this.canMoveThere(from, to)) {
             this.man!.destinationY = to.y
@@ -164,76 +163,59 @@ export class Game {
         }
       }
 
-      if (this.man!.destinationX && this.man!.x !== this.man!.destinationX) {
-        const delta2 = this.man!.destinationX > this.man!.x ? delta : -delta
-        if (delta2 <= 0) {
-          const match = /^walk_.+?_(\d)$/.exec(
-            this.man!.texture.textureCacheIds[0],
-          )
-          let frameNumber = Number(match![1])
-          if (nextFrame) {
-            frameNumber = (frameNumber + 1) % 8
-          }
-          this.man!.texture = Texture.from("walk_left_" + frameNumber)
-        } else {
-          const match = /^walk_.+?_(\d)$/.exec(
-            this.man!.texture.textureCacheIds[0],
-          )
-          let frameNumber = Number(match![1])
-          if (nextFrame) {
-            frameNumber = (frameNumber + 1) % 8
-          }
-          this.man!.texture = Texture.from("walk_right_" + frameNumber)
-        }
-        this.man!.x += delta2
-        if (delta2 > 0 && this.man!.x > this.man!.destinationX) {
-          this.man!.x = this.man!.destinationX
-        } else if (delta2 < 0 && this.man!.x < this.man!.destinationX) {
-          this.man!.x = this.man!.destinationX
-        }
-        if (this.man!.x === this.man!.destinationX) {
-          this.man!.destinationX = null
-        }
-        hasPositionChanged = true
-      }
-      if (this.man!.destinationY && this.man!.y !== this.man!.destinationY) {
-        const delta2 = this.man!.destinationY > this.man!.y ? delta : -delta
-        if (delta2 <= 0) {
-          const match = /^walk_.+?_(\d)$/.exec(
-            this.man!.texture.textureCacheIds[0],
-          )
-          let frameNumber = Number(match![1])
-          if (!hasPositionChanged && nextFrame) {
-            frameNumber = (frameNumber + 1) % 8
-          }
-          this.man!.texture = Texture.from("walk_up_" + frameNumber)
-        } else {
-          const match = /^walk_.+?_(\d)$/.exec(
-            this.man!.texture.textureCacheIds[0],
-          )
-          let frameNumber = Number(match![1])
-          if (!hasPositionChanged && nextFrame) {
-            frameNumber = (frameNumber + 1) % 8
-          }
-          this.man!.texture = Texture.from("walk_down_" + frameNumber)
-        }
-        this.man!.y += delta2
-        if (delta2 > 0 && this.man!.y > this.man!.destinationY) {
-          this.man!.y = this.man!.destinationY
-        } else if (delta2 < 0 && this.man!.y < this.man!.destinationY) {
-          this.man!.y = this.man!.destinationY
-        }
-        if (this.man!.y === this.man!.destinationY) {
-          this.man!.destinationY = null
-        }
-        this.updateManAndObjectInHandIndex()
-        hasPositionChanged = true
-      }
+      const isXDifferentFromDestinationX =
+        this.man!.destinationX && this.man!.x !== this.man!.destinationX
+      const isYDifferentFromDestinationY =
+        this.man!.destinationY && this.man!.y !== this.man!.destinationY
 
-      if (hasPositionChanged) {
-        this.updateObjectInHandPosition()
-        this.updateViewport()
-        this.database.saveObject(this.man!)
+      if (isXDifferentFromDestinationX || isYDifferentFromDestinationY) {
+        if (isXDifferentFromDestinationX) {
+          const delta2 = this.man!.destinationX > this.man!.x ? delta : -delta
+          if (delta2 <= 0) {
+            this.man!.direction = Direction.Left
+          } else {
+            this.man!.direction = Direction.Right
+          }
+          this.man!.x += delta2
+          if (delta2 > 0 && this.man!.x > this.man!.destinationX) {
+            this.man!.x = this.man!.destinationX
+          } else if (delta2 < 0 && this.man!.x < this.man!.destinationX) {
+            this.man!.x = this.man!.destinationX
+          }
+          if (this.man!.x === this.man!.destinationX) {
+            this.man!.destinationX = null
+          }
+          hasPositionChanged = true
+          this.man!.isMoving = true
+        }
+        if (isYDifferentFromDestinationY) {
+          const delta2 = this.man!.destinationY > this.man!.y ? delta : -delta
+          if (delta2 <= 0) {
+            this.man!.direction = Direction.Up
+          } else {
+            this.man!.direction = Direction.Down
+          }
+          this.man!.y += delta2
+          if (delta2 > 0 && this.man!.y > this.man!.destinationY) {
+            this.man!.y = this.man!.destinationY
+          } else if (delta2 < 0 && this.man!.y < this.man!.destinationY) {
+            this.man!.y = this.man!.destinationY
+          }
+          if (this.man!.y === this.man!.destinationY) {
+            this.man!.destinationY = null
+          }
+          this.updateManAndObjectInHandIndex()
+          hasPositionChanged = true
+          this.man!.isMoving = true
+        }
+
+        if (hasPositionChanged) {
+          this.updateObjectInHandPosition()
+          this.updateViewport()
+          // this.database.saveObject(this.man!)
+        }
+      } else {
+        this.man!.isMoving = false
       }
     })
   }
@@ -361,7 +343,7 @@ export class Game {
     ) {
       index++
     }
-    this.app.stage.setChildIndex(this.man!, index)
+    this.app.stage.setChildIndex(this.man!.sprite, index)
     if (this.objectInHand) {
       this.app.stage.setChildIndex(this.objectInHand, index + 1)
     }

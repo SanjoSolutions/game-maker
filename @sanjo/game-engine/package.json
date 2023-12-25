@@ -18,7 +18,8 @@
   "dependencies": {
     "@pixi/display": "^7.2.4",
     "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
-    "pixi.js": "^7.2.4"
+    "pixi.js": "^7.2.4",
+    "@sanjo/mmog-client": "file:../../projects/mmog/packages/client"
   },
   "devDependencies": {
     "prettier": "^3.0.2",

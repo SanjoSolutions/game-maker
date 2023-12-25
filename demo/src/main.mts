@@ -62,9 +62,6 @@ async function main() {
     }
   }
 
-  Assets.add("walk", "sprites/walk.json")
-  await Assets.load(["walk"])
-
   await game.load()
 
   window.addEventListener("keydown", function (event) {
