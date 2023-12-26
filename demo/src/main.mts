@@ -29,15 +29,16 @@ async function main() {
 
   const map = await loadMap("maps/map.json.gz")
 
-  const tileSetToTexture = new Map<number, PIXI.BaseTexture>()
+  const tileSetToTexture = new Map<number, PIXI.Texture>()
 
   const tileSets = []
 
   for (const [index, tileSet] of Object.entries(map.tileSets)) {
     const image = await createImage(tileSet.content)
     const baseTexture = new PIXI.BaseTexture(image)
-    tileSets.push(baseTexture)
-    tileSetToTexture.set(parseInt(index, 10), baseTexture)
+    const texture = new PIXI.Texture(baseTexture)
+    tileSets.push(texture)
+    tileSetToTexture.set(parseInt(index, 10), texture)
   }
 
   for (const level of map.tiles) {
@@ -47,17 +48,15 @@ async function main() {
     for (const [position, tile] of level.entries()) {
       if (tile) {
         const texture = tileSetToTexture.get(tile.tileSet)
-        tileMap.tile(
-          texture,
-          Number(position.column) * map.tileSize.width,
-          Number(position.row) * map.tileSize.height,
-          {
-            u: tile.x,
-            v: tile.y,
-            tileWidth: map.tileSize.width,
-            tileHeight: map.tileSize.height,
-          },
-        )
+        const x = Number(position.column) * map.tileSize.width
+        const y = Number(position.row) * map.tileSize.height
+        const options = {
+          u: tile.x,
+          v: tile.y,
+          tileWidth: map.tileSize.width,
+          tileHeight: map.tileSize.height,
+        }
+        tileMap.tile(texture, x, y, options)
       }
     }
   }

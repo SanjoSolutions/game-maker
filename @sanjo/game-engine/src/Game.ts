@@ -14,6 +14,7 @@ import type { Database } from "./persistence.js"
 import type { SpriteWithId } from "./serialization.js"
 import { CharacterWithOneSpritesheet } from "./CharacterWithOneSpritesheet.js"
 import { Direction } from "./Direction.js"
+import { settings } from "@pixi/tilemap"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -44,6 +45,7 @@ export class Game {
   }
 
   async load(): Promise<void> {
+    settings.use32bitIndex = true
     await CharacterWithOneSpritesheet.loadSpritesheets()
     this.man = new CharacterWithOneSpritesheet(this.app.stage)
     this.app.stage.addChild(this.man.sprite)
@@ -204,12 +206,13 @@ export class Game {
           if (this.man!.y === this.man!.destinationY) {
             this.man!.destinationY = null
           }
-          this.updateManAndObjectInHandIndex()
+          // this.updateManAndObjectInHandIndex()
           hasPositionChanged = true
           this.man!.isMoving = true
         }
 
         if (hasPositionChanged) {
+          console.log(this.man?.x, this.man.y)
           this.updateObjectInHandPosition()
           this.updateViewport()
           // this.database.saveObject(this.man!)
