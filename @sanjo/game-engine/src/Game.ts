@@ -12,7 +12,7 @@ import { generateRandomInteger } from "./generateRandomInteger.js"
 import { isFlagSet } from "./isFlagSet.js"
 import type { Database } from "./persistence.js"
 import type { SpriteWithId } from "./serialization.js"
-import { Character } from "./Character.js"
+import { CharacterWithOneSpritesheet } from "./CharacterWithOneSpritesheet.js"
 import { Direction } from "./Direction.js"
 
 export const numberOfTilesPerRow = 64
@@ -21,7 +21,7 @@ export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
 export class Game {
-  man: Character | undefined | null = null
+  man: CharacterWithOneSpritesheet | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
   database: Database
@@ -44,8 +44,8 @@ export class Game {
   }
 
   async load(): Promise<void> {
-    await Character.loadSpritesheets()
-    this.man = new Character(this.app.stage)
+    await CharacterWithOneSpritesheet.loadSpritesheets()
+    this.man = new CharacterWithOneSpritesheet(this.app.stage)
     this.app.stage.addChild(this.man.sprite)
     this.updateManAndObjectInHandIndex()
 
