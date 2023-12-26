@@ -49,7 +49,6 @@ export class Game {
     await CharacterWithOneSpritesheet.loadSpritesheets()
     this.man = new CharacterWithOneSpritesheet(this.app.stage)
     this.app.stage.addChild(this.man.sprite)
-    this.updateManAndObjectInHandIndex()
 
     await this.database.saveState(this.app)
 
@@ -172,17 +171,17 @@ export class Game {
 
       if (isXDifferentFromDestinationX || isYDifferentFromDestinationY) {
         if (isXDifferentFromDestinationX) {
-          const delta2 = this.man!.destinationX > this.man!.x ? delta : -delta
+          const delta2 = this.man!.destinationX! > this.man!.x ? delta : -delta
           if (delta2 <= 0) {
             this.man!.direction = Direction.Left
           } else {
             this.man!.direction = Direction.Right
           }
           this.man!.x += delta2
-          if (delta2 > 0 && this.man!.x > this.man!.destinationX) {
-            this.man!.x = this.man!.destinationX
-          } else if (delta2 < 0 && this.man!.x < this.man!.destinationX) {
-            this.man!.x = this.man!.destinationX
+          if (delta2 > 0 && this.man!.x > this.man!.destinationX!) {
+            this.man!.x = this.man!.destinationX!
+          } else if (delta2 < 0 && this.man!.x < this.man!.destinationX!) {
+            this.man!.x = this.man!.destinationX!
           }
           if (this.man!.x === this.man!.destinationX) {
             this.man!.destinationX = null
@@ -191,28 +190,26 @@ export class Game {
           this.man!.isMoving = true
         }
         if (isYDifferentFromDestinationY) {
-          const delta2 = this.man!.destinationY > this.man!.y ? delta : -delta
+          const delta2 = this.man!.destinationY! > this.man!.y ? delta : -delta
           if (delta2 <= 0) {
             this.man!.direction = Direction.Up
           } else {
             this.man!.direction = Direction.Down
           }
           this.man!.y += delta2
-          if (delta2 > 0 && this.man!.y > this.man!.destinationY) {
-            this.man!.y = this.man!.destinationY
-          } else if (delta2 < 0 && this.man!.y < this.man!.destinationY) {
-            this.man!.y = this.man!.destinationY
+          if (delta2 > 0 && this.man!.y > this.man!.destinationY!) {
+            this.man!.y = this.man!.destinationY!
+          } else if (delta2 < 0 && this.man!.y < this.man!.destinationY!) {
+            this.man!.y = this.man!.destinationY!
           }
           if (this.man!.y === this.man!.destinationY) {
             this.man!.destinationY = null
           }
-          // this.updateManAndObjectInHandIndex()
           hasPositionChanged = true
           this.man!.isMoving = true
         }
 
         if (hasPositionChanged) {
-          console.log(this.man?.x, this.man.y)
           this.updateObjectInHandPosition()
           this.updateViewport()
           // this.database.saveObject(this.man!)
@@ -224,80 +221,6 @@ export class Game {
   }
 
   private canMoveThere(from: Point2D, to: Point2D) {
-    if (this.isEnteringNewTile(from, to)) {
-      const tile = this.retrieveTileEntered(from, to)!
-      const enteringFromDirection = this.retrieveEnteringFromDirection(
-        from,
-        to,
-      )!
-      return this.canEnterTileFromDirection(tile, enteringFromDirection)
-    } else {
-      return true
-    }
-  }
-
-  private isEnteringNewTile(from: Point2D, to: Point2D) {
-    return Boolean(this.retrieveEnteringFromDirection(from, to))
-  }
-
-  private retrieveTileEntered(from: Point2D, to: Point2D) {
-    return this.retrieveEnteringInformation(from, to)?.tile ?? null
-  }
-
-  private retrieveEnteringFromDirection(
-    from: Point2D,
-    to: Point2D,
-  ): Side | null {
-    return this.retrieveEnteringInformation(from, to)?.direction ?? null
-  }
-
-  private retrieveEnteringInformation(
-    from: Point2D,
-    to: Point2D,
-  ): EnteringInformation | null {
-    if (isMovingToTheRight(from, to)) {
-      const tileA = determineTile({
-        x: from.x + 0.5 * this.man!.width,
-        y: from.y,
-      })
-      const tileB = determineTile({
-        x: to.x + 0.5 * this.man!.width,
-        y: to.y,
-      })
-      if (areDifferentTiles(tileA, tileB)) {
-        return { direction: Side.Left, tile: tileB }
-      }
-    } else if (isMovingToTheLeft(from, to)) {
-      const tileA = determineTile({
-        x: from.x - 0.5 * this.man!.width,
-        y: from.y,
-      })
-      const tileB = determineTile({
-        x: to.x - 0.5 * this.man!.width,
-        y: to.y,
-      })
-      if (areDifferentTiles(tileA, tileB)) {
-        return { direction: Side.Right, tile: tileB }
-      }
-    }
-    if (isMovingToTheTop(from, to)) {
-      const tileA = determineTile(from)
-      const tileB = determineTile(to)
-      if (areDifferentTiles(tileA, tileB)) {
-        return { direction: Side.Bottom, tile: tileB }
-      }
-    } else if (isMovingToTheBottom(from, to)) {
-      const tileA = determineTile(from)
-      const tileB = determineTile(to)
-      if (areDifferentTiles(tileA, tileB)) {
-        return { direction: Side.Top, tile: tileB }
-      }
-    }
-    return null
-  }
-
-  private canEnterTileFromDirection(tile: TilePosition, direction: Side) {
-    // return isFlagSet(this.#walkableInFrom[this.calculateIndex(tile)], direction)
     return true
   }
 
@@ -332,23 +255,6 @@ export class Game {
       this.#objectInHand.x = this.man!.x + 5
       this.#objectInHand.y = this.man!.y - 50
       this.database.saveObject(this.#objectInHand)
-    }
-  }
-
-  public updateManAndObjectInHandIndex() {
-    let index = 0
-    while (
-      index < this.app.stage.children.length - 1 &&
-      (this.app.stage.getChildAt(index) === this.man ||
-        (this.objectInHand &&
-          this.app.stage.getChildAt(index) === this.objectInHand) ||
-        this.app.stage.getChildAt(index).y <= this.man!.y)
-    ) {
-      index++
-    }
-    this.app.stage.setChildIndex(this.man!.sprite, index)
-    if (this.objectInHand) {
-      this.app.stage.setChildIndex(this.objectInHand, index + 1)
     }
   }
 

@@ -7,6 +7,7 @@ import {
 import { Game } from "./Game.js"
 import { Interactable } from "./Interactable.js"
 import { isPlayerCharacter } from "./isPlayerCharacter.js"
+import type { Object } from "./Object.js"
 
 export class Branch extends Interactable {
   #game: Game | null = null
@@ -30,7 +31,7 @@ export class Branch extends Interactable {
     this.#game = value
   }
 
-  canInteractWith(entity: Sprite): boolean {
+  canInteractWith(entity: Object): boolean {
     return isPlayerCharacter(entity)
   }
 

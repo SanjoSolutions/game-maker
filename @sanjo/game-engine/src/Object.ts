@@ -1,6 +1,6 @@
 import { Container, Sprite } from "pixi.js"
-import { Direction } from "../../../projects/mmog/packages/shared/Direction.js"
-import { updatePosition } from "../../../projects/mmog/packages/updatePosition.js"
+import { Direction } from "./Direction.js"
+import { updatePosition } from "./updatePosition.js"
 
 export abstract class Object {
   lastI: number | null = null
