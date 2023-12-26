@@ -55,8 +55,8 @@ async function main() {
             u: tile.x,
             v: tile.y,
             tileWidth: map.tileSize.width,
-            tileHeight: map.tileSize.height
-          }
+            tileHeight: map.tileSize.height,
+          },
         )
       }
     }
