@@ -4,31 +4,34 @@ import { createUniversalSpritesheet } from "./createUniversalSpritesheet.js"
 import { Character } from "./Character.js"
 
 export class CharacterWithOneSpritesheet extends Character {
-  static #hasSpritesheetBeenLoaded: boolean = false
-  static #spritesheet: any | null = null
+  #spritesheetPath: string
+  #hasSpritesheetBeenLoaded: boolean = false
+  #spritesheet: any | null = null
 
-  static async loadSpritesheets() {
-    if (!CharacterWithOneSpritesheet.#hasSpritesheetBeenLoaded) {
-      Assets.add("Download38592", "Download38592.png")
-      const spritesheet = await Assets.load("Download38592")
-
-      CharacterWithOneSpritesheet.#spritesheet =
-        await createUniversalSpritesheet("Download38592", spritesheet)
-
-      CharacterWithOneSpritesheet.#hasSpritesheetBeenLoaded = true
-    }
-  }
-
-  constructor(container: Container) {
+  constructor(spritesheetPath: string, container: Container) {
     super(container)
 
-    this._determineTextures = this._determineTextures.bind(this)
+    this.#spritesheetPath = spritesheetPath
+  }
 
-    this.sprite.addChild(
-      createAnimatedSprite(
-        CharacterWithOneSpritesheet.#spritesheet.animations.down,
-      ),
-    )
+  async loadSpritesheet() {
+    if (!this.#hasSpritesheetBeenLoaded) {
+      Assets.add(this.#spritesheetPath, this.#spritesheetPath)
+      const spritesheet = await Assets.load(this.#spritesheetPath)
+
+      this.#spritesheet = await createUniversalSpritesheet(
+        this.#spritesheetPath,
+        spritesheet,
+      )
+
+      this.#hasSpritesheetBeenLoaded = true
+
+      this._determineTextures = this._determineTextures.bind(this)
+
+      this.sprite.addChild(
+        createAnimatedSprite(this.#spritesheet.animations.down),
+      )
+    }
   }
 
   protected _updateTextures() {
@@ -36,6 +39,6 @@ export class CharacterWithOneSpritesheet extends Character {
   }
 
   private _determineTextures(): Texture<Resource>[] {
-    return this._determineTexture(CharacterWithOneSpritesheet.#spritesheet)
+    return this._determineTexture(this.#spritesheet)
   }
 }

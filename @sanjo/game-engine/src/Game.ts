@@ -1,4 +1,4 @@
-import { Application, Sprite, Texture } from "pixi.js"
+import { Application, Container, Sprite, Texture } from "pixi.js"
 import { Branch } from "./Branch.js"
 import { Interactable } from "./Interactable.js"
 import type { Point2D } from "./Point2D.js"
@@ -22,6 +22,7 @@ export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
 export class Game {
+  entities: Container
   man: CharacterWithOneSpritesheet | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
@@ -33,6 +34,8 @@ export class Game {
     this.app = new Application({
       resizeTo: window,
     })
+    this.entities = new Container()
+    this.app.stage.addChild(this.entities)
 
     this.#walkableInFrom = new Array(mapWidth * mapHeight)
 
@@ -46,9 +49,12 @@ export class Game {
 
   async load(): Promise<void> {
     settings.use32bitIndex = true
-    await CharacterWithOneSpritesheet.loadSpritesheets()
-    this.man = new CharacterWithOneSpritesheet(this.app.stage)
-    this.app.stage.addChild(this.man.sprite)
+    this.man = new CharacterWithOneSpritesheet(
+      "Download38592.png",
+      this.app.stage,
+    )
+    await this.man.loadSpritesheet()
+    this.entities.addChild(this.man.sprite)
 
     await this.database.saveState(this.app)
 
@@ -205,6 +211,7 @@ export class Game {
           if (this.man!.y === this.man!.destinationY) {
             this.man!.destinationY = null
           }
+          this.updateManAndObjectInHandIndex()
           hasPositionChanged = true
           this.man!.isMoving = true
         }
@@ -258,6 +265,27 @@ export class Game {
     }
   }
 
+  public updateManAndObjectInHandIndex() {
+    this.entities.removeChild(this.man!.sprite)
+    if (this.objectInHand) {
+      this.entities.removeChild(this.objectInHand)
+    }
+
+    let manIndex = 0
+    for (let index = 0; index < this.entities.children.length; index++) {
+      const entity = this.entities.getChildAt(index)
+      if (entity.y <= this.man!.y) {
+        manIndex = index + 1
+      } else {
+        break
+      }
+    }
+    this.entities.addChildAt(this.man!.sprite, manIndex)
+    if (this.objectInHand) {
+      this.entities.addChildAt(this.objectInHand, manIndex + 1)
+    }
+  }
+
   public updateViewport() {
     this.app.stage.x = 0.5 * this.app.view.width - this.man!.x
     this.app.stage.y = 0.5 * this.app.view.height - this.man!.y
@@ -266,33 +294,6 @@ export class Game {
   private calculateIndex(tile: TilePosition): number {
     return tile.row * numberOfTilesPerRow + tile.column
   }
-}
-
-function isMovingToTheRight(from: Point2D, to: Point2D): boolean {
-  return to.x > from.x
-}
-
-function isMovingToTheLeft(from: Point2D, to: Point2D): boolean {
-  return to.x < from.x
-}
-
-function isMovingToTheTop(from: Point2D, to: Point2D): boolean {
-  return to.y < from.y
-}
-
-function isMovingToTheBottom(from: Point2D, to: Point2D): boolean {
-  return to.y > from.y
-}
-
-function determineTile(point: Point2D): TilePosition {
-  return {
-    row: Math.floor(point.x / TILE_WIDTH),
-    column: Math.floor(point.y / TILE_HEIGHT),
-  }
-}
-
-function areDifferentTiles(a: TilePosition, b: TilePosition): boolean {
-  return a.row !== b.row || a.column !== b.column
 }
 
 export interface EnteringInformation {

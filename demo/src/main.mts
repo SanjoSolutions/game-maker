@@ -1,7 +1,9 @@
 import {
   Assets,
+  CharacterWithOneSpritesheet,
   CompositeTilemap,
   Database,
+  Direction,
   Game,
   PIXI,
   TILE_HEIGHT,
@@ -41,10 +43,12 @@ async function main() {
     tileSetToTexture.set(parseInt(index, 10), texture)
   }
 
+  let insertIndex = game.app.stage.getChildIndex(game.entities)
   for (const level of map.tiles) {
     const tileMap = new CompositeTilemap()
     tileMap.tileset(tileSets)
-    game.app.stage.addChild(tileMap)
+    game.app.stage.addChildAt(tileMap, insertIndex)
+    insertIndex += 1
     for (const [position, tile] of level.entries()) {
       if (tile) {
         const texture = tileSetToTexture.get(tile.tileSet)
@@ -62,6 +66,13 @@ async function main() {
   }
 
   await game.load()
+
+  const npc = new CharacterWithOneSpritesheet("npc_woman.png", game.app.stage)
+  await npc.loadSpritesheet()
+  game.entities.addChild(npc.sprite)
+  npc.x = 0
+  npc.y = 0
+  npc.direction = Direction.Down
 
   window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {

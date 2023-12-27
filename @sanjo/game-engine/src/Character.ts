@@ -8,10 +8,6 @@ export abstract class Character extends Object {
   public destinationX: number | null = null
   public destinationY: number | null = null
 
-  static async loadSpritesheets(): Promise<void> {
-    throw new Error("Please implement in a subclass.")
-  }
-
   constructor(container: Container) {
     super(container)
   }
