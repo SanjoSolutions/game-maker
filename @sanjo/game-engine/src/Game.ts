@@ -49,10 +49,7 @@ export class Game {
 
   async load(): Promise<void> {
     settings.use32bitIndex = true
-    this.man = new CharacterWithOneSpritesheet(
-      "Download38592.png",
-      this.app.stage,
-    )
+    this.man = new CharacterWithOneSpritesheet("character.png", this.app.stage)
     await this.man.loadSpritesheet()
     this.entities.addChild(this.man.sprite)
 
