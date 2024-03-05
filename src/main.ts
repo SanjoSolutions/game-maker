@@ -8,6 +8,8 @@ import { createGzip, unzip as unzipWithCallback } from "node:zlib"
 const pipe = promisify(pipeline)
 const unzip = promisify(unzipWithCallback)
 
+let openedMapPath: string | null = null
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit()
@@ -93,7 +95,9 @@ const createWindow = () => {
               buttonLabel: "Open map",
               properties: ["openFile"],
             })
-            const contents = await fs.readFile(result.filePaths[0])
+            const filePath = result.filePaths[0]
+            openedMapPath = filePath
+            const contents = await fs.readFile(filePath)
             const buffer = await unzip(contents)
             const map = JSON.parse(buffer.toString())
             mainWindow.webContents.send("open-map", map)
@@ -199,19 +203,26 @@ const createWindow = () => {
   Menu.setApplicationMenu(menu)
 
   ipcMain.on("map", async function (event, map) {
-    const result = await dialog.showSaveDialog({
-      title: "Choose file to save map to",
-      defaultPath: "map1.map.gz",
-      buttonLabel: "Save map",
-      properties: [
-        "createDirectory",
-        "treatPackageAsDirectory",
-        "showOverwriteConfirmation",
-      ],
-    })
+    let saveFilePath
+    if (openedMapPath) {
+      saveFilePath = openedMapPath
+    } else {
+      const result = await dialog.showSaveDialog({
+        title: "Choose file to save map to",
+        defaultPath: "map1.map.gz",
+        buttonLabel: "Save map",
+        properties: [
+          "createDirectory",
+          "treatPackageAsDirectory",
+          "showOverwriteConfirmation",
+        ],
+      })
+      saveFilePath = result.filePath
+    }
+
     const gzip = createGzip()
     const source = Readable.from([JSON.stringify(map)])
-    const destination = createWriteStream(result.filePath)
+    const destination = createWriteStream(saveFilePath)
     await pipe(source, gzip, destination)
   })
 }
