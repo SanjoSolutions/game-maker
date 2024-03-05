@@ -2380,3 +2380,12 @@ app.previewTiles.subscribe(function (previewTiles) {
 
   previousPreviewTiles = previewTiles
 })
+
+{
+  const play = document.getElementById("play")
+  play.addEventListener("click", function () {
+    startGame()
+  })
+}
+
+function startGame() {}
