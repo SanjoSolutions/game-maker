@@ -19,4 +19,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onPaste(callback) {
     return ipcRenderer.on("paste", (event, value) => callback(value))
   },
+  onRequestMap(callback) {
+    return ipcRenderer.on("request-map", (event, value) => callback(value))
+  },
+  map(map) {
+    return ipcRenderer.send("map", map)
+  },
 })

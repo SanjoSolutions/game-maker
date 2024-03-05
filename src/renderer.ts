@@ -1139,8 +1139,24 @@ async function createTileMap() {
     height: DEFAULT_TILE_HEIGHT,
   }
   tileMap.tileSets[0] = {
-    name: "tileset.png",
-    content: await loadFileAsDataUrl("tileset.png"),
+    name: "world.png",
+    content: await loadFileAsDataUrl("world.png"),
+  }
+  tileMap.tileSets[1] = {
+    name: "exterior.png",
+    content: await loadFileAsDataUrl("exterior.png"),
+  }
+  tileMap.tileSets[2] = {
+    name: "dungeon.png",
+    content: await loadFileAsDataUrl("dungeon.png"),
+  }
+  tileMap.tileSets[3] = {
+    name: "interior.png",
+    content: await loadFileAsDataUrl("interior.png"),
+  }
+  tileMap.tileSets[4] = {
+    name: "ship.png",
+    content: await loadFileAsDataUrl("ship.png"),
   }
 
   tileMap.tiles[0] = new TileLayer()
@@ -1659,31 +1675,9 @@ function parseJSONTileMap(content: string): TileMap {
   return TileMap.fromRawObject(rawObjectTileMap)
 }
 
-async function saveMap() {
-  let handle
-  try {
-    handle = await window.showSaveFilePicker({
-      ...filePickerBaseOptions,
-      suggestedName: localStorage.getItem("openFileName") || "map.json.gz",
-    })
-  } catch (error: any) {
-    if (error.code !== ABORT_ERROR) {
-      throw error
-    }
-  }
-  if (handle) {
-    const fileName = handle.name
-    const extension = path.extname(fileName)
-    let stream: ReadableStream
-    if (extension.endsWith(".gz")) {
-      stream = createCompressedTileMapStream()
-    } else {
-      stream = createReadableTileMapStream()
-    }
-    const fileStream = await handle.createWritable()
-    await stream.pipeTo(fileStream)
-  }
-}
+window.electronAPI.onRequestMap(function () {
+  window.electronAPI.map(app.tileMap.value)
+})
 
 function createReadableTileMapStream(): ReadableStream {
   return createReadableStream(
@@ -1792,9 +1786,6 @@ window.addEventListener("keydown", function (event) {
     } else if (isOnlyCtrlOrCmdModifierKeyPressed(event) && event.key === "o") {
       event.preventDefault()
       loadTileMap()
-    } else if (isOnlyCtrlOrCmdModifierKeyPressed(event) && event.key === "s") {
-      event.preventDefault()
-      saveMap()
     } else if (event.code === "Escape") {
       if (isInPasteMode) {
         event.preventDefault()

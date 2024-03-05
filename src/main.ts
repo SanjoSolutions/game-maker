@@ -1,5 +1,11 @@
-import { app, BrowserWindow, globalShortcut, Menu, shell } from "electron"
+import { app, BrowserWindow, dialog, Menu, shell, ipcMain } from "electron"
 import path from "path"
+import fs from "fs/promises"
+import { createWriteStream } from "fs"
+import { Readable, pipeline } from "node:stream"
+import { promisify } from "node:util"
+import { createGzip } from "node:zlib"
+const pipe = promisify(pipeline)
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -57,8 +63,25 @@ const createWindow = () => {
         {
           label: "New game",
           accelerator: "CommandOrControl+N",
+          async click() {
+            const result = await dialog.showOpenDialog({
+              title: "Select folder for new game",
+              buttonLabel: "Create new game in folder",
+              properties: [
+                "openDirectory",
+                "createDirectory",
+                "promptToCreate",
+              ],
+            })
+            console.log("path", result.filePaths[0])
+            // mainWindow.webContents.send("new-game")
+          },
+        },
+        {
+          label: "Save",
+          accelerator: "CommandOrControl+S",
           click() {
-            mainWindow.webContents.send("new-game")
+            mainWindow.webContents.send("request-map")
           },
         },
         isMac ? { role: "close" } : { role: "quit" },
@@ -152,6 +175,23 @@ const createWindow = () => {
         ]),
   ])
   Menu.setApplicationMenu(menu)
+
+  ipcMain.on("map", async function (event, map) {
+    const result = await dialog.showSaveDialog({
+      title: "Choose file to save map to",
+      defaultPath: "map1.map.gz",
+      buttonLabel: "Save map",
+      properties: [
+        "createDirectory",
+        "treatPackageAsDirectory",
+        "showOverwriteConfirmation",
+      ],
+    })
+    const gzip = createGzip()
+    const source = Readable.from([JSON.stringify(map)])
+    const destination = createWriteStream(result.filePath)
+    await pipe(source, gzip, destination)
+  })
 }
 
 // This method will be called when Electron has finished
