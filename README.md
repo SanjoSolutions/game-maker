@@ -1,28 +1,30 @@
-# Tilemap Editor
+# Game Maker
 
 ![How the app looks](image.png)
 
+(The screenshot is a little bit outdated.)
+
 ## Features
 
-- Runs in the browser
-- Tools
-  - Pen
-  - Area
-  - Fill
-  - Select
-    - Cut
-    - Cut and paste
-    - Copy and paste
-- Large tile maps
-- Multiple levels (layers)
-- Multiple tile sets
-- Undo
-- Export and import from JSON
-- Automatic saving (in browser storage)
-- Keybindings
-- Toggle grid
-- Toggle: render only current level
-- Zooming
+- Map editor
+  - Tools
+    - Pen
+    - Area
+    - Fill
+    - Select
+      - Cut
+      - Cut and paste
+      - Copy and paste
+  - Large tile maps
+  - Multiple levels (layers)
+  - Multiple tile sets
+  - Undo
+  - Export and import from JSON
+  - Automatic saving (in browser storage)
+  - Keybindings
+  - Toggle grid
+  - Toggle: render only current level
+  - Zooming
 
 ## Keyboard shortcuts
 
@@ -42,8 +44,8 @@ There are more shortcuts, which are documented in the titles of the GUI elements
 ### Installation
 
 ```bash
-git clone https://github.com/SanjoSolutions/tilemap-editor.git
-cd tilemap-editor
+git clone https://github.com/SanjoSolutions/game-maker.git
+cd game-maker
 npm install
 ```
 
