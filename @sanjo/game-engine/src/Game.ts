@@ -94,40 +94,37 @@ export class Game {
 
     let elapsed = 0
 
+    const threshold = 5
+
     this.app.ticker.add((delta) => {
       elapsed += delta
-      const threshold = 5
       elapsed %= threshold
       const left = keyStates.get("ArrowLeft")
       const right = keyStates.get("ArrowRight")
       const up = keyStates.get("ArrowUp")
       const down = keyStates.get("ArrowDown")
 
-      let direction = this.man!.direction
+      const isStillPressedInDirection =
+        this.man!.direction !== Direction.None &&
+        ((this.man!.direction === Direction.Left && left) ||
+          (this.man!.direction === Direction.Right && right) ||
+          (this.man!.direction === Direction.Up && up) ||
+          (this.man!.direction === Direction.Down && down))
 
       if (
-        direction !== Direction.None &&
-        ((direction === Direction.Left && !left) ||
-          (direction === Direction.Right && !right) ||
-          (direction === Direction.Up && !up) ||
-          (direction === Direction.Down && !down))
+        this.man!.direction === Direction.None ||
+        !isStillPressedInDirection
       ) {
-        direction = Direction.None
-      }
-
-      if (direction === Direction.None) {
         if (down && !up) {
-          direction = Direction.Down
+          this.man!.direction = Direction.Down
         } else if (up && !down) {
-          direction = Direction.Up
+          this.man!.direction = Direction.Up
         } else if (left && !right) {
-          direction = Direction.Left
+          this.man!.direction = Direction.Left
         } else if (right && !left) {
-          direction = Direction.Right
+          this.man!.direction = Direction.Right
         }
       }
-
-      this.man!.direction = direction
 
       let hasPositionChanged = false
 
