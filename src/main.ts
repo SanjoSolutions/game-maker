@@ -74,7 +74,6 @@ const createWindow = () => {
                 "promptToCreate",
               ],
             })
-            console.log("path", result.filePaths[0])
             // mainWindow.webContents.send("new-game")
           },
         },

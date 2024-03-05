@@ -1622,7 +1622,6 @@ const filePickerBaseOptions = {
 const ABORT_ERROR = 20
 
 async function openMap(map: any) {
-  console.log("a")
   app.tileMap.next(TileMap.fromRawObject(map))
   app.level = app.tileMap.value.tiles.length - 1
 
