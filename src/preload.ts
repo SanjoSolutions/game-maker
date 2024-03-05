@@ -7,6 +7,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onNewGame(callback) {
     return ipcRenderer.on("new-game", (event, value) => callback(value))
   },
+  onNewMap(callback) {
+    return ipcRenderer.on("new-map", (event, value) => callback(value))
+  },
+  onOpenMap(callback) {
+    return ipcRenderer.on("open-map", (event, value) => callback(value))
+  },
   onUndo(callback) {
     return ipcRenderer.on("undo", (event, value) => callback(value))
   },

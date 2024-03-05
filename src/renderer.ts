@@ -375,7 +375,9 @@ for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
   const selectedTileSetID = selectedTileSetSerialized
     ? parseInt(selectedTileSetSerialized, 10)
     : 0
-  selectTileSet(selectedTileSetID)
+  if (app.tileMap.value.tileSets[selectedTileSetID]) {
+    selectTileSet(selectedTileSetID)
+  }
 }
 
 function migrateTileMap(tileMap: TileMap): TileMap {
@@ -1131,6 +1133,9 @@ async function createNewTileMap(): Promise<void> {
 }
 
 window.electronAPI.onNewGame(function newGame() {})
+window.electronAPI.onOpenMap(function onOpenMap(map: any) {
+  openMap(map)
+})
 
 async function createTileMap() {
   const tileMap = new TileMap()
@@ -1616,58 +1621,21 @@ const filePickerBaseOptions = {
 
 const ABORT_ERROR = 20
 
-async function loadTileMap() {
-  let fileHandles
-  try {
-    fileHandles = await window.showOpenFilePicker({
-      ...filePickerBaseOptions,
-      types: [
-        {
-          description: "Compressed Map",
-          accept: {
-            "application/gzip": [".json.gz"],
-          },
-        },
-        {
-          description: "Map",
-          accept: {
-            "text/json": [".json"],
-          },
-        },
-      ],
-    })
-  } catch (error: any) {
-    if (error.code !== ABORT_ERROR) {
-      throw error
-    }
-  }
-  if (fileHandles) {
-    const fileHandle = fileHandles[0]
-    const fileName = fileHandle.name
-    const extension = path.extname(fileName)
+async function openMap(map: any) {
+  console.log("a")
+  app.tileMap.next(TileMap.fromRawObject(map))
+  app.level = app.tileMap.value.tiles.length - 1
 
-    localStorage.setItem("openFileName", fileName)
-    const file = await fileHandle.getFile()
-    let stream: ReadableStream
-    if (extension.endsWith(".gz")) {
-      const decompressedStream = createDecompressedStream(file.stream())
-      stream = decompressedStream
-    } else {
-      stream = file.stream()
-    }
-    const content = await readReadableStreamAsUTF8(stream)
-    app.tileMap.next(parseJSONTileMap(content))
-    app.level = app.tileMap.value.tiles.length - 1
+  $tileHover.style.width = app.tileMap.value.tileSize.width + "px"
+  $tileHover.style.height = app.tileMap.value.tileSize.height + "px"
 
-    $tileHover.style.width = app.tileMap.value.tileSize.width + "px"
-    $tileHover.style.height = app.tileMap.value.tileSize.height + "px"
+  $tileSelected.style.width = app.tileMap.value.tileSize.width + "px"
+  $tileSelected.style.height = app.tileMap.value.tileSize.height + "px"
 
-    $tileSelected.style.width = app.tileMap.value.tileSize.width + "px"
-    $tileSelected.style.height = app.tileMap.value.tileSize.height + "px"
+  selectTileSet(0)
 
-    renderTileMap()
-    saveTileMap()
-  }
+  renderTileMap()
+  saveTileMap()
 }
 
 function parseJSONTileMap(content: string): TileMap {
@@ -1677,6 +1645,10 @@ function parseJSONTileMap(content: string): TileMap {
 
 window.electronAPI.onRequestMap(function () {
   window.electronAPI.map(app.tileMap.value)
+})
+
+window.electronAPI.onNewMap(function () {
+  createNewTileMap()
 })
 
 function createReadableTileMapStream(): ReadableStream {
@@ -1783,9 +1755,6 @@ window.addEventListener("keydown", function (event) {
     } else if (isNoModifierKeyPressed(event) && event.key === "c") {
       event.preventDefault()
       toggleRenderOnlyCurrentLevel()
-    } else if (isOnlyCtrlOrCmdModifierKeyPressed(event) && event.key === "o") {
-      event.preventDefault()
-      loadTileMap()
     } else if (event.code === "Escape") {
       if (isInPasteMode) {
         event.preventDefault()

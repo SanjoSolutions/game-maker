@@ -4,8 +4,9 @@ import fs from "fs/promises"
 import { createWriteStream } from "fs"
 import { Readable, pipeline } from "node:stream"
 import { promisify } from "node:util"
-import { createGzip } from "node:zlib"
+import { createGzip, unzip as unzipWithCallback } from "node:zlib"
 const pipe = promisify(pipeline)
+const unzip = promisify(unzipWithCallback)
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -62,7 +63,7 @@ const createWindow = () => {
       submenu: [
         {
           label: "New game",
-          accelerator: "CommandOrControl+N",
+          accelerator: "CommandOrControl+Alt+N",
           async click() {
             const result = await dialog.showOpenDialog({
               title: "Select folder for new game",
@@ -75,6 +76,28 @@ const createWindow = () => {
             })
             console.log("path", result.filePaths[0])
             // mainWindow.webContents.send("new-game")
+          },
+        },
+        {
+          label: "New map",
+          accelerator: "CommandOrControl+N",
+          click() {
+            mainWindow.webContents.send("new-map")
+          },
+        },
+        {
+          label: "Open map",
+          accelerator: "CommandOrControl+O",
+          async click() {
+            const result = await dialog.showOpenDialog({
+              title: "Open map",
+              buttonLabel: "Open map",
+              properties: ["openFile"],
+            })
+            const contents = await fs.readFile(result.filePaths[0])
+            const buffer = await unzip(contents)
+            const map = JSON.parse(buffer.toString())
+            mainWindow.webContents.send("open-map", map)
           },
         },
         {
