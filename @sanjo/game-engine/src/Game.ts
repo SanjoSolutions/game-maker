@@ -93,131 +93,70 @@ export class Game {
     })
 
     let elapsed = 0
-    let direction: Side | null = null
 
     this.app.ticker.add((delta) => {
       elapsed += delta
       const threshold = 5
-      const nextFrame = elapsed >= threshold
       elapsed %= threshold
       const left = keyStates.get("ArrowLeft")
       const right = keyStates.get("ArrowRight")
       const up = keyStates.get("ArrowUp")
       const down = keyStates.get("ArrowDown")
+
+      let direction = this.man!.direction
+
       if (
-        (direction === Side.Left && !left) ||
-        (direction === Side.Right && !right) ||
-        (direction === Side.Top && !up) ||
-        (direction === Side.Bottom && !down)
+        direction !== Direction.None &&
+        ((direction === Direction.Left && !left) ||
+          (direction === Direction.Right && !right) ||
+          (direction === Direction.Up && !up) ||
+          (direction === Direction.Down && !down))
       ) {
-        direction = null
+        direction = Direction.None
       }
+
+      if (direction === Direction.None) {
+        if (down && !up) {
+          direction = Direction.Down
+        } else if (up && !down) {
+          direction = Direction.Up
+        } else if (left && !right) {
+          direction = Direction.Left
+        } else if (right && !left) {
+          direction = Direction.Right
+        }
+      }
+
+      this.man!.direction = direction
+
       let hasPositionChanged = false
-      const from = this.man!
-      const isStandingStill = Boolean(
-        !this.man!.destinationX && !this.man!.destinationY,
-      )
-      if (isStandingStill) {
-        if ((!direction || direction === Side.Left) && left && !right) {
-          const to = {
-            x:
-              (Math.ceil((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) - 1) *
-                TILE_WIDTH +
-              0.5 * TILE_WIDTH,
-            y: this.man!.destinationY ?? this.man!.y,
-          }
-          if (this.canMoveThere(from, to)) {
-            this.man!.destinationX = to.x
-            direction = Side.Left
-          }
-        } else if ((!direction || direction === Side.Right) && right && !left) {
-          const to = {
-            x:
-              (Math.floor((this.man!.x - 0.5 * TILE_WIDTH) / TILE_WIDTH) + 1) *
-                TILE_WIDTH +
-              0.5 * TILE_WIDTH,
-            y: this.man!.destinationY || this.man!.y,
-          }
-          if (this.canMoveThere(from, to)) {
-            this.man!.destinationX = to.x
-            direction = Side.Right
-          }
-        }
-        if ((!direction || direction === Side.Top) && up && !down) {
-          const to = {
-            x: this.man!.destinationX ?? this.man!.x,
-            y:
-              (Math.ceil((this.man!.y - 0.5 * TILE_HEIGHT) / TILE_HEIGHT) - 1) *
-                TILE_HEIGHT +
-              0.5 * TILE_HEIGHT,
-          }
-          if (this.canMoveThere(from, to)) {
-            this.man!.destinationY = to.y
-            direction = Side.Top
-          }
-        } else if ((!direction || direction === Side.Bottom) && down && !up) {
-          const to = {
-            x: this.man!.x,
-            y: this.man!.y + TILE_HEIGHT,
-          }
-          if (this.canMoveThere(from, to)) {
-            this.man!.destinationY = to.y
-            direction = Side.Bottom
-          }
-        }
+
+      if (left && !right) {
+        this.man!.x -= delta
+        hasPositionChanged = true
+        this.man!.isMoving = true
+      } else if (right && !left) {
+        this.man!.x += delta
+        hasPositionChanged = true
+        this.man!.isMoving = true
       }
 
-      const isXDifferentFromDestinationX =
-        this.man!.destinationX && this.man!.x !== this.man!.destinationX
-      const isYDifferentFromDestinationY =
-        this.man!.destinationY && this.man!.y !== this.man!.destinationY
+      if (up && !down) {
+        this.man!.y -= delta
+        this.updateManAndObjectInHandIndex()
+        hasPositionChanged = true
+        this.man!.isMoving = true
+      } else if (down && !up) {
+        this.man!.y += delta
+        this.updateManAndObjectInHandIndex()
+        hasPositionChanged = true
+        this.man!.isMoving = true
+      }
 
-      if (isXDifferentFromDestinationX || isYDifferentFromDestinationY) {
-        if (isXDifferentFromDestinationX) {
-          const delta2 = this.man!.destinationX! > this.man!.x ? delta : -delta
-          if (delta2 <= 0) {
-            this.man!.direction = Direction.Left
-          } else {
-            this.man!.direction = Direction.Right
-          }
-          this.man!.x += delta2
-          if (delta2 > 0 && this.man!.x > this.man!.destinationX!) {
-            this.man!.x = this.man!.destinationX!
-          } else if (delta2 < 0 && this.man!.x < this.man!.destinationX!) {
-            this.man!.x = this.man!.destinationX!
-          }
-          if (this.man!.x === this.man!.destinationX) {
-            this.man!.destinationX = null
-          }
-          hasPositionChanged = true
-          this.man!.isMoving = true
-        }
-        if (isYDifferentFromDestinationY) {
-          const delta2 = this.man!.destinationY! > this.man!.y ? delta : -delta
-          if (delta2 <= 0) {
-            this.man!.direction = Direction.Up
-          } else {
-            this.man!.direction = Direction.Down
-          }
-          this.man!.y += delta2
-          if (delta2 > 0 && this.man!.y > this.man!.destinationY!) {
-            this.man!.y = this.man!.destinationY!
-          } else if (delta2 < 0 && this.man!.y < this.man!.destinationY!) {
-            this.man!.y = this.man!.destinationY!
-          }
-          if (this.man!.y === this.man!.destinationY) {
-            this.man!.destinationY = null
-          }
-          this.updateManAndObjectInHandIndex()
-          hasPositionChanged = true
-          this.man!.isMoving = true
-        }
-
-        if (hasPositionChanged) {
-          this.updateObjectInHandPosition()
-          this.updateViewport()
-          // this.database.saveObject(this.man!)
-        }
+      if (hasPositionChanged) {
+        this.updateObjectInHandPosition()
+        this.updateViewport()
+        // this.database.saveObject(this.man!)
       } else {
         this.man!.isMoving = false
       }

@@ -22,8 +22,10 @@ export abstract class Object {
   }
 
   set direction(direction: Direction) {
-    this._direction = direction
-    this._updateTextures()
+    if (direction !== this._direction) {
+      this._direction = direction
+      this._updateTextures()
+    }
   }
 
   get isMoving(): boolean {
