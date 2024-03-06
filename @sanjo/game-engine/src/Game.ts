@@ -1,20 +1,18 @@
-import { Application, Container, Sprite, Texture } from "pixi.js"
-import { Branch } from "./Branch.js"
+import { Application, Container, Sprite } from "pixi.js"
 import { Interactable } from "./Interactable.js"
 import type { Point2D } from "./Point2D.js"
 import { Side } from "./Side.js"
 import type { TilePosition } from "./TilePosition.js"
 import { calculateDistance } from "./calculateDistance.js"
-import { compareTrees } from "./compareTrees.js"
 import { TILE_HEIGHT, TILE_WIDTH } from "./config.js"
 import { findClosest } from "./findClosest.js"
-import { generateRandomInteger } from "./generateRandomInteger.js"
-import { isFlagSet } from "./isFlagSet.js"
 import type { Database } from "./persistence.js"
-import type { SpriteWithId } from "./serialization.js"
 import { CharacterWithOneSpritesheet } from "./CharacterWithOneSpritesheet.js"
 import { Direction } from "./Direction.js"
 import { settings } from "@pixi/tilemap"
+import { CompositeTilemap } from "@pixi/tilemap"
+import { TileMap } from "./TileMap/TileMap.js"
+import * as PIXI from "pixi.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -28,6 +26,8 @@ export class Game {
   app: Application
   database: Database
   #walkableInFrom: Side[]
+  map: TileMap | null = null
+  walkable: Walkable = new Walkable()
 
   constructor(database: Database) {
     this.database = database
@@ -50,6 +50,8 @@ export class Game {
   async load(): Promise<void> {
     settings.use32bitIndex = true
     this.man = new CharacterWithOneSpritesheet("character.png", this.app.stage)
+    this.man!.x = 32
+    this.man!.y = 32
     await this.man.loadSpritesheet()
     this.entities.addChild(this.man.sprite)
 
@@ -126,38 +128,117 @@ export class Game {
         }
       }
 
-      let hasPositionChanged = false
+      const newPosition = { x: this.man!.x, y: this.man!.y }
 
       if (left && !right) {
-        this.man!.x -= delta
-        hasPositionChanged = true
-        this.man!.isMoving = true
+        newPosition.x -= delta
       } else if (right && !left) {
-        this.man!.x += delta
-        hasPositionChanged = true
-        this.man!.isMoving = true
+        newPosition.x += delta
       }
 
       if (up && !down) {
-        this.man!.y -= delta
-        this.updateManAndObjectInHandIndex()
-        hasPositionChanged = true
-        this.man!.isMoving = true
+        newPosition.y -= delta
       } else if (down && !up) {
-        this.man!.y += delta
-        this.updateManAndObjectInHandIndex()
-        hasPositionChanged = true
-        this.man!.isMoving = true
+        newPosition.y += delta
       }
 
+      const hasPositionChanged =
+        newPosition.x !== this.man!.x || newPosition.y !== this.man!.y
+
       if (hasPositionChanged) {
-        this.updateObjectInHandPosition()
-        this.updateViewport()
-        // this.database.saveObject(this.man!)
+        this.man!.isMoving = true
+
+        let x = newPosition.x
+        let y = newPosition.y
+        const radius = 12
+        if (left && !right) {
+          x -= radius
+        } else if (right && !left) {
+          x += radius
+        }
+        if (up && !down) {
+          y -= radius
+        }
+
+        const tile = {
+          row: Math.floor(y / this.map!.tileSize.height),
+          column: Math.floor(x / this.map!.tileSize.width),
+        }
+
+        if (this.walkable.isWalkableAt(BigInt(tile.row), BigInt(tile.column))) {
+          this.man!.x = newPosition.x
+          this.man!.y = newPosition.y
+          if (newPosition.y !== this.man!.y) {
+            this.updateManAndObjectInHandIndex()
+          }
+          this.updateObjectInHandPosition()
+          this.updateViewport()
+          // this.database.saveObject(this.man!)
+        }
       } else {
         this.man!.isMoving = false
       }
     })
+  }
+
+  public async loadMap(mapFilePath: string): Promise<void> {
+    const response = await fetch(mapFilePath)
+    const stream = createDecompressedStream(response.body)
+    const content = await readReadableStreamAsUTF8(stream)
+    const map = parseJSONTileMap(content)
+    this.map = map
+
+    const tileSetToTexture = new Map<number, PIXI.Texture>()
+
+    const tileSets = []
+
+    for (const [index, tileSet] of Object.entries(map.tileSets)) {
+      const image = await createImage(tileSet.content)
+      const baseTexture = new PIXI.BaseTexture(image)
+      const texture = new PIXI.Texture(baseTexture)
+      tileSets.push(texture)
+      tileSetToTexture.set(parseInt(index, 10), texture)
+    }
+
+    let insertIndex = this.app.stage.getChildIndex(this.entities)
+    for (const level of map.tiles) {
+      const tileMap = new CompositeTilemap()
+      tileMap.tileset(tileSets)
+      this.app.stage.addChildAt(tileMap, insertIndex)
+      insertIndex += 1
+      for (const [position, tile] of level.entries()) {
+        if (tile) {
+          const texture = tileSetToTexture.get(tile.tileSet)
+          const x = Number(position.column) * map.tileSize.width
+          const y = Number(position.row) * map.tileSize.height
+          const options = {
+            u: tile.x,
+            v: tile.y,
+            tileWidth: map.tileSize.width,
+            tileHeight: map.tileSize.height,
+          }
+          tileMap.tile(texture, x, y, options)
+        }
+      }
+    }
+
+    const floorLevel = map.tiles[1]
+    if (floorLevel) {
+      for (const [position, tile] of floorLevel.entries()) {
+        if (tile) {
+          this.walkable.setIsWalkable(position.row, position.column, true)
+        }
+      }
+    }
+
+    const levelOnCharacterHeight = map.tiles[2]
+    if (levelOnCharacterHeight) {
+      for (const [position, tile] of levelOnCharacterHeight.entries()) {
+        if (tile) {
+          this.walkable.setIsWalkable(position.row, position.column, false)
+        }
+      }
+    }
   }
 
   private canMoveThere(from: Point2D, to: Point2D) {
@@ -232,4 +313,61 @@ export class Game {
 export interface EnteringInformation {
   direction: Side
   tile: TilePosition
+}
+
+class Walkable {
+  #data: Map<bigint, Map<bigint, boolean>> = new Map()
+
+  isWalkableAt(row: bigint, column: bigint) {
+    const row2 = this.#data.get(row)
+    if (row2 && row2.has(column)) {
+      const isWalkable = row2.get(column)
+      return isWalkable
+    } else {
+      return false
+    }
+  }
+
+  setIsWalkable(row: bigint, column: bigint, isWalkable: boolean) {
+    let row2 = this.#data.get(row)
+    if (!row2) {
+      row2 = new Map()
+      this.#data.set(row, row2)
+    }
+    row2.set(column, isWalkable)
+  }
+}
+
+function createDecompressedStream(stream: ReadableStream): ReadableStream {
+  return stream.pipeThrough(new DecompressionStream("gzip"))
+}
+
+async function readReadableStreamAsUTF8(
+  stream: ReadableStream,
+): Promise<string> {
+  const reader = stream.getReader()
+  let content = ""
+  let result = await reader.read()
+  const textDecoder = new TextDecoder()
+  while (!result.done) {
+    content += textDecoder.decode(result.value)
+    result = await reader.read()
+  }
+  return content
+}
+
+function parseJSONTileMap(content: string): TileMap {
+  const rawObjectTileMap = JSON.parse(content)
+  return TileMap.fromRawObject(rawObjectTileMap)
+}
+
+function createImage(content: string) {
+  return new Promise((resolve, onError) => {
+    const image = new Image()
+    image.src = content
+    image.onload = function () {
+      resolve(image)
+    }
+    image.onerror = onError
+  })
 }
