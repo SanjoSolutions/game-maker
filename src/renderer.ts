@@ -132,6 +132,10 @@ const tileMapViewport = new BehaviorSubject<PositionBigInt>({
 })
 let tileSets: Record<number, HTMLImageElement> = {}
 const $level = document.querySelector(".level") as HTMLInputElement
+const $entities = document.querySelector<HTMLDivElement>(".entities")!
+const $entityPreview =
+  document.querySelector<HTMLDivElement>(".entity-preview")!
+let areShortcutsEnabled = true
 
 {
   const levelSerialized = localStorage.getItem("level")
@@ -195,18 +199,20 @@ $level.addEventListener("change", function (event) {
   app.level = Number((event.target as HTMLInputElement).value)
 })
 
-const $sidebar = document.querySelector(".sidebar") as HTMLDivElement
-
-{
-  const sideBarWidth = localStorage.getItem("sidebarWidth")
+function initializeSidebar(
+  sidebar: HTMLDivElement,
+  slider: HTMLDivElement,
+  id: string,
+  calculateWidth,
+) {
+  const localStorageKey = `sidebar${id}Width`
+  const sideBarWidth = localStorage.getItem(localStorageKey)
   if (sideBarWidth) {
-    $sidebar.style.flexBasis = sideBarWidth
+    sidebar.style.flexBasis = sideBarWidth
   }
-}
 
-{
   let offset: number | null = null
-  const $sliderDragArea = document.querySelector(
+  const $sliderDragArea = slider.querySelector(
     ".slider__drag-area",
   ) as HTMLDivElement
   let isSliding = false
@@ -218,14 +224,42 @@ const $sidebar = document.querySelector(".sidebar") as HTMLDivElement
   window.addEventListener("pointermove", function (event) {
     if (isSliding) {
       event.preventDefault()
-      $sidebar.style.flexBasis = event.clientX - offset! + "px"
+      sidebar.style.flexBasis = calculateWidth(offset!, event.clientX)
     }
   })
   window.addEventListener("pointerup", function () {
     isSliding = false
     offset = null
-    localStorage.setItem("sidebarWidth", $sidebar.style.flexBasis)
+    localStorage.setItem(localStorageKey, sidebar.style.flexBasis)
+    updateTileMap()
   })
+}
+
+initializeSidebar(
+  document.querySelector<HTMLDivElement>(".sidebar")!,
+  document.querySelector<HTMLDivElement>(".slider")!,
+  "1",
+  (offset, clientX) => clientX - offset + "px",
+)
+
+const $sidebar2 = document.querySelectorAll<HTMLDivElement>(".sidebar")[1]!
+const $slider2 = document.querySelectorAll<HTMLDivElement>(".slider")[1]!
+
+initializeSidebar(
+  $sidebar2,
+  $slider2,
+  "2",
+  (offset, clientX) => window.innerWidth - clientX + offset + "px",
+)
+
+function showSidebar2() {
+  $sidebar2.style.display = "block"
+  $slider2.style.display = "block"
+}
+
+function hideSidebar2() {
+  $sidebar2.style.display = "none"
+  $slider2.style.display = "none"
 }
 
 const $tileHover = document.querySelector(".tile-hover") as HTMLDivElement
@@ -381,19 +415,19 @@ for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
   }
 }
 
+const $tileMapContainer = document.querySelector(".tile-map-container")!
+
 {
-  const $tileMapContainer = document.querySelector(".tile-map-container")!
   $tileMap.width = $tileMapContainer.clientWidth
   $tileMap.height = $tileMapContainer.clientHeight
 
-  window.addEventListener(
-    "resize",
-    debounce(function () {
-      $tileMap.width = $tileMapContainer.clientWidth
-      $tileMap.height = $tileMapContainer.clientHeight
-      renderTileMap()
-    }, 300),
-  )
+  window.addEventListener("resize", debounce(updateTileMap, 300))
+}
+
+function updateTileMap() {
+  $tileMap.width = $tileMapContainer.clientWidth
+  $tileMap.height = $tileMapContainer.clientHeight
+  renderTileMap()
 }
 
 $tileHover.style.width = app.tileMap.value.tileSize.width + "px"
@@ -774,6 +808,13 @@ $tileMap.addEventListener("pointermove", function (event) {
     }
   } else if (isInPasteMode) {
     previewPaste()
+  } else if (app.activeTool.value === Tool.PlaceNPC) {
+    const position = convertCellPositionToCanvasPosition({
+      row: determineRowFromCoordinate(lastPointerPosition!.y),
+      column: determineColumnFromCoordinate(lastPointerPosition!.x),
+    })
+    $entityPreview.style.left = `${position.x}px`
+    $entityPreview.style.top = `${position.y}px`
   } else if (app.selectedTileSetTiles.value) {
     if (app.activeTool.value === "pen") {
       const previousPreviewTiles = app.previewTiles.value
@@ -858,12 +899,26 @@ window.addEventListener("pointerup", function () {
   isPointerDownInTileMap = false
 
   if (wasPointerDownInTileMap) {
-    if (app.activeTool.value === "area") {
+    if (app.activeTool.value === Tool.Area) {
       if (seemsThat9SliceIsSelected()) {
         setTilesWith9SliceMethod()
       } else {
         area()
       }
+    } else if (app.activeTool.value === Tool.PlaceNPC) {
+      const entity = {
+        row: determineRowFromCoordinate(lastPointerPosition.y),
+        column: determineColumnFromCoordinate(lastPointerPosition.x),
+      }
+      app.tileMap.value.entities.push(entity)
+      const $entity = document.createElement("div")
+      $entity.className = "entity"
+      const position = convertCellPositionToCanvasPosition(entity)
+      $entity.style.left = `${position.x}px`
+      $entity.style.top = `${position.y}px`
+      $entities.appendChild($entity)
+      showSidebar2()
+      $sidebar2.querySelector('input[name="ID"]')!.focus()
     }
   }
 
@@ -1088,6 +1143,8 @@ function changeTool(tool: Tool): void {
     app.activeTool.next(tool)
     updateToolButtonStates()
     $selectedArea.style.display = "none"
+    $entityPreview.style.display =
+      app.activeTool.value === Tool.PlaceNPC ? "block" : "none"
   }
 }
 
@@ -1707,7 +1764,7 @@ window.electronAPI.onCopy(copy)
 window.electronAPI.onPaste(startPasting)
 
 window.addEventListener("keydown", function (event) {
-  if (!isModalOpen) {
+  if (areShortcutsEnabled && !isModalOpen) {
     if (isOnlyCtrlOrCmdModifierKeyPressed(event) && event.key === "c") {
       event.preventDefault()
       copy()
@@ -1769,12 +1826,15 @@ window.addEventListener("keydown", function (event) {
     ) {
       event.preventDefault()
       app.resetZoom()
+      updateEntityPreviewScale()
     } else if (isCtrlOrCmdModifierKeyPressed(event) && event.key === "+") {
       event.preventDefault()
       app.zoomIn()
+      updateEntityPreviewScale()
     } else if (isCtrlOrCmdModifierKeyPressed(event) && event.key === "-") {
       event.preventDefault()
       app.zoomOut()
+      updateEntityPreviewScale()
     }
   }
 })
@@ -1789,9 +1849,18 @@ $tileMap.addEventListener("wheel", function (event) {
       } else {
         app.zoomOut()
       }
+      updateEntityPreviewScale()
     }
   }
 })
+
+function updateEntityPreviewScale() {
+  const scaledTileSize = determineScaledTileSize(app.scale.value)
+  const edge = Math.round(app.scale.value * 2)
+  $entityPreview.style.width = scaledTileSize.width - 2 * edge + "px"
+  $entityPreview.style.height = scaledTileSize.height - 2 * edge + "px"
+  $entityPreview.style.transform = `translate(${edge}px, ${edge}px)`
+}
 
 app.isDragModeEnabled.subscribe((isDragModeEnabled) => {
   if (isDragModeEnabled) {
@@ -2004,7 +2073,6 @@ function previewPaste() {
       !previousPreviewTiles ||
       areCellAreasDifferent(previousPreviewTiles, previewTiles)
     ) {
-      console.log("a")
       doSomethingWithCopiedTiles(function (
         position: CellPosition,
         cutTile: MultiLayerTile | Tile | null,
@@ -2382,3 +2450,21 @@ app.previewTiles.subscribe(function (previewTiles) {
 }
 
 function startGame() {}
+
+window.addEventListener("focusin", function (event) {
+  if (
+    event.target instanceof HTMLInputElement ||
+    event.target instanceof HTMLTextAreaElement
+  ) {
+    areShortcutsEnabled = false
+  }
+})
+
+window.addEventListener("focusout", function (event) {
+  if (
+    event.target instanceof HTMLInputElement ||
+    event.target instanceof HTMLTextAreaElement
+  ) {
+    areShortcutsEnabled = true
+  }
+})

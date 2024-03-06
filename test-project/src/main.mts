@@ -13,6 +13,9 @@ async function main() {
   document.body.appendChild(game.app.view as any)
 
   await game.loadMap("maps/map2.map.gz")
+  game.map.findEntityByID("teleportToCity").onOver(function () {
+    // teleport()
+  })
   await game.load()
   game.man!.y = 6 * 32
   game.updateViewport()

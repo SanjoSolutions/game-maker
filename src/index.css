@@ -56,6 +56,7 @@ body {
 
 .tile-selected {
   border: 1px solid black;
+  box-shadow: inset 0 0 0 1px white;
   box-sizing: border-box;
   position: absolute;
   pointer-events: none;
@@ -84,6 +85,7 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .level {
@@ -110,11 +112,44 @@ body {
 }
 
 .selected-area {
-  border: 1px dashed gainsboro;
+  border: 1px dashed black;
   position: absolute;
+  pointer-events: none;
+}
+
+.selected-area-inner {
+  border: 1px dashed white;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
   pointer-events: none;
 }
 
 #tileSetSelect:focus {
   box-shadow: none;
+}
+
+.entities {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.entity {
+  box-sizing: border-box;
+  background-color: black;
+  border: 1px solid white;
+  width: calc(32px - 2 * 2px);
+  height: calc(32px - 2 * 2px);
+  transform: translate(2px, 2px);
+  position: absolute;
+}
+
+.entity-preview {
+  pointer-events: none;
 }
