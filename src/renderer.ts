@@ -871,17 +871,27 @@ function area() {
   if (selectedTileSetTiles && selectedTilesInTileMap) {
     app.backUpMap()
 
-    const numberOfRows =
-      selectedTileSetTiles.height / app.tileMap.value.tileSize.height
-    const numberOfColumns =
-      selectedTileSetTiles.width / app.tileMap.value.tileSize.width
+    const numberOfRows = BigInt(
+      selectedTileSetTiles.height / app.tileMap.value.tileSize.height,
+    )
+    const numberOfColumns = BigInt(
+      selectedTileSetTiles.width / app.tileMap.value.tileSize.width,
+    )
     const baseRow = selectedTilesInTileMap.row
     const baseColumn = selectedTilesInTileMap.column
     doSomethingWithSelectedTilesInTileMap(function ({ row, column }) {
       const selectedTile = {
         x:
           selectedTileSetTiles.x +
-          Number(column % BigInt(numberOfColumns)) *
+          Number(
+            numberOfColumns === 3n
+              ? column === 0n
+                ? 0
+                : column === selectedTilesInTileMap!.width - 1n
+                ? numberOfColumns - 1n
+                : 1
+              : column % numberOfColumns,
+          ) *
             app.tileMap.value.tileSize.width,
         y:
           selectedTileSetTiles.y +
