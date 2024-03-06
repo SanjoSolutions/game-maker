@@ -1,4 +1,4 @@
-import type { Tile } from "../Tile.js"
+import type { Tile } from "@sanjo/game-engine/TileMap/Tile.js"
 export function createTileFixture(): Tile {
   return {
     x: 0,

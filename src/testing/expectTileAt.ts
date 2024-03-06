@@ -1,6 +1,6 @@
 import type { App } from "../App.js"
-import type { CellPosition } from "../CellPosition.js"
-import type { Tile } from "../Tile.js"
+import type { CellPosition } from "@sanjo/game-engine/TileMap/CellPosition.js"
+import type { Tile } from "@sanjo/game-engine/TileMap/Tile.js"
 
 export function expectTileAt(
   app: App,

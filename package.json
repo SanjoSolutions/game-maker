@@ -48,6 +48,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@sanjo/game-engine": "^0.0.0",
     "bootstrap": "^5.3.1",
     "firebase": "^10.3.1",
     "lodash-es": "^4.17.21",
