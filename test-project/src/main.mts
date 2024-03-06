@@ -12,8 +12,10 @@ async function main() {
   const game = new Game(database)
   document.body.appendChild(game.app.view as any)
 
-  await game.loadMap("maps/map1.map.gz")
+  await game.loadMap("maps/map2.map.gz")
   await game.load()
+  game.man!.y = 6 * 32
+  game.updateViewport()
 
   window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {

@@ -83,6 +83,7 @@ const createWindow = () => {
           label: "New map",
           accelerator: "CommandOrControl+N",
           click() {
+            openedMapPath = null
             mainWindow.webContents.send("new-map")
           },
         },
