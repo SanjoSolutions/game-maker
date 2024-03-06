@@ -2,7 +2,7 @@
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
     "target": "ESNext",
-    "module": "commonjs",
+    "module": "esnext",
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,

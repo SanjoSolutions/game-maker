@@ -170,6 +170,9 @@ const areaToolButton = menuIconBar.querySelector(
 const fillToolButton = menuIconBar.querySelector(
   ".fill-tool-button",
 ) as HTMLButtonElement
+const placeNPCToolButton = menuIconBar.querySelector(
+  ".place-npc-button",
+) as HTMLButtonElement
 const selectionToolButton = menuIconBar.querySelector(
   ".selection-tool-button",
 ) as HTMLButtonElement
@@ -331,10 +334,8 @@ await database.open()
 const tileMapFromDatabase = await database.load("tileMap")
 app.tileMap.next(
   tileMapFromDatabase
-    ? migrateTileMap(
-        TileMap.fromRawObject(
-          JSON.parse(await decompressBlob(tileMapFromDatabase)),
-        ),
+    ? TileMap.fromRawObject(
+        JSON.parse(await decompressBlob(tileMapFromDatabase)),
       )
     : await createTileMap(),
 )
@@ -378,32 +379,6 @@ for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
   if (app.tileMap.value.tileSets[selectedTileSetID]) {
     selectTileSet(selectedTileSetID)
   }
-}
-
-function migrateTileMap(tileMap: TileMap): TileMap {
-  if (!tileMap.tileSets) {
-    tileMap.tileSets = {}
-    tileMap.tileSets[0] = {
-      name: "tileset.png",
-      content: localStorage.getItem("tileSetUrl") || "",
-    }
-  }
-
-  if (
-    !tileMap.tiles[0]
-      .retrieveTile({ row: 0n, column: 0n })
-      ?.hasOwnProperty("tileSet")
-  ) {
-    for (const tileLayer of tileMap.tiles) {
-      for (const [_, tile] of tileLayer.entries()) {
-        if (tile) {
-          tile.tileSet = 0
-        }
-      }
-    }
-  }
-
-  return tileMap
 }
 
 {
@@ -1041,6 +1016,7 @@ function updateToolButtonStates() {
   updatePenToolButton()
   updateAreaToolButton()
   updateFillToolButton()
+  updatePlaceNPCToolButton()
   updateSelectionToolButton()
 }
 
@@ -1080,6 +1056,16 @@ fillToolButton.addEventListener("click", activateFillTool)
 
 function updateFillToolButton() {
   updateToolButton(fillToolButton, "fill")
+}
+
+function activatePlaceNPCTool() {
+  changeTool(Tool.PlaceNPC)
+}
+
+placeNPCToolButton.addEventListener("click", activatePlaceNPCTool)
+
+function updatePlaceNPCToolButton() {
+  updateToolButton(placeNPCToolButton, "placeNPC")
 }
 
 function activateSelectTool() {
@@ -1624,6 +1610,15 @@ const ABORT_ERROR = 20
 async function openMap(map: any) {
   app.tileMap.next(TileMap.fromRawObject(map))
   app.level = app.tileMap.value.tiles.length - 1
+
+  for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
+    loadTileSetAsImage(Number(id), tileSet).then(renderTileMap)
+  }
+
+  $tileSetSelect.innerHTML = ""
+  for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
+    addOptionToTileSetSelect(Number(id), tileSet)
+  }
 
   $tileHover.style.width = app.tileMap.value.tileSize.width + "px"
   $tileHover.style.height = app.tileMap.value.tileSize.height + "px"
