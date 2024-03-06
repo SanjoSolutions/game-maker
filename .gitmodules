@@ -1,6 +1,3 @@
-[submodule "tilemap-editor"]
-	path = tilemap-editor
-	url = git@github.com:SanjoSolutions/tilemap-editor.git
 [submodule "projects"]
 	path = projects
 	url = git@github.com:SanjoSolutions/projects.git

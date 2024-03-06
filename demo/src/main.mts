@@ -15,7 +15,7 @@ import {
   mapHeight,
   mapWidth,
 } from "@sanjo/game-engine"
-import { TileMap } from "../../tilemap-editor/src/TileMap.js"
+import { TileMap } from "@sanjo/game-engine/TileMap/TileMap.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
