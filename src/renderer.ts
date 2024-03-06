@@ -673,7 +673,15 @@ function previewArea() {
       const tile = {
         x:
           selectedTileSetTiles.x +
-          Number(column % numberOfColumnsSelectedInTileSet) *
+          Number(
+            numberOfColumnsSelectedInTileSet === 3n
+              ? column === 0n
+                ? 0
+                : column === currentlySelectedTilesInTileMap.width - 1n
+                ? numberOfColumnsSelectedInTileSet - 1n
+                : 1
+              : column % numberOfColumnsSelectedInTileSet,
+          ) *
             app.tileMap.value.tileSize.width,
         y:
           selectedTileSetTiles.y +
@@ -940,9 +948,9 @@ function do9SliceMethodWithSelectedTiles(
         selectedTilesX = selectedTileSetTiles.x
         selectedTilesY = selectedTileSetTiles.y
       } else if (row === 0n && column === numberOfColumns - 1n) {
-        ;(selectedTilesX =
-          selectedTileSetTiles.x + 2 * app.tileMap.value.tileSize.width),
-          (selectedTilesY = selectedTileSetTiles.y)
+        selectedTilesX =
+          selectedTileSetTiles.x + 2 * app.tileMap.value.tileSize.width
+        selectedTilesY = selectedTileSetTiles.y
       } else if (row === numberOfRows - 1n && column === numberOfColumns - 1n) {
         selectedTilesX =
           selectedTileSetTiles.x + 2 * app.tileMap.value.tileSize.width
