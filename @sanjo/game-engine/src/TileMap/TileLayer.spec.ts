@@ -5,8 +5,8 @@ describe("TileLayer", () => {
     it("sets a tile", () => {
       const tileLayer = new TileLayer()
       const tile = createTileFixture()
-      tileLayer.setTile({ row: 0n, column: 0n }, tile)
-      expect(tileLayer.retrieveTile({ row: 0n, column: 0n })).toBe(tile)
+      tileLayer.setTile({ row: 0, column: 0 }, tile)
+      expect(tileLayer.retrieveTile({ row: 0, column: 0 })).toBe(tile)
     })
   })
 
@@ -14,9 +14,9 @@ describe("TileLayer", () => {
     it("removes a tile", () => {
       const tileLayer = new TileLayer()
       const tile = createTileFixture()
-      tileLayer.setTile({ row: 0n, column: 0n }, tile)
-      tileLayer.removeTile({ row: 0n, column: 0n })
-      expect(tileLayer.retrieveTile({ row: 0n, column: 0n })).toBe(null)
+      tileLayer.setTile({ row: 0, column: 0 }, tile)
+      tileLayer.removeTile({ row: 0, column: 0 })
+      expect(tileLayer.retrieveTile({ row: 0, column: 0 })).toBe(null)
     })
   })
 
@@ -24,8 +24,8 @@ describe("TileLayer", () => {
     it("retrieves a tile", () => {
       const tileLayer = new TileLayer()
       const tile = createTileFixture()
-      tileLayer.setTile({ row: 0n, column: 0n }, tile)
-      expect(tileLayer.retrieveTile({ row: 0n, column: 0n })).toBe(tile)
+      tileLayer.setTile({ row: 0, column: 0 }, tile)
+      expect(tileLayer.retrieveTile({ row: 0, column: 0 })).toBe(tile)
     })
   })
 
@@ -33,12 +33,12 @@ describe("TileLayer", () => {
     it("retrieves an area", () => {
       const tileLayer = new TileLayer()
       const tile = createTileFixture()
-      tileLayer.setTile({ row: 0n, column: 0n }, tile)
+      tileLayer.setTile({ row: 0, column: 0 }, tile)
       const areaTileLayer = tileLayer.retrieveArea({
-        from: { row: 0n, column: 0n },
-        to: { row: 0n, column: 0n },
+        from: { row: 0, column: 0 },
+        to: { row: 0, column: 0 },
       })
-      expect(areaTileLayer.retrieveTile({ row: 0n, column: 0n })).toBe(tile)
+      expect(areaTileLayer.retrieveTile({ row: 0, column: 0 })).toBe(tile)
     })
   })
 
@@ -46,9 +46,9 @@ describe("TileLayer", () => {
     it("copies a tile layer", () => {
       const tileLayer = new TileLayer()
       const tile = createTileFixture()
-      tileLayer.setTile({ row: 0n, column: 0n }, tile)
+      tileLayer.setTile({ row: 0, column: 0 }, tile)
       const copy = tileLayer.copy()
-      expect(copy.retrieveTile({ row: 0n, column: 0n })).toBe(tile)
+      expect(copy.retrieveTile({ row: 0, column: 0 })).toBe(tile)
     })
   })
 
@@ -57,12 +57,12 @@ describe("TileLayer", () => {
       const tileLayer = new TileLayer()
       const tile1 = createTileFixture()
       const tile2 = createTileFixture()
-      tileLayer.setTile({ row: 0n, column: 0n }, tile1)
-      tileLayer.setTile({ row: 1n, column: 1n }, tile2)
+      tileLayer.setTile({ row: 0, column: 0 }, tile1)
+      tileLayer.setTile({ row: 1, column: 1 }, tile2)
       const entries = [...tileLayer.entries()]
       expect(entries).toEqual([
-        [{ row: 0n, column: 0n }, tile1],
-        [{ row: 1n, column: 1n }, tile2],
+        [{ row: 0, column: 0 }, tile1],
+        [{ row: 1, column: 1 }, tile2],
       ])
     })
   })

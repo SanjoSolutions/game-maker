@@ -1,4 +1,5 @@
 import type { CellPosition } from "./CellPosition.js"
+import type { Entity, IEntity } from "./Entity.js"
 import type { MultiLayerTile } from "./MultiLayerTile.js"
 import type { Size } from "./Size.js"
 import { TileLayer } from "./TileLayer.js"
@@ -8,8 +9,8 @@ import type { TileSetID } from "./TileSetID.js"
 interface RawObjectTileMap {
   tileSize: Size
   tileSets: Record<TileSetID, TileSet>
-  tiles: TileLayer[]
-  entities: any[]
+  tiles: TileLayer[] // TODO: Correct type?
+  entities: IEntity[]
 }
 
 export class TileMap {
@@ -20,7 +21,7 @@ export class TileMap {
   tileSets: Record<TileSetID, TileSet> = {}
   // TODO: Make tiles reactive
   tiles: TileLayer[] = [new TileLayer()]
-  entities: Entity
+  entities: Entity[] = []
 
   static fromRawObject(rawObject: RawObjectTileMap) {
     const tileMap = new TileMap()

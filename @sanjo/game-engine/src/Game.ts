@@ -163,7 +163,7 @@ export class Game {
           column: Math.floor(x / this.map!.tileSize.width),
         }
 
-        if (this.walkable.isWalkableAt(BigInt(tile.row), BigInt(tile.column))) {
+        if (this.walkable.isWalkableAt(tile.row, tile.column)) {
           this.man!.x = newPosition.x
           this.man!.y = newPosition.y
           if (hasYChanged) {
@@ -332,9 +332,9 @@ export interface EnteringInformation {
 }
 
 class Walkable {
-  #data: Map<bigint, Map<bigint, boolean>> = new Map()
+  #data: Map<number, Map<number, boolean>> = new Map()
 
-  isWalkableAt(row: bigint, column: bigint) {
+  isWalkableAt(row: number, column: number) {
     const row2 = this.#data.get(row)
     if (row2 && row2.has(column)) {
       const isWalkable = row2.get(column)
@@ -344,7 +344,7 @@ class Walkable {
     }
   }
 
-  setIsWalkable(row: bigint, column: bigint, isWalkable: boolean) {
+  setIsWalkable(row: number, column: number, isWalkable: boolean) {
     let row2 = this.#data.get(row)
     if (!row2) {
       row2 = new Map()

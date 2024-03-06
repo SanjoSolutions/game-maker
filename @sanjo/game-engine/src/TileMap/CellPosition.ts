@@ -1,6 +1,6 @@
 export interface CellPosition {
-  row: bigint
-  column: bigint
+  row: number
+  column: number
 }
 
 export function createCellPositionKey(position: CellPosition) {

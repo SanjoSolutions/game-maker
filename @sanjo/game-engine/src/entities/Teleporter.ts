@@ -4,8 +4,8 @@ class Teleporter {
 
 interface Location {
   map: any
-  x: bigint
-  y: bigint
+  x: number
+  y: number
 }
 
 function teleport(entity: any, location: Location): Promise<void> {}

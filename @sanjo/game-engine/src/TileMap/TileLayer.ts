@@ -46,12 +46,12 @@ export class TileLayer {
 
   retrieveArea(area: CellAreaFromTo): TileLayer {
     const size = {
-      width: area.to.column - area.from.column + 1n,
-      height: area.to.row - area.from.row + 1n,
+      width: area.to.column - area.from.column + 1,
+      height: area.to.row - area.from.row + 1,
     }
     const areaTileLayer = new TileLayer()
-    for (let row = 0n; row < size.height; row++) {
-      for (let column = 0n; column < size.width; column++) {
+    for (let row = 0; row < size.height; row++) {
+      for (let column = 0; column < size.width; column++) {
         const tile = this.retrieveTile({
           row: area.from.row + row,
           column: area.from.column + column,
@@ -81,8 +81,8 @@ export class TileLayer {
         const tile = tileLayerRow[column]
         yield [
           {
-            row: BigInt(row),
-            column: BigInt(column),
+            row: Number(row),
+            column: Number(column),
           },
           tile,
         ]
