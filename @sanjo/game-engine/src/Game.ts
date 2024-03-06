@@ -20,7 +20,6 @@ export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
 export class Game {
-  entities: Container
   man: CharacterWithOneSpritesheet | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
@@ -28,14 +27,13 @@ export class Game {
   #walkableInFrom: Side[]
   map: TileMap | null = null
   walkable: Walkable = new Walkable()
+  layers: (CompositeTilemap | Container)[] = []
 
   constructor(database: Database) {
     this.database = database
     this.app = new Application({
       resizeTo: window,
     })
-    this.entities = new Container()
-    this.app.stage.addChild(this.entities)
 
     this.#walkableInFrom = new Array(mapWidth * mapHeight)
 
@@ -53,7 +51,7 @@ export class Game {
     this.man!.x = 32
     this.man!.y = 32
     await this.man.loadSpritesheet()
-    this.entities.addChild(this.man.sprite)
+    this.layers[3].addChild(this.man.sprite)
 
     await this.database.saveState(this.app)
 
@@ -142,8 +140,8 @@ export class Game {
         newPosition.y += delta
       }
 
-      const hasPositionChanged =
-        newPosition.x !== this.man!.x || newPosition.y !== this.man!.y
+      const hasYChanged = newPosition.y !== this.man!.y
+      const hasPositionChanged = newPosition.x !== this.man!.x || hasYChanged
 
       if (hasPositionChanged) {
         this.man!.isMoving = true
@@ -168,7 +166,7 @@ export class Game {
         if (this.walkable.isWalkableAt(BigInt(tile.row), BigInt(tile.column))) {
           this.man!.x = newPosition.x
           this.man!.y = newPosition.y
-          if (newPosition.y !== this.man!.y) {
+          if (hasYChanged) {
             this.updateManAndObjectInHandIndex()
           }
           this.updateObjectInHandPosition()
@@ -200,12 +198,15 @@ export class Game {
       tileSetToTexture.set(parseInt(index, 10), texture)
     }
 
-    let insertIndex = this.app.stage.getChildIndex(this.entities)
-    for (const level of map.tiles) {
+    for (
+      let levelNumber = 1;
+      levelNumber <= Math.min(map.tiles.length - 1, 2);
+      levelNumber++
+    ) {
+      const level = map.tiles[levelNumber]
       const tileMap = new CompositeTilemap()
       tileMap.tileset(tileSets)
-      this.app.stage.addChildAt(tileMap, insertIndex)
-      insertIndex += 1
+      this.app.stage.addChild(tileMap)
       for (const [position, tile] of level.entries()) {
         if (tile) {
           const texture = tileSetToTexture.get(tile.tileSet)
@@ -220,6 +221,38 @@ export class Game {
           tileMap.tile(texture, x, y, options)
         }
       }
+      this.layers[levelNumber] = tileMap
+    }
+
+    for (
+      let levelNumber = 3;
+      levelNumber <= map.tiles.length - 1;
+      levelNumber++
+    ) {
+      const level = map.tiles[levelNumber]
+      const tileMap = new Container()
+      tileMap.sortableChildren = true
+      this.app.stage.addChild(tileMap)
+      for (const [position, tile] of level.entries()) {
+        if (tile) {
+          const texture = tileSetToTexture.get(tile.tileSet)!
+          const tileTexture = new PIXI.Texture(
+            texture,
+            new PIXI.Rectangle(
+              tile.x,
+              tile.y,
+              map.tileSize.width,
+              map.tileSize.height,
+            ),
+          )
+          const sprite = new Sprite(tileTexture)
+          sprite.x = Number(position.column) * map.tileSize.width
+          sprite.y = Number(position.row) * map.tileSize.height
+          sprite.zIndex = sprite.y + map.tileSize.height
+          tileMap.addChild(sprite)
+        }
+      }
+      this.layers[levelNumber] = tileMap
     }
 
     const floorLevel = map.tiles[1]
@@ -280,24 +313,7 @@ export class Game {
   }
 
   public updateManAndObjectInHandIndex() {
-    this.entities.removeChild(this.man!.sprite)
-    if (this.objectInHand) {
-      this.entities.removeChild(this.objectInHand)
-    }
-
-    let manIndex = 0
-    for (let index = 0; index < this.entities.children.length; index++) {
-      const entity = this.entities.getChildAt(index)
-      if (entity.y <= this.man!.y) {
-        manIndex = index + 1
-      } else {
-        break
-      }
-    }
-    this.entities.addChildAt(this.man!.sprite, manIndex)
-    if (this.objectInHand) {
-      this.entities.addChildAt(this.objectInHand, manIndex + 1)
-    }
+    this.layers[3].sortChildren()
   }
 
   public updateViewport() {

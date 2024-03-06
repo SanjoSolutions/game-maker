@@ -64,6 +64,7 @@ export abstract class Object {
 
   set y(y: number) {
     this.sprite.y = y
+    this.sprite.zIndex = y
   }
 
   updatePosition(): void {
