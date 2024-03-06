@@ -1123,15 +1123,37 @@ function updateRenderOnlyCurrentLevelButton() {
 }
 
 async function createNewTileMap(): Promise<void> {
-  app.tileMap.next(await createTileMap())
+  loadMap(await createTileMap())
+}
+
+function loadMap(map: TileMap) {
+  app.tileMap.next(map)
   localStorage.removeItem("openFileName")
+
+  for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
+    loadTileSetAsImage(Number(id), tileSet).then(renderTileMap)
+  }
+
+  $tileSetSelect.innerHTML = ""
+  for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
+    addOptionToTileSetSelect(Number(id), tileSet)
+  }
+
+  $tileHover.style.width = app.tileMap.value.tileSize.width + "px"
+  $tileHover.style.height = app.tileMap.value.tileSize.height + "px"
+
+  $tileSelected.style.width = app.tileMap.value.tileSize.width + "px"
+  $tileSelected.style.height = app.tileMap.value.tileSize.height + "px"
+
+  selectTileSet(0)
+
   renderTileMap()
   saveTileMap()
 }
 
 window.electronAPI.onNewGame(function newGame() {})
 window.electronAPI.onOpenMap(function onOpenMap(map: any) {
-  openMap(map)
+  loadMap(TileMap.fromRawObject(map))
 })
 
 async function createTileMap() {
@@ -1611,42 +1633,7 @@ const types: FileType[] = [
   },
 ]
 
-const filePickerBaseOptions = {
-  excludeAcceptAllOption: true,
-  types,
-}
-
 const ABORT_ERROR = 20
-
-async function openMap(map: any) {
-  app.tileMap.next(TileMap.fromRawObject(map))
-  app.level = app.tileMap.value.tiles.length - 1
-
-  for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
-    loadTileSetAsImage(Number(id), tileSet).then(renderTileMap)
-  }
-
-  $tileSetSelect.innerHTML = ""
-  for (const [id, tileSet] of Object.entries(app.tileMap.value.tileSets)) {
-    addOptionToTileSetSelect(Number(id), tileSet)
-  }
-
-  $tileHover.style.width = app.tileMap.value.tileSize.width + "px"
-  $tileHover.style.height = app.tileMap.value.tileSize.height + "px"
-
-  $tileSelected.style.width = app.tileMap.value.tileSize.width + "px"
-  $tileSelected.style.height = app.tileMap.value.tileSize.height + "px"
-
-  selectTileSet(0)
-
-  renderTileMap()
-  saveTileMap()
-}
-
-function parseJSONTileMap(content: string): TileMap {
-  const rawObjectTileMap = JSON.parse(content)
-  return TileMap.fromRawObject(rawObjectTileMap)
-}
 
 window.electronAPI.onRequestMap(function () {
   window.electronAPI.map(app.tileMap.value)
