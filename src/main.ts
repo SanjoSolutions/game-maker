@@ -204,7 +204,7 @@ const createWindow = () => {
   Menu.setApplicationMenu(menu)
 
   ipcMain.on("map", async function (event, map) {
-    let saveFilePath
+    let saveFilePath = null
     if (openedMapPath) {
       saveFilePath = openedMapPath
     } else {
@@ -218,13 +218,18 @@ const createWindow = () => {
           "showOverwriteConfirmation",
         ],
       })
-      saveFilePath = result.filePath
+      if (!result.canceled) {
+        saveFilePath = result.filePath
+      }
     }
 
-    const gzip = createGzip()
-    const source = Readable.from([JSON.stringify(map)])
-    const destination = createWriteStream(saveFilePath)
-    await pipe(source, gzip, destination)
+    if (saveFilePath) {
+      const gzip = createGzip()
+      const source = Readable.from([JSON.stringify(map)])
+      const destination = createWriteStream(saveFilePath)
+      await pipe(source, gzip, destination)
+      openedMapPath = saveFilePath
+    }
   })
 }
 

@@ -1981,8 +1981,7 @@ function paste(): void {
 
 function previewPaste() {
   const previousPreviewTiles = app.previewTiles.value
-  const selectedTileSetTiles = app.selectedTileSetTiles.value
-  if (selectedTileSetTiles && lastPointerPosition) {
+  if (lastPointerPosition) {
     const numberOfRowsCut = copiedArea!.to.row - copiedArea!.from.row + 1n
     const numberOfColumnsCut =
       copiedArea!.to.column - copiedArea!.from.column + 1n
@@ -2005,6 +2004,7 @@ function previewPaste() {
       !previousPreviewTiles ||
       areCellAreasDifferent(previousPreviewTiles, previewTiles)
     ) {
+      console.log("a")
       doSomethingWithCopiedTiles(function (
         position: CellPosition,
         cutTile: MultiLayerTile | Tile | null,
