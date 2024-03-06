@@ -9,6 +9,7 @@ const pipe = promisify(pipeline)
 const unzip = promisify(unzipWithCallback)
 
 let openedMapPath: string | null = null
+let saveAs = false
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -96,18 +97,29 @@ const createWindow = () => {
               buttonLabel: "Open map",
               properties: ["openFile"],
             })
-            const filePath = result.filePaths[0]
-            openedMapPath = filePath
-            const contents = await fs.readFile(filePath)
-            const buffer = await unzip(contents)
-            const map = JSON.parse(buffer.toString())
-            mainWindow.webContents.send("open-map", map)
+            if (!result.canceled) {
+              const filePath = result.filePaths[0]
+              openedMapPath = filePath
+              const contents = await fs.readFile(filePath)
+              const buffer = await unzip(contents)
+              const map = JSON.parse(buffer.toString())
+              mainWindow.webContents.send("open-map", map)
+            }
           },
         },
         {
           label: "Save",
           accelerator: "CommandOrControl+S",
           click() {
+            saveAs = false
+            mainWindow.webContents.send("request-map")
+          },
+        },
+        {
+          label: "Save as",
+          accelerator: "CommandOrControl+Shift+S",
+          click() {
+            saveAs = true
             mainWindow.webContents.send("request-map")
           },
         },
@@ -205,7 +217,7 @@ const createWindow = () => {
 
   ipcMain.on("map", async function (event, map) {
     let saveFilePath = null
-    if (openedMapPath) {
+    if (!saveAs && openedMapPath) {
       saveFilePath = openedMapPath
     } else {
       const result = await dialog.showSaveDialog({
