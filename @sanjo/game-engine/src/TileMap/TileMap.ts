@@ -9,6 +9,7 @@ interface RawObjectTileMap {
   tileSize: Size
   tileSets: Record<TileSetID, TileSet>
   tiles: TileLayer[]
+  entities: any[]
 }
 
 export class TileMap {
@@ -19,6 +20,7 @@ export class TileMap {
   tileSets: Record<TileSetID, TileSet> = {}
   // TODO: Make tiles reactive
   tiles: TileLayer[] = [new TileLayer()]
+  entities: Entity
 
   static fromRawObject(rawObject: RawObjectTileMap) {
     const tileMap = new TileMap()
@@ -36,6 +38,7 @@ export class TileMap {
       }
       return tileLayer
     })
+    tileMap.entities = rawObject.entities
     return tileMap
   }
 
