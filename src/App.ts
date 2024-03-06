@@ -68,7 +68,7 @@ export class App {
       height: this.tileMap.value.tileSize.height,
     })
   }
-  useToolAt(row: bigint, column: bigint) {
+  useToolAt(row: number, column: number) {
     const tool = this.activeTool.value
     if (tool === Tool.Pen) {
       this.usePenToolAt({ row, column })
@@ -110,13 +110,13 @@ export class App {
 
       const numberOfSelectedRowsInTileSet = Number(
         calculateNumberOfRows(
-          BigInt(this.selectedTileSetTiles.value.height),
+          this.selectedTileSetTiles.value.height,
           this.tileMap.value.tileSize.height,
         ),
       )
       const numberOfSelectedColumnsInTileSet = Number(
         calculateNumberOfColumns(
-          BigInt(this.selectedTileSetTiles.value.width),
+          this.selectedTileSetTiles.value.width,
           this.tileMap.value.tileSize.width,
         ),
       )
@@ -132,8 +132,8 @@ export class App {
           columnOffset < numberOfSelectedColumnsInTileSet;
           columnOffset++
         ) {
-          const row = baseRow + BigInt(rowOffset)
-          const column = baseColumn + BigInt(columnOffset)
+          const row = baseRow + rowOffset
+          const column = baseColumn + columnOffset
 
           const tile = {
             x:

@@ -1,6 +1,6 @@
 export function calculateNumberOfColumns(
-  width: bigint,
+  width: number,
   tileWidth: number,
-): bigint {
-  return width / BigInt(tileWidth)
+): number {
+  return Math.floor(width / tileWidth)
 }

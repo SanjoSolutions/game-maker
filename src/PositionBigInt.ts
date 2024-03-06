@@ -1,4 +1,4 @@
 export interface PositionBigInt {
-  x: bigint
-  y: bigint
+  x: number
+  y: number
 }

@@ -1,6 +1,6 @@
 export interface CellAreaCartesian {
-  x: bigint
-  y: bigint
-  width: bigint
-  height: bigint
+  x: number
+  y: number
+  width: number
+  height: number
 }

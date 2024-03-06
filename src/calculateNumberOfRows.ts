@@ -1,6 +1,6 @@
 export function calculateNumberOfRows(
-  height: bigint,
+  height: number,
   tileHeight: number,
-): bigint {
-  return height / BigInt(tileHeight)
+): number {
+  return Math.floor(height / tileHeight)
 }

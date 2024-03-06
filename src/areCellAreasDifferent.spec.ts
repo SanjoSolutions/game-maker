@@ -3,8 +3,8 @@ describe("areCellAreasDifferent", () => {
   it("returns true when the cell areas are different", () => {
     expect(
       areCellAreasDifferent(
-        { row: 0n, column: 0n, width: 1n, height: 1n },
-        { row: 1n, column: 0n, width: 1n, height: 1n },
+        { row: 0, column: 0, width: 1, height: 1 },
+        { row: 1, column: 0, width: 1, height: 1 },
       ),
     ).toBe(true)
   })
@@ -12,8 +12,8 @@ describe("areCellAreasDifferent", () => {
   it("returns false when the cell areas are the same", () => {
     expect(
       areCellAreasDifferent(
-        { row: 0n, column: 0n, width: 1n, height: 1n },
-        { row: 0n, column: 0n, width: 1n, height: 1n },
+        { row: 0, column: 0, width: 1, height: 1 },
+        { row: 0, column: 0, width: 1, height: 1 },
       ),
     ).toBe(false)
   })

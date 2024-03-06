@@ -33,8 +33,8 @@ describe("App", () => {
       const app = createAppFixture()
       app.selectPenTool()
       app.selectTileSetTile(0, 0)
-      app.useToolAt(0n, 0n)
-      expectTileAt(app, { row: 0n, column: 0n }, { x: 0, y: 0, tileSet: 0 })
+      app.useToolAt(, )
+      expectTileAt(app, { row: , column:  }, { x: 0, y: 0, tileSet: 0 })
     })
   })
 

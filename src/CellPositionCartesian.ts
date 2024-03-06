@@ -1,4 +1,4 @@
 export interface CellPositionCartesian {
-  x: bigint
-  y: bigint
+  x: number
+  y: number
 }

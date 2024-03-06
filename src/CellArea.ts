@@ -1,3 +1,3 @@
 import type { CellPosition } from "@sanjo/game-engine/TileMap/CellPosition.js"
-import type { SizeBigInt } from "./SizeBigInt.js"
-export type CellArea = CellPosition & SizeBigInt
+import type { Size } from "./Size.js"
+export type CellArea = CellPosition & Size
