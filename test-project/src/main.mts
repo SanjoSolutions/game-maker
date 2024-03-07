@@ -5,6 +5,10 @@ import {
   width as characterWidth,
   height as characterHeight,
 } from "@sanjo/game-engine/createOpenRTPSpritesheet.js"
+import { TextMessage } from "@sanjo/game-engine/TextMessage.js"
+import { Option } from "@sanjo/game-engine/Dialog.js"
+import "@sanjo/game-engine/TextMessage.css"
+import "@sanjo/game-engine/Dialog.css"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -40,6 +44,21 @@ async function main() {
   npc.x = 5 * 32
   npc.y = 5 * 32
   await npc.loadSpritesheet()
+  npc.sprite.canInteractWith = function () {
+    return true
+  }
+  npc.sprite.interact = async function () {
+    await TextMessage.show("Hi!")
+    const requireMoneyOption = new Option(
+      "I require some money for the restaurant",
+    )
+    const option = await game.showOptions([requireMoneyOption, new Option("b")])
+    if (option === requireMoneyOption) {
+      await TextMessage.show("Here are 50 gold. ;-)")
+      game.money += 50
+      console.log("Money: " + game.money)
+    }
+  }
   game.layers[3].addChild(npc.sprite)
 
   window.addEventListener("keydown", function (event) {
