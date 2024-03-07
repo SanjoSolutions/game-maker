@@ -1,5 +1,5 @@
 import type { CellPosition } from "./CellPosition.js"
-import type { Entity, IEntity } from "./Entity.js"
+import { Entity, type IEntity } from "./Entity.js"
 import type { MultiLayerTile } from "./MultiLayerTile.js"
 import type { Size } from "./Size.js"
 import { TileLayer } from "./TileLayer.js"
@@ -39,7 +39,11 @@ export class TileMap {
       }
       return tileLayer
     })
-    tileMap.entities = rawObject.entities
+    tileMap.entities = rawObject.entities.map((rawEntity) => {
+      const entity = new Entity(rawEntity.row, rawEntity.column)
+      entity.id = rawEntity.id
+      return entity
+    })
     return tileMap
   }
 
@@ -70,6 +74,10 @@ export class TileMap {
     copy.tileSets = { ...this.tileSets }
     copy.tiles = this.tiles.map((tileLayer) => tileLayer.copy())
     return copy
+  }
+
+  findEntityByID(id: string): Entity | null {
+    return this.entities.find((entity) => entity.id === id) ?? null
   }
 }
 

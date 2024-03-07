@@ -13,6 +13,7 @@ import { settings } from "@pixi/tilemap"
 import { CompositeTilemap } from "@pixi/tilemap"
 import { TileMap } from "./TileMap/TileMap.js"
 import * as PIXI from "pixi.js"
+import { Location } from "@sanjo/game-engine/Location.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -172,6 +173,21 @@ export class Game {
           this.updateObjectInHandPosition()
           this.updateViewport()
           // this.database.saveObject(this.man!)
+
+          const entityOver = this.map.entities.find(
+            (entity) =>
+              this.man!.x >= entity.column * this.map!.tileSize.width &&
+              this.man!.x <
+                entity.column * this.map!.tileSize.width +
+                  this.map!.tileSize.width &&
+              this.man!.y >= entity.row * this.map!.tileSize.height &&
+              this.man!.y <
+                entity.row * this.map!.tileSize.height +
+                  this.map!.tileSize.height,
+          )
+          if (entityOver) {
+            entityOver.triggerOnOver()
+          }
         }
       } else {
         this.man!.isMoving = false
@@ -184,7 +200,6 @@ export class Game {
     const stream = createDecompressedStream(response.body)
     const content = await readReadableStreamAsUTF8(stream)
     const map = parseJSONTileMap(content)
-    this.map = map
 
     const tileSetToTexture = new Map<number, PIXI.Texture>()
 
@@ -197,6 +212,10 @@ export class Game {
       tileSets.push(texture)
       tileSetToTexture.set(parseInt(index, 10), texture)
     }
+
+    this.map = map
+    this.layers = []
+    this.app.stage.removeChildren()
 
     for (
       let levelNumber = 1;
@@ -224,35 +243,40 @@ export class Game {
       this.layers[levelNumber] = tileMap
     }
 
-    for (
-      let levelNumber = 3;
-      levelNumber <= map.tiles.length - 1;
-      levelNumber++
-    ) {
-      const level = map.tiles[levelNumber]
-      const tileMap = new Container()
-      tileMap.sortableChildren = true
-      this.app.stage.addChild(tileMap)
-      for (const [position, tile] of level.entries()) {
-        if (tile) {
-          const texture = tileSetToTexture.get(tile.tileSet)!
-          const tileTexture = new PIXI.Texture(
-            texture,
-            new PIXI.Rectangle(
-              tile.x,
-              tile.y,
-              map.tileSize.width,
-              map.tileSize.height,
-            ),
-          )
-          const sprite = new Sprite(tileTexture)
-          sprite.x = Number(position.column) * map.tileSize.width
-          sprite.y = Number(position.row) * map.tileSize.height
-          sprite.zIndex = sprite.y + map.tileSize.height
-          tileMap.addChild(sprite)
+    if (map.tiles.length >= 4) {
+      for (
+        let levelNumber = 3;
+        levelNumber <= map.tiles.length - 1;
+        levelNumber++
+      ) {
+        const level = map.tiles[levelNumber]
+        const tileMap = new Container()
+        tileMap.sortableChildren = true
+
+        for (const [position, tile] of level.entries()) {
+          if (tile) {
+            const texture = tileSetToTexture.get(tile.tileSet)!
+            const tileTexture = new PIXI.Texture(
+              texture,
+              new PIXI.Rectangle(
+                tile.x,
+                tile.y,
+                map.tileSize.width,
+                map.tileSize.height,
+              ),
+            )
+            const sprite = new Sprite(tileTexture)
+            sprite.x = Number(position.column) * map.tileSize.width
+            sprite.y = Number(position.row) * map.tileSize.height
+            sprite.zIndex = sprite.y + map.tileSize.height
+            tileMap.addChild(sprite)
+          }
         }
+        this.layers[levelNumber] = tileMap
       }
-      this.layers[levelNumber] = tileMap
+    } else {
+      this.layers[3] = new Container()
+      this.app.stage.addChild(this.layers[3])
     }
 
     const floorLevel = map.tiles[1]
@@ -271,6 +295,10 @@ export class Game {
           this.walkable.setIsWalkable(position.row, position.column, false)
         }
       }
+    }
+
+    if (this.man) {
+      this.layers[3].addChild(this.man.sprite)
     }
   }
 
@@ -323,6 +351,15 @@ export class Game {
 
   private calculateIndex(tile: TilePosition): number {
     return tile.row * numberOfTilesPerRow + tile.column
+  }
+
+  public async teleport(entity: any, location: Location): Promise<void> {
+    if (location.mapID) {
+      await this.loadMap(location.mapID)
+    }
+    entity.x = location.x
+    entity.y = location.y
+    this.updateViewport()
   }
 }
 
