@@ -1815,15 +1815,15 @@ window.addEventListener("keydown", function (event) {
     ) {
       event.preventDefault()
       app.resetZoom()
-      updateEntityPreviewScale()
+      updateEntityPreview()
     } else if (isCtrlOrCmdModifierKeyPressed(event) && event.key === "+") {
       event.preventDefault()
       app.zoomIn()
-      updateEntityPreviewScale()
+      updateEntityPreview()
     } else if (isCtrlOrCmdModifierKeyPressed(event) && event.key === "-") {
       event.preventDefault()
       app.zoomOut()
-      updateEntityPreviewScale()
+      updateEntityPreview()
     }
   }
 })
@@ -1838,17 +1838,43 @@ $tileMap.addEventListener("wheel", function (event) {
       } else {
         app.zoomOut()
       }
-      updateEntityPreviewScale()
+      updateEntities()
+      updateEntityPreview()
     }
   }
 })
 
-function updateEntityPreviewScale() {
+function updateEntities() {
+  const entities = $entities.children
+  for (let index = 0; index < app.tileMap.value.entities.length; index++) {
+    const entity = app.tileMap.value.entities[index]
+    const $entity = entities[index] as HTMLDivElement
+
+    const scaledTileSize = determineScaledTileSize(app.scale.value)
+    const edge = Math.round(app.scale.value * 2)
+    $entity.style.width = scaledTileSize.width - 2 * edge + "px"
+    $entity.style.height = scaledTileSize.height - 2 * edge + "px"
+    $entity.style.transform = `translate(${edge}px, ${edge}px)`
+
+    const position = convertCellPositionToCanvasPosition(entity)
+    $entity.style.left = `${position.x}px`
+    $entity.style.top = `${position.y}px`
+  }
+}
+
+function updateEntityPreview() {
   const scaledTileSize = determineScaledTileSize(app.scale.value)
   const edge = Math.round(app.scale.value * 2)
   $entityPreview.style.width = scaledTileSize.width - 2 * edge + "px"
   $entityPreview.style.height = scaledTileSize.height - 2 * edge + "px"
   $entityPreview.style.transform = `translate(${edge}px, ${edge}px)`
+
+  const position = convertCellPositionToCanvasPosition({
+    row: determineRowFromCoordinate(lastPointerPosition!.y),
+    column: determineColumnFromCoordinate(lastPointerPosition!.x),
+  })
+  $entityPreview.style.left = `${position.x}px`
+  $entityPreview.style.top = `${position.y}px`
 }
 
 app.isDragModeEnabled.subscribe((isDragModeEnabled) => {
@@ -2148,7 +2174,7 @@ function determineRowFromCoordinate(y: number): number {
   const scaledTileHeight = app.scale.value * app.tileMap.value.tileSize.height
   return (
     adjustToStep(tileMapViewport.value.y + Math.round(y), scaledTileHeight) /
-    (scaledTileHeight * 100)
+    scaledTileHeight
   )
 }
 
@@ -2158,8 +2184,7 @@ function determineColumnFromCoordinate(x: number): number {
     adjustToStep(
       tileMapViewport.value.x + Math.round(x),
       scaledTileSize.width,
-    ) /
-    (scaledTileSize.width * 100)
+    ) / scaledTileSize.width
   )
 }
 
@@ -2359,8 +2384,8 @@ function adjustTileMapViewportSoThatTheMousePointerIsOnTheSameTilePositionAsBefo
     const x = tileMapViewport.value.x + Math.round(lastPointerPosition.x)
     const y = tileMapViewport.value.y + Math.round(lastPointerPosition.y)
     const offsetBeforeZoom = {
-      x: Number(x * 100 - adjustToStep(x, scaledTileSizeBeforeZoom.width)),
-      y: Number(y * 100 - adjustToStep(y, scaledTileSizeBeforeZoom.height)),
+      x: x - adjustToStep(x, scaledTileSizeBeforeZoom.width),
+      y: y - adjustToStep(y, scaledTileSizeBeforeZoom.height),
     }
     const offsetBeforeZoomPercentual = {
       x: offsetBeforeZoom.x / scaledTileSizeBeforeZoom.width,
