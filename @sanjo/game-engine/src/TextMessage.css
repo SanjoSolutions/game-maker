@@ -1,0 +1,11 @@
+.text-message {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100px;
+  background: burlywood;
+  border: 3px solid brown;
+  padding: 0.5rem;
+  border-radius: 3px;
+}

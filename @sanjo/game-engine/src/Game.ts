@@ -14,6 +14,7 @@ import { CompositeTilemap } from "@pixi/tilemap"
 import { TileMap } from "./TileMap/TileMap.js"
 import * as PIXI from "pixi.js"
 import { Location } from "@sanjo/game-engine/Location.js"
+import { Option, Dialog } from "@sanjo/game-engine/Dialog.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -29,6 +30,8 @@ export class Game {
   map: TileMap | null = null
   walkable: Walkable = new Walkable()
   layers: (CompositeTilemap | Container)[] = []
+  #areOptionsShown: boolean = false
+  money: number = 0
 
   constructor(database: Database) {
     this.database = database
@@ -87,110 +90,106 @@ export class Game {
         } else {
           const object = this.findClosestInteractableObject()
           if (object) {
-            this.objectInHand = object
+            object.interact(this.man!)
           }
         }
       }
     })
 
-    let elapsed = 0
-
-    const threshold = 5
-
     this.app.ticker.add((delta) => {
-      elapsed += delta
-      elapsed %= threshold
-      const left = keyStates.get("ArrowLeft")
-      const right = keyStates.get("ArrowRight")
-      const up = keyStates.get("ArrowUp")
-      const down = keyStates.get("ArrowDown")
+      if (!this.#areOptionsShown) {
+        const left = keyStates.get("ArrowLeft")
+        const right = keyStates.get("ArrowRight")
+        const up = keyStates.get("ArrowUp")
+        const down = keyStates.get("ArrowDown")
 
-      const isStillPressedInDirection =
-        this.man!.direction !== Direction.None &&
-        ((this.man!.direction === Direction.Left && left) ||
-          (this.man!.direction === Direction.Right && right) ||
-          (this.man!.direction === Direction.Up && up) ||
-          (this.man!.direction === Direction.Down && down))
+        const isStillPressedInDirection =
+          this.man!.direction !== Direction.None &&
+          ((this.man!.direction === Direction.Left && left) ||
+            (this.man!.direction === Direction.Right && right) ||
+            (this.man!.direction === Direction.Up && up) ||
+            (this.man!.direction === Direction.Down && down))
 
-      if (
-        this.man!.direction === Direction.None ||
-        !isStillPressedInDirection
-      ) {
-        if (down && !up) {
-          this.man!.direction = Direction.Down
-        } else if (up && !down) {
-          this.man!.direction = Direction.Up
-        } else if (left && !right) {
-          this.man!.direction = Direction.Left
-        } else if (right && !left) {
-          this.man!.direction = Direction.Right
+        if (
+          this.man!.direction === Direction.None ||
+          !isStillPressedInDirection
+        ) {
+          if (down && !up) {
+            this.man!.direction = Direction.Down
+          } else if (up && !down) {
+            this.man!.direction = Direction.Up
+          } else if (left && !right) {
+            this.man!.direction = Direction.Left
+          } else if (right && !left) {
+            this.man!.direction = Direction.Right
+          }
         }
-      }
 
-      const newPosition = { x: this.man!.x, y: this.man!.y }
+        const newPosition = { x: this.man!.x, y: this.man!.y }
 
-      if (left && !right) {
-        newPosition.x -= delta
-      } else if (right && !left) {
-        newPosition.x += delta
-      }
-
-      if (up && !down) {
-        newPosition.y -= delta
-      } else if (down && !up) {
-        newPosition.y += delta
-      }
-
-      const hasYChanged = newPosition.y !== this.man!.y
-      const hasPositionChanged = newPosition.x !== this.man!.x || hasYChanged
-
-      if (hasPositionChanged) {
-        this.man!.isMoving = true
-
-        let x = newPosition.x
-        let y = newPosition.y
-        const radius = 12
         if (left && !right) {
-          x -= radius
+          newPosition.x -= delta
         } else if (right && !left) {
-          x += radius
+          newPosition.x += delta
         }
+
         if (up && !down) {
-          y -= radius
+          newPosition.y -= delta
+        } else if (down && !up) {
+          newPosition.y += delta
         }
 
-        const tile = {
-          row: Math.floor(y / this.map!.tileSize.height),
-          column: Math.floor(x / this.map!.tileSize.width),
-        }
+        const hasYChanged = newPosition.y !== this.man!.y
+        const hasPositionChanged = newPosition.x !== this.man!.x || hasYChanged
 
-        if (this.walkable.isWalkableAt(tile.row, tile.column)) {
-          this.man!.x = newPosition.x
-          this.man!.y = newPosition.y
-          if (hasYChanged) {
-            this.updateManAndObjectInHandIndex()
+        if (hasPositionChanged) {
+          this.man!.isMoving = true
+
+          let x = newPosition.x
+          let y = newPosition.y
+          const radius = 12
+          if (left && !right) {
+            x -= radius
+          } else if (right && !left) {
+            x += radius
           }
-          this.updateObjectInHandPosition()
-          this.updateViewport()
-          // this.database.saveObject(this.man!)
-
-          const entityOver = this.map.entities.find(
-            (entity) =>
-              this.man!.x >= entity.column * this.map!.tileSize.width &&
-              this.man!.x <
-                entity.column * this.map!.tileSize.width +
-                  this.map!.tileSize.width &&
-              this.man!.y >= entity.row * this.map!.tileSize.height &&
-              this.man!.y <
-                entity.row * this.map!.tileSize.height +
-                  this.map!.tileSize.height,
-          )
-          if (entityOver) {
-            entityOver.onOver.next(null)
+          if (up && !down) {
+            y -= radius
           }
+
+          const tile = {
+            row: Math.floor(y / this.map!.tileSize.height),
+            column: Math.floor(x / this.map!.tileSize.width),
+          }
+
+          if (this.walkable.isWalkableAt(tile.row, tile.column)) {
+            this.man!.x = newPosition.x
+            this.man!.y = newPosition.y
+            if (hasYChanged) {
+              this.updateManAndObjectInHandIndex()
+            }
+            this.updateObjectInHandPosition()
+            this.updateViewport()
+            // this.database.saveObject(this.man!)
+
+            const entityOver = this.map.entities.find(
+              (entity) =>
+                this.man!.x >= entity.column * this.map!.tileSize.width &&
+                this.man!.x <
+                  entity.column * this.map!.tileSize.width +
+                    this.map!.tileSize.width &&
+                this.man!.y >= entity.row * this.map!.tileSize.height &&
+                this.man!.y <
+                  entity.row * this.map!.tileSize.height +
+                    this.map!.tileSize.height,
+            )
+            if (entityOver) {
+              entityOver.onOver.next(null)
+            }
+          }
+        } else {
+          this.man!.isMoving = false
         }
-      } else {
-        this.man!.isMoving = false
       }
     })
   }
@@ -316,19 +315,22 @@ export class Game {
   }
 
   public findClosestInteractableObject(): Sprite | null {
-    const close = 50
+    const close = 32
     const manPoint = {
       x: this.man!.x,
-      y: this.man!.y - 50,
+      y: this.man!.y,
     }
     return findClosest(
       manPoint,
-      this.app.stage.children.filter(
-        (object) =>
-          object instanceof Interactable &&
-          object.canInteractWith(this.man!) &&
-          calculateDistance(object, manPoint) <= close,
-      ),
+      this.app.stage.children
+        .concat(this.layers[3].children)
+        .filter(
+          (object) =>
+            object.canInteractWith &&
+            object.interact &&
+            object.canInteractWith(this.man!) &&
+            calculateDistance(object, manPoint) <= close,
+        ),
     ) as Sprite | null
   }
 
@@ -360,6 +362,13 @@ export class Game {
     entity.x = location.x
     entity.y = location.y
     this.updateViewport()
+  }
+
+  public async showOptions(options: Option[]): Promise<Option> {
+    this.#areOptionsShown = true
+    const option = await Dialog.showOptions(options)
+    this.#areOptionsShown = false
+    return option
   }
 }
 

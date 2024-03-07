@@ -1,0 +1,24 @@
+.dialog-options {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  background: burlywood;
+  border: 3px solid brown;
+  padding: 0.5rem;
+  border-radius: 3px;
+}
+
+.dialog-option {
+  display: block;
+  border: 1px solid #976b37;
+  margin-bottom: 0.24rem;
+  padding: 0.25rem;
+}
+
+.dialog-option:last-child {
+  margin-bottom: 0;
+}
+
+.dialog-option--selected {
+  background-color: antiquewhite;
+}
