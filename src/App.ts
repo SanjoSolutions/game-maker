@@ -9,6 +9,7 @@ import type { Level } from "./Level.js"
 import { TileLayer } from "@sanjo/game-engine/TileMap/TileLayer.js"
 import type { TileMap } from "@sanjo/game-engine/TileMap/TileMap.js"
 import { createTileMapNullObject } from "@sanjo/game-engine/TileMap/TileMap.js"
+import { Entity } from "@sanjo/game-engine/TileMap/Entity.js"
 import { Tool } from "./Tool.js"
 
 const scales = [
@@ -28,6 +29,7 @@ export class App {
   backups: TileMap[] = []
   scale = new BehaviorSubject<number>(DEFAULT_SCALE)
   previewTiles = new BehaviorSubject<CellArea | null>(null)
+  selectedEntity = new BehaviorSubject<Entity | null>(null)
 
   set level(level: Level) {
     if (level >= 0) {

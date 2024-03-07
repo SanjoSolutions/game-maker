@@ -49,7 +49,6 @@ import type { MultiLayerTile } from "@sanjo/game-engine/TileMap/MultiLayerTile.j
 import { Database } from "./persistence.js"
 import type { Point } from "./Point.js"
 import type { Position } from "./Position.js"
-import type { PositionBigInt } from "./PositionBigInt.js"
 import type { Size } from "@sanjo/game-engine/TileMap/Size.js"
 import type { Tile } from "@sanjo/game-engine/TileMap/Tile.js"
 import { TileLayer } from "@sanjo/game-engine/TileMap/TileLayer.js"
@@ -125,7 +124,7 @@ const context = $tileMap.getContext("2d")!
 
 const database = new Database()
 const app = new App()
-const tileMapViewport = new BehaviorSubject<PositionBigInt>({
+const tileMapViewport = new BehaviorSubject<Position>({
   x: 0,
   y: 0,
 })
@@ -138,6 +137,40 @@ let areShortcutsEnabled = true
 const $tileSetSelect = document.getElementById(
   "tileSetSelect",
 ) as HTMLSelectElement
+const $sidebar2 = document.querySelectorAll<HTMLDivElement>(".sidebar")[1]!
+const $slider2 = document.querySelectorAll<HTMLDivElement>(".slider")[1]!
+let renderOnlyCurrentLevel: boolean = false
+const isGridShownSerialized = localStorage.getItem("isGridShown")
+let isModalOpen: boolean = false
+const menuIconBar = document.querySelector(
+  ".menu-icon-bar-main",
+) as HTMLDivElement
+const penToolButton = menuIconBar.querySelector(
+  ".pen-tool-button",
+) as HTMLButtonElement
+const areaToolButton = menuIconBar.querySelector(
+  ".area-tool-button",
+) as HTMLButtonElement
+const fillToolButton = menuIconBar.querySelector(
+  ".fill-tool-button",
+) as HTMLButtonElement
+const placeNPCToolButton = menuIconBar.querySelector(
+  ".place-npc-button",
+) as HTMLButtonElement
+const selectionToolButton = menuIconBar.querySelector(
+  ".selection-tool-button",
+) as HTMLButtonElement
+const $selectedArea = document.querySelector(".selected-area") as HTMLDivElement
+let isGridShown: boolean = isGridShownSerialized
+  ? JSON.parse(isGridShownSerialized)
+  : true
+const $tileMapContainer = document.querySelector(".tile-map-container")!
+
+const $ID = $sidebar2.querySelector("#ID") as HTMLInputElement
+$ID?.addEventListener("keyup", function () {
+  app.selectedEntity.value.id = $ID.value
+  saveTileMap()
+})
 
 {
   const levelSerialized = localStorage.getItem("level")
@@ -162,29 +195,7 @@ let firstPoint: Point | null = null
   }
 }
 
-const isGridShownSerialized = localStorage.getItem("isGridShown")
-let isModalOpen: boolean = false
-const menuIconBar = document.querySelector(
-  ".menu-icon-bar-main",
-) as HTMLDivElement
-const penToolButton = menuIconBar.querySelector(
-  ".pen-tool-button",
-) as HTMLButtonElement
-const areaToolButton = menuIconBar.querySelector(
-  ".area-tool-button",
-) as HTMLButtonElement
-const fillToolButton = menuIconBar.querySelector(
-  ".fill-tool-button",
-) as HTMLButtonElement
-const placeNPCToolButton = menuIconBar.querySelector(
-  ".place-npc-button",
-) as HTMLButtonElement
-const selectionToolButton = menuIconBar.querySelector(
-  ".selection-tool-button",
-) as HTMLButtonElement
-const $selectedArea = document.querySelector(".selected-area") as HTMLDivElement
 changeTool(Tool.Pen)
-let renderOnlyCurrentLevel: boolean = false
 
 const saveTileMap = debounce(async function () {
   database.save(
@@ -192,10 +203,6 @@ const saveTileMap = debounce(async function () {
     await readReadableStreamAsGzipBlob(createCompressedTileMapStream()),
   )
 })
-
-let isGridShown: boolean = isGridShownSerialized
-  ? JSON.parse(isGridShownSerialized)
-  : true
 
 $level.addEventListener("change", function (event) {
   app.level = Number((event.target as HTMLInputElement).value)
@@ -244,9 +251,6 @@ initializeSidebar(
   (offset, clientX) => clientX - offset + "px",
 )
 
-const $sidebar2 = document.querySelectorAll<HTMLDivElement>(".sidebar")[1]!
-const $slider2 = document.querySelectorAll<HTMLDivElement>(".slider")[1]!
-
 initializeSidebar(
   $sidebar2,
   $slider2,
@@ -262,6 +266,7 @@ function showSidebar2() {
 function hideSidebar2() {
   $sidebar2.style.display = "none"
   $slider2.style.display = "none"
+  updateTileMap()
 }
 
 const $tileHover = document.querySelector(".tile-hover") as HTMLDivElement
@@ -394,8 +399,6 @@ function addOptionToTileSetSelect(id: number, tileSet: TileSet): void {
     selectTileSet(selectedTileSetID)
   }
 }
-
-const $tileMapContainer = document.querySelector(".tile-map-container")!
 
 {
   $tileMap.width = $tileMapContainer.clientWidth
@@ -882,14 +885,24 @@ window.addEventListener("pointerup", function () {
         area()
       }
     } else if (app.activeTool.value === Tool.PlaceNPC) {
-      const entity = new Entity(
-        determineRowFromCoordinate(lastPointerPosition.y),
-        determineColumnFromCoordinate(lastPointerPosition.x),
+      const cellPosition = {
+        row: determineRowFromCoordinate(lastPointerPosition.y),
+        column: determineColumnFromCoordinate(lastPointerPosition.x),
+      }
+      let entity = app.tileMap.value.entities.find(
+        (entity: Entity) =>
+          entity.row === cellPosition.row &&
+          entity.column === cellPosition.column,
       )
-      app.tileMap.value.entities.push(entity)
-      saveTileMap()
-      const $entity = createEntity(entity)
-      $entities.appendChild($entity)
+      if (!entity) {
+        entity = new Entity(cellPosition.row, cellPosition.column)
+        app.tileMap.value.entities.push(entity)
+        saveTileMap()
+        const $entity = createEntity(entity)
+        $entities.appendChild($entity)
+      }
+      app.selectedEntity.next(entity)
+      $ID.value = entity.id ?? ""
       showSidebar2()
       $sidebar2.querySelector('input[name="ID"]')!.focus()
     }
@@ -1127,6 +1140,9 @@ function changeTool(tool: Tool): void {
     $selectedArea.style.display = "none"
     $entityPreview.style.display =
       app.activeTool.value === Tool.PlaceNPC ? "block" : "none"
+    if (app.activeTool.value !== Tool.PlaceNPC) {
+      hideSidebar2()
+    }
   }
 }
 
@@ -1406,11 +1422,11 @@ function renderPreviewTiles() {
   }
 }
 
-let previousTileMapViewport: PositionBigInt | null = null
-tileMapViewport.subscribe(function (tileMapViewport: PositionBigInt) {
+let previousTileMapViewport: Position | null = null
+tileMapViewport.subscribe(function (tileMapViewport: Position) {
   if (previousTileMapViewport) {
-    const offsetX = Number(previousTileMapViewport.x - tileMapViewport.x)
-    const offsetY = Number(previousTileMapViewport.y - tileMapViewport.y)
+    const offsetX = previousTileMapViewport.x - tileMapViewport.x
+    const offsetY = previousTileMapViewport.y - tileMapViewport.y
     const width = Math.max($tileMap.width - Math.abs(offsetX), 0)
     const height = Math.max($tileMap.height - Math.abs(offsetY), 0)
     let backup
@@ -1548,6 +1564,8 @@ tileMapViewport.subscribe(function (tileMapViewport: PositionBigInt) {
         }),
       )
     }
+
+    updateEntities()
   }
   previousTileMapViewport = tileMapViewport
 })

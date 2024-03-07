@@ -1,4 +1,5 @@
 import { Database, Game } from "@sanjo/game-engine"
+import { Location } from "@sanjo/game-engine/Location.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -12,9 +13,12 @@ async function main() {
   const game = new Game(database)
   document.body.appendChild(game.app.view as any)
 
-  await game.loadMap("maps/map2.map.gz")
-  game.map.findEntityByID("teleportToCity").onOver(function () {
-    // teleport()
+  await game.loadMap("maps/teleporter_test2.map.gz")
+  game.map!.findEntityByID("teleporter")!.onOver(async function () {
+    await game.teleport(
+      game.man!,
+      new Location("maps/map1.map.gz", 10.5 * 32, 10.5 * 32),
+    )
   })
   await game.load()
   game.man!.y = 6 * 32
