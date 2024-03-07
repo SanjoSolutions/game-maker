@@ -1,5 +1,10 @@
 import { Database, Game } from "@sanjo/game-engine"
 import { Location } from "@sanjo/game-engine/Location.js"
+import { CharacterWithOpenRTPSpritesheet } from "@sanjo/game-engine/CharacterWithOpenRTPSpritesheet.js"
+import {
+  width as characterWidth,
+  height as characterHeight,
+} from "@sanjo/game-engine/createOpenRTPSpritesheet.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -23,6 +28,19 @@ async function main() {
   await game.load()
   game.man!.y = 6 * 32
   game.updateViewport()
+
+  const npc = new CharacterWithOpenRTPSpritesheet(
+    "char-sets/People1.png",
+    game.app.stage,
+    {
+      x: 6 * characterWidth,
+      y: 4 * characterHeight,
+    },
+  )
+  npc.x = 5 * 32
+  npc.y = 5 * 32
+  await npc.loadSpritesheet()
+  game.layers[3].addChild(npc.sprite)
 
   window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {
