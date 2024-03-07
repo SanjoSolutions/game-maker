@@ -14,7 +14,7 @@ async function main() {
   document.body.appendChild(game.app.view as any)
 
   await game.loadMap("maps/teleporter_test2.map.gz")
-  game.map!.findEntityByID("teleporter")!.onOver(async function () {
+  game.map!.findEntityByID("teleporter")!.onOver.subscribe(async function () {
     await game.teleport(
       game.man!,
       new Location("maps/map1.map.gz", 10.5 * 32, 10.5 * 32),
