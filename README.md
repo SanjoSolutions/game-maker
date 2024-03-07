@@ -2,8 +2,6 @@
 
 ![How the app looks](image.png)
 
-(The screenshot is a little bit outdated.)
-
 ## Features
 
 - Map editor
