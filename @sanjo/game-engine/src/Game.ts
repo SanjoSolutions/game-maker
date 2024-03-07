@@ -186,7 +186,7 @@ export class Game {
                   this.map!.tileSize.height,
           )
           if (entityOver) {
-            entityOver.triggerOnOver()
+            entityOver.onOver.next(null)
           }
         }
       } else {

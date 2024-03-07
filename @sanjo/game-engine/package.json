@@ -22,6 +22,7 @@
   "dependencies": {
     "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
     "pixi.js": "^7.3.2",
+    "rxjs": "^7.8.1",
     "@sanjo/mmog-client": "file:../../projects/mmog/packages/client"
   },
   "devDependencies": {

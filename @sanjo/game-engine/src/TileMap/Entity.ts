@@ -1,3 +1,5 @@
+import { Subject } from "rxjs"
+
 export interface IEntity {
   id: string | null
   row: number
@@ -10,18 +12,10 @@ export class Entity {
   id: string | null = null
   row: number
   column: number
-  #onOverCallbacks: OnOverCallback[] = []
+  onOver = new Subject()
 
   constructor(row: number, column: number) {
     this.row = row
     this.column = column
-  }
-
-  onOver(callback: OnOverCallback): void {
-    this.#onOverCallbacks.push(callback)
-  }
-
-  triggerOnOver() {
-    this.#onOverCallbacks.forEach((callback) => callback())
   }
 }
