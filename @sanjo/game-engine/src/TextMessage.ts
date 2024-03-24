@@ -3,7 +3,10 @@ export class TextMessage {
   static #onKeyDown: ((event: KeyboardEvent) => void) | null = null
   static #resolve: ((value: any) => void) | null = null
 
-  static async show(text: string) {
+  static async show(
+    text: string,
+    options: { html: boolean } = { html: false },
+  ) {
     return new Promise((resolve) => {
       if (TextMessage.#message) {
         TextMessage.#hideMessage()
@@ -12,8 +15,18 @@ export class TextMessage {
       TextMessage.#resolve = resolve
       const message = document.createElement("div")
       message.classList.add("text-message")
-      message.textContent = text
+
       document.body.appendChild(message)
+
+      const messageInner = document.createElement("div")
+      messageInner.classList.add("text-message-inner")
+      if (options.html) {
+        messageInner.innerHTML = text
+      } else {
+        messageInner.textContent = text
+      }
+      message.appendChild(messageInner)
+
       TextMessage.#message = message
       TextMessage.#onKeyDown = function (event) {
         if (event.code === "Enter") {

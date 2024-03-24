@@ -14,7 +14,12 @@ import { CompositeTilemap } from "@pixi/tilemap"
 import { TileMap } from "./TileMap/TileMap.js"
 import * as PIXI from "pixi.js"
 import { Location } from "@sanjo/game-engine/Location.js"
-import { Option, Dialog } from "@sanjo/game-engine/Dialog.js"
+import {
+  Option,
+  Dialog,
+  type AskForNumberOptions,
+  type AskForNumberReturnType,
+} from "@sanjo/game-engine/Dialog.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -30,7 +35,7 @@ export class Game {
   map: TileMap | null = null
   walkable: Walkable = new Walkable()
   layers: (CompositeTilemap | Container)[] = []
-  #areOptionsShown: boolean = false
+  #canCharacterMove: boolean = true
   money: number = 0
 
   constructor(database: Database) {
@@ -97,7 +102,7 @@ export class Game {
     })
 
     this.app.ticker.add((delta) => {
-      if (!this.#areOptionsShown) {
+      if (this.#canCharacterMove) {
         const left = keyStates.get("ArrowLeft")
         const right = keyStates.get("ArrowRight")
         const up = keyStates.get("ArrowUp")
@@ -274,8 +279,10 @@ export class Game {
         this.layers[levelNumber] = tileMap
       }
     } else {
-      this.layers[3] = new Container()
-      this.app.stage.addChild(this.layers[3])
+      const container = new Container()
+      container.sortableChildren = true
+      this.layers[3] = container
+      this.app.stage.addChild(container)
     }
 
     const floorLevel = map.tiles[1]
@@ -365,10 +372,31 @@ export class Game {
   }
 
   public async showOptions(options: Option[]): Promise<Option> {
-    this.#areOptionsShown = true
+    this.disableMovement()
     const option = await Dialog.showOptions(options)
-    this.#areOptionsShown = false
+    this.enableMovement()
     return option
+  }
+
+  public async askForNumber(
+    options: AskForNumberOptions,
+  ): AskForNumberReturnType {
+    this.disableMovement()
+    const number = await Dialog.askForNumber(options)
+    this.enableMovement()
+    return number
+  }
+
+  public async wait(duration: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, duration * 1000))
+  }
+
+  public disableMovement() {
+    this.#canCharacterMove = false
+  }
+
+  public enableMovement() {
+    this.#canCharacterMove = true
   }
 }
 

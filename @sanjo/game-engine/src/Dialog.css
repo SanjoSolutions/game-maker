@@ -22,3 +22,13 @@
 .dialog-option--selected {
   background-color: antiquewhite;
 }
+
+.dialog-ask-for-number {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  background: burlywood;
+  border: 3px solid brown;
+  padding: 0.5rem;
+  border-radius: 3px;
+}

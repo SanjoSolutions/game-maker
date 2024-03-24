@@ -62,4 +62,43 @@ export class Dialog {
     )
     Dialog.#$options[optionIndex].classList.add("dialog-option--selected")
   }
+
+  static async askForNumber(
+    options: AskForNumberOptions,
+  ): AskForNumberReturnType {
+    return new Promise((resolve) => {
+      const $container = document.createElement("div")
+      $container.className = "dialog-ask-for-number"
+
+      const $form = document.createElement("form")
+      $container.appendChild($form)
+
+      const $number = document.createElement("input")
+      $number.type = "number"
+      if (options.hasOwnProperty("minimum")) {
+        $number.min = String(options.minimum)
+      }
+      if (options.hasOwnProperty("maximum")) {
+        $number.max = String(options.maximum)
+      }
+      $form.appendChild($number)
+
+      document.body.appendChild($container)
+
+      $form.addEventListener("submit", function (event) {
+        event.preventDefault()
+        $container.remove()
+        resolve(parseInt($number.value, 10))
+      })
+
+      $number.focus()
+    })
+  }
 }
+
+export interface AskForNumberOptions {
+  minimum: number
+  maximum: number
+}
+
+export type AskForNumberReturnType = Promise<number | null>

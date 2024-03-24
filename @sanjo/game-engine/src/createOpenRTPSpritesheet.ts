@@ -112,18 +112,26 @@ export async function createOpenRTPSpritesheet(
     },
   }
   const animations = {
-    up: [`${prefix}_walk_up_0`, `${prefix}_walk_up_1`, `${prefix}_walk_up_2`],
+    up: [
+      `${prefix}_walk_up_1`,
+      `${prefix}_walk_up_0`,
+      `${prefix}_walk_up_1`,
+      `${prefix}_walk_up_2`,
+    ],
     left: [
+      `${prefix}_walk_left_1`,
       `${prefix}_walk_left_0`,
       `${prefix}_walk_left_1`,
       `${prefix}_walk_left_2`,
     ],
     down: [
+      `${prefix}_walk_down_1`,
       `${prefix}_walk_down_0`,
       `${prefix}_walk_down_1`,
       `${prefix}_walk_down_2`,
     ],
     right: [
+      `${prefix}_walk_right_1`,
       `${prefix}_walk_right_0`,
       `${prefix}_walk_right_1`,
       `${prefix}_walk_right_2`,
