@@ -1,4 +1,4 @@
-import { Database, Game } from "@sanjo/game-engine"
+import { Database, Direction, Game } from "@sanjo/game-engine"
 import { Location } from "@sanjo/game-engine/Location.js"
 import { CharacterWithOpenRTPSpritesheet } from "@sanjo/game-engine/CharacterWithOpenRTPSpritesheet.js"
 import {
@@ -31,35 +31,86 @@ async function main() {
   })
   await game.load()
   game.man!.y = 6 * 32
+  game.layers[3].sortChildren()
   game.updateViewport()
 
-  const npc = new CharacterWithOpenRTPSpritesheet(
-    "char-sets/People1.png",
-    game.app.stage,
-    {
-      x: 6 * characterWidth,
-      y: 4 * characterHeight,
-    },
-  )
-  npc.x = 5 * 32
-  npc.y = 5 * 32
-  await npc.loadSpritesheet()
-  npc.sprite.canInteractWith = function () {
-    return true
-  }
-  npc.sprite.interact = async function () {
-    await TextMessage.show("Hi!")
-    const requireMoneyOption = new Option(
-      "I require some money for the restaurant",
+  {
+    const npc = new CharacterWithOpenRTPSpritesheet(
+      "char-sets/People1.png",
+      game.app.stage,
+      {
+        x: 6 * characterWidth,
+        y: 4 * characterHeight,
+      },
     )
-    const option = await game.showOptions([requireMoneyOption, new Option("b")])
-    if (option === requireMoneyOption) {
-      await TextMessage.show("Here are 50 gold. ;-)")
-      game.money += 50
-      console.log("Money: " + game.money)
+    npc.x = 5 * 32
+    npc.y = 5 * 32
+    await npc.loadSpritesheet()
+    npc.sprite.canInteractWith = function () {
+      return true
     }
+    npc.sprite.interact = async function () {
+      await TextMessage.show("Hi!")
+      const requireMoneyOption = new Option(
+        "I require some money for the restaurant",
+      )
+      const option = await game.showOptions([
+        requireMoneyOption,
+        new Option("b"),
+      ])
+      if (option === requireMoneyOption) {
+        await TextMessage.show("Here are 50 gold. ;-)")
+        game.money += 50
+        console.log("Money: " + game.money)
+      }
+    }
+    game.layers[3].addChild(npc.sprite)
   }
-  game.layers[3].addChild(npc.sprite)
+
+  {
+    const npc = new CharacterWithOpenRTPSpritesheet(
+      "char-sets/People1.png",
+      game.app.stage,
+      {
+        x: 3 * characterWidth,
+        y: 0 * characterHeight,
+      },
+    )
+    npc.x = 7.5 * 32
+    npc.y = 5 * 32
+    await npc.loadSpritesheet()
+    npc.sprite.canInteractWith = function () {
+      return true
+    }
+    npc.sprite.interact = async function () {
+      await TextMessage.show(
+        "<strong>Vendor:</strong> What would you like to buy?",
+        { html: true },
+      )
+      const flourOption = new Option("Flour")
+      const tomatoesOption = new Option("Tomatoes")
+      const option = await game.showOptions([flourOption, tomatoesOption])
+      if (option) {
+        if (option === flourOption) {
+          await TextMessage.show(
+            "<strong>Vendor:</strong> How many packages?",
+            { html: true },
+          )
+          const amount = await game.askForNumber({
+            minimum: 1,
+          })
+          npc.direction = Direction.Right
+          await game.wait(1)
+          npc.direction = Direction.Down
+          await game.wait(1)
+          await TextMessage.show("<strong>Vendor:</strong> Here you go. ;-)", {
+            html: true,
+          })
+        }
+      }
+    }
+    game.layers[3].addChild(npc.sprite)
+  }
 
   window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {
