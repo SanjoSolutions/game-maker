@@ -1,7 +1,13 @@
 .dialog-options {
   position: absolute;
-  right: 0.5rem;
+  left: 0;
+  right: 0;
   bottom: 0.5rem;
+}
+
+.dialog-options-list {
+  max-width: 32rem;
+  margin: 0 auto;
   background: burlywood;
   border: 3px solid brown;
   padding: 0.5rem;
@@ -25,10 +31,21 @@
 
 .dialog-ask-for-number {
   position: absolute;
-  right: 0.5rem;
+  left: 0;
+  right: 0;
   bottom: 0.5rem;
+}
+
+.dialog-ask-for-number-inner {
+  max-width: 32rem;
+  margin: 0 auto;
   background: burlywood;
   border: 3px solid brown;
   padding: 0.5rem;
   border-radius: 3px;
+}
+
+.dialog-ask-for-number form {
+  display: flex;
+  flex-direction: column;
 }

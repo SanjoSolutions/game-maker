@@ -9,7 +9,7 @@ export class TextMessage {
   ) {
     return new Promise((resolve) => {
       if (TextMessage.#message) {
-        TextMessage.#hideMessage()
+        TextMessage.#hideMessage(false)
       }
 
       TextMessage.#resolve = resolve
@@ -31,20 +31,20 @@ export class TextMessage {
       TextMessage.#onKeyDown = function (event) {
         if (event.code === "Enter") {
           event.preventDefault()
-          TextMessage.#hideMessage()
+          TextMessage.#hideMessage(true)
         }
       }
       window.addEventListener("keydown", TextMessage.#onKeyDown)
     })
   }
 
-  static #hideMessage() {
+  static #hideMessage(hasPlayerDoneContinueAction: boolean) {
     TextMessage.#message!.remove()
     TextMessage.#message = null
     window.removeEventListener("keydown", TextMessage.#onKeyDown!)
     TextMessage.#onKeyDown = null
     const resolve = TextMessage.#resolve!
     TextMessage.#resolve = null
-    resolve(null)
+    resolve(hasPlayerDoneContinueAction)
   }
 }

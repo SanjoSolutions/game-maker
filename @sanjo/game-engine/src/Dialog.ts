@@ -9,21 +9,24 @@ export class Option {
 export class Dialog {
   static selectedOptionIndex: number | null = null
   static options: Option[]
-  static #container: HTMLOListElement | null = null
+  static #container: HTMLDivElement | null = null
   static #$options: HTMLLIElement[] = []
 
   static async showOptions(options: Option[]): Promise<Option> {
     return new Promise((resolve) => {
       Dialog.options = options
-      const $options = document.createElement("ol")
+      const $options = document.createElement("div")
       Dialog.#container = $options
       $options.className = "dialog-options"
+      const $list = document.createElement("ol")
+      $list.className = "dialog-options-list"
+      $options.appendChild($list)
       Dialog.#$options = []
       for (const option of options) {
         const $option = document.createElement("li")
         $option.className = "dialog-option"
         $option.textContent = option.name
-        $options.appendChild($option)
+        $list.appendChild($option)
         Dialog.#$options.push($option)
       }
       document.body.appendChild($options)
@@ -70,8 +73,12 @@ export class Dialog {
       const $container = document.createElement("div")
       $container.className = "dialog-ask-for-number"
 
+      const $inner = document.createElement("div")
+      $inner.className = "dialog-ask-for-number-inner"
+      $container.appendChild($inner)
+
       const $form = document.createElement("form")
-      $container.appendChild($form)
+      $inner.appendChild($form)
 
       const $number = document.createElement("input")
       $number.type = "number"
