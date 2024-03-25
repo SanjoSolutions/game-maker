@@ -12,7 +12,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",
-    "moduleResolution": "node",
+    "moduleResolution": "Node16",
     "resolveJsonModule": true
   }
 }

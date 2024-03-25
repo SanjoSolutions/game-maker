@@ -29,7 +29,7 @@ async function main() {
       new Location("maps/map1.map.gz", 10.5 * 32, 10.5 * 32),
     )
   })
-  await game.load()
+  await game.initialize()
   game.man!.y = 6 * 32
   game.layers[3].sortChildren()
   game.updateViewport()
@@ -85,57 +85,62 @@ async function main() {
       return true
     }
     npc.sprite.interact = async function () {
-      await TextMessage.show(
+      const hasPlayerDoneContinueAction = await TextMessage.show(
         "<strong>Vendor:</strong> What would you like to buy?",
         { html: true },
       )
-      const flourOption = new Option("Flour")
-      const tomatoesOption = new Option("Tomatoes")
-      const option = await game.showOptions([flourOption, tomatoesOption])
-      if (option) {
-        if (option === flourOption) {
-          await TextMessage.show(
-            "<strong>Vendor:</strong> How many packages?",
-            { html: true },
-          )
-          const amount = await game.askForNumber({
-            minimum: 1,
-          })
-          npc.direction = Direction.Right
-          await game.wait(1)
-          npc.direction = Direction.Down
-          await game.wait(1)
-          await TextMessage.show("<strong>Vendor:</strong> Here you go. ;-)", {
-            html: true,
-          })
-          const prices = new Map([
-            [flourOption, 1],
-            [tomatoesOption, 1],
-          ])
-          const pricePerUnit = prices.get(option)!
-          const total = amount * pricePerUnit
-          await TextMessage.show(
-            `<strong>Vendor:</strong> That makes ${total} €.`,
-            {
-              html: true,
-            },
-          )
-          const giveMoneyOption = new Option("Give the money.")
-          const notEnoughMoneyOption = new Option(
-            "Oops, it seems that I don't have enough money with me.",
-          )
-          const payOptions = []
-          if (game.money >= total) {
-            payOptions.push(giveMoneyOption)
-          } else {
-            payOptions.push(notEnoughMoneyOption)
-          }
-          const payOption = await game.showOptions(payOptions)
-          if (payOption === giveMoneyOption) {
-            game.lowerMoneyBy(total)
-            await TextMessage.show(`<strong>Vendor:</strong> Thanks.`, {
-              html: true,
+      if (hasPlayerDoneContinueAction) {
+        const flourOption = new Option("Flour")
+        const tomatoesOption = new Option("Tomatoes")
+        const option = await game.showOptions([flourOption, tomatoesOption])
+        if (option) {
+          if (option === flourOption) {
+            await TextMessage.show(
+              "<strong>Vendor:</strong> How many packages?",
+              { html: true },
+            )
+            const amount = await game.askForNumber({
+              minimum: 1,
             })
+            npc.direction = Direction.Right
+            await game.wait(1)
+            npc.direction = Direction.Down
+            await game.wait(1)
+            await TextMessage.show(
+              "<strong>Vendor:</strong> Here you go. ;-)",
+              {
+                html: true,
+              },
+            )
+            const prices = new Map([
+              [flourOption, 1],
+              [tomatoesOption, 1],
+            ])
+            const pricePerUnit = prices.get(option)!
+            const total = amount * pricePerUnit
+            await TextMessage.show(
+              `<strong>Vendor:</strong> That makes ${total} €.`,
+              {
+                html: true,
+              },
+            )
+            const giveMoneyOption = new Option("Give the money.")
+            const notEnoughMoneyOption = new Option(
+              "Oops, it seems that I don't have enough money with me.",
+            )
+            const payOptions = []
+            if (game.money >= total) {
+              payOptions.push(giveMoneyOption)
+            } else {
+              payOptions.push(notEnoughMoneyOption)
+            }
+            const payOption = await game.showOptions(payOptions)
+            if (payOption === giveMoneyOption) {
+              game.lowerMoneyBy(total)
+              await TextMessage.show(`<strong>Vendor:</strong> Thanks.`, {
+                html: true,
+              })
+            }
           }
         }
       }
