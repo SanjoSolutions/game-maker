@@ -104,8 +104,8 @@ export class Dialog {
 }
 
 export interface AskForNumberOptions {
-  minimum: number
-  maximum: number
+  minimum?: number
+  maximum?: number
 }
 
 export type AskForNumberReturnType = Promise<number | null>

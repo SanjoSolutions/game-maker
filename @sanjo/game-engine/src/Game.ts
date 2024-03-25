@@ -58,7 +58,7 @@ export class Game {
     this.money = Math.max(this.money - amount, 0)
   }
 
-  async load(): Promise<void> {
+  async initialize(): Promise<void> {
     settings.use32bitIndex = true
     this.man = new CharacterWithOneSpritesheet("character.png", this.app.stage)
     this.man!.x = 32

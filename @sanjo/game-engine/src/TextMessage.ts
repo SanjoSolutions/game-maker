@@ -6,7 +6,7 @@ export class TextMessage {
   static async show(
     text: string,
     options: { html: boolean } = { html: false },
-  ) {
+  ): Promise<boolean> {
     return new Promise((resolve) => {
       if (TextMessage.#message) {
         TextMessage.#hideMessage(false)
