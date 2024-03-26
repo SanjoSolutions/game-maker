@@ -6,7 +6,7 @@ import {
   type Texture,
 } from "pixi.js"
 import { createAnimatedSprite } from "./createAnimatedSprite.js"
-import { createUniversalSpritesheet } from "./createUniversalSpritesheet.js"
+import { createUniversalSpriteSheet } from "./createUniversalSpriteSheet.js"
 import { Character } from "./Character.js"
 
 export class CharacterWithMultipleSpritesheets extends Character {
@@ -38,11 +38,11 @@ export class CharacterWithMultipleSpritesheets extends Character {
       } = (await Assets.load(["body", "head", "hair"])) as any
 
       CharacterWithMultipleSpritesheets.#bodySpritesheet =
-        await createUniversalSpritesheet("body", body)
+        await createUniversalSpriteSheet("body", body)
       CharacterWithMultipleSpritesheets.#headSpritesheet =
-        await createUniversalSpritesheet("head", head)
+        await createUniversalSpriteSheet("head", head)
       CharacterWithMultipleSpritesheets.#hairSpritesheet =
-        await createUniversalSpritesheet("hair", hair)
+        await createUniversalSpriteSheet("hair", hair)
 
       CharacterWithMultipleSpritesheets.#haveSpritesheetsBeenLoaded = true
     }

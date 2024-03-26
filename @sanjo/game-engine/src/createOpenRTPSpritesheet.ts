@@ -3,7 +3,7 @@ import { Resource, Spritesheet, Texture } from "pixi.js"
 export const width = 48
 export const height = 64
 
-export async function createOpenRTPSpritesheet(
+export async function createOpenRTPSpriteSheet(
   prefix: string,
   texture: Texture<Resource>,
   basePosition: { x: number; y: number },
@@ -143,7 +143,7 @@ export async function createOpenRTPSpritesheet(
     frames,
     animations,
   }
-  const spritesheet = new Spritesheet(texture, data)
-  await spritesheet.parse()
-  return spritesheet
+  const spriteSheet = new Spritesheet(texture, data)
+  await spriteSheet.parse()
+  return spriteSheet
 }

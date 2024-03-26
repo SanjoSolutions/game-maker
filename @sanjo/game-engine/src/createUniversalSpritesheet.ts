@@ -1,6 +1,6 @@
 import { Resource, Spritesheet, Texture } from "pixi.js"
 
-export async function createUniversalSpritesheet(
+export async function createUniversalSpriteSheet(
   prefix: string,
   texture: Texture<Resource>,
 ) {

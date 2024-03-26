@@ -1,35 +1,35 @@
 import { Assets, type Container, type Resource, type Texture } from "pixi.js"
 import { createAnimatedSprite } from "./createAnimatedSprite.js"
-import { createUniversalSpritesheet } from "./createUniversalSpritesheet.js"
+import { createUniversalSpriteSheet } from "./createUniversalSpriteSheet.js"
 import { Character } from "./Character.js"
 
-export class CharacterWithOneSpritesheet extends Character {
-  #spritesheetPath: string
-  #hasSpritesheetBeenLoaded: boolean = false
-  #spritesheet: any | null = null
+export class CharacterWithOneSpriteSheet extends Character {
+  #spriteSheetPath: string
+  #hasSpriteSheetBeenLoaded: boolean = false
+  #spriteSheet: any | null = null
 
-  constructor(spritesheetPath: string, container: Container) {
+  constructor(spriteSheetPath: string, container: Container) {
     super(container)
 
-    this.#spritesheetPath = spritesheetPath
+    this.#spriteSheetPath = spriteSheetPath
   }
 
-  async loadSpritesheet() {
-    if (!this.#hasSpritesheetBeenLoaded) {
-      Assets.add(this.#spritesheetPath, this.#spritesheetPath)
-      const spritesheet = await Assets.load(this.#spritesheetPath)
+  async loadSpriteSheet() {
+    if (!this.#hasSpriteSheetBeenLoaded) {
+      Assets.add(this.#spriteSheetPath, this.#spriteSheetPath)
+      const spriteSheet = await Assets.load(this.#spriteSheetPath)
 
-      this.#spritesheet = await createUniversalSpritesheet(
-        this.#spritesheetPath,
-        spritesheet,
+      this.#spriteSheet = await createUniversalSpriteSheet(
+        this.#spriteSheetPath,
+        spriteSheet,
       )
 
-      this.#hasSpritesheetBeenLoaded = true
+      this.#hasSpriteSheetBeenLoaded = true
 
       this._determineTextures = this._determineTextures.bind(this)
 
       this.sprite.addChild(
-        createAnimatedSprite(this.#spritesheet.animations.down),
+        createAnimatedSprite(this.#spriteSheet.animations.down),
       )
     }
   }
@@ -39,6 +39,6 @@ export class CharacterWithOneSpritesheet extends Character {
   }
 
   private _determineTextures(): Texture<Resource>[] {
-    return this._determineTexture(this.#spritesheet)
+    return this._determineTexture(this.#spriteSheet)
   }
 }

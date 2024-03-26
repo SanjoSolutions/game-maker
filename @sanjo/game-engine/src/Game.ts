@@ -7,7 +7,7 @@ import { calculateDistance } from "./calculateDistance.js"
 import { TILE_HEIGHT, TILE_WIDTH } from "./config.js"
 import { findClosest } from "./findClosest.js"
 import type { Database } from "./persistence.js"
-import { CharacterWithOneSpritesheet } from "./CharacterWithOneSpritesheet.js"
+import { CharacterWithOneSpriteSheet } from "./CharacterWithOneSpritesheet.js"
 import { Direction } from "./Direction.js"
 import { settings } from "@pixi/tilemap"
 import { CompositeTilemap } from "@pixi/tilemap"
@@ -27,7 +27,7 @@ export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
 export class Game {
-  man: CharacterWithOneSpritesheet | undefined | null = null
+  man: CharacterWithOneSpriteSheet | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
   database: Database
@@ -60,10 +60,10 @@ export class Game {
 
   async initialize(): Promise<void> {
     settings.use32bitIndex = true
-    this.man = new CharacterWithOneSpritesheet("character.png", this.app.stage)
+    this.man = new CharacterWithOneSpriteSheet("character.png", this.app.stage)
     this.man!.x = 32
     this.man!.y = 32
-    await this.man.loadSpritesheet()
+    await this.man.loadSpriteSheet()
     this.layers[3].addChild(this.man.sprite)
 
     await this.database.saveState(this.app)
