@@ -1,5 +1,4 @@
 import { Application, Container, Sprite } from "pixi.js"
-import { Interactable } from "./Interactable.js"
 import type { Point2D } from "./Point2D.js"
 import { Side } from "./Side.js"
 import type { TilePosition } from "./TilePosition.js"
