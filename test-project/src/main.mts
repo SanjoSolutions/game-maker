@@ -1,10 +1,10 @@
 import { Database, Direction, Game } from "@sanjo/game-engine"
 import { Location } from "@sanjo/game-engine/Location.js"
-import { CharacterWithOpenRTPSpritesheet } from "@sanjo/game-engine/CharacterWithOpenRTPSpritesheet.js"
+import { CharacterWithOpenRTPSpriteSheet } from "@sanjo/game-engine/CharacterWithOpenRTPSpriteSheet.js"
 import {
   width as characterWidth,
   height as characterHeight,
-} from "@sanjo/game-engine/createOpenRTPSpritesheet.js"
+} from "@sanjo/game-engine/createOpenRTPSpriteSheet.js"
 import { TextMessage } from "@sanjo/game-engine/TextMessage.js"
 import { Option } from "@sanjo/game-engine/Dialog.js"
 import "@sanjo/game-engine/TextMessage.css"
@@ -35,7 +35,7 @@ async function main() {
   game.updateViewport()
 
   {
-    const npc = new CharacterWithOpenRTPSpritesheet(
+    const npc = new CharacterWithOpenRTPSpriteSheet(
       "char-sets/People1.png",
       game.app.stage,
       {
@@ -45,11 +45,11 @@ async function main() {
     )
     npc.x = 5 * 32
     npc.y = 5 * 32
-    await npc.loadSpritesheet()
-    npc.sprite.canInteractWith = function () {
+    await npc.loadSpriteSheet()
+    ;(npc.sprite as any).canInteractWith = function () {
       return true
     }
-    npc.sprite.interact = async function () {
+    ;(npc.sprite as any).interact = async function () {
       const continueDialog = await TextMessage.show("Hi!")
       if (continueDialog) {
         const requireMoneyOption = new Option(
@@ -70,7 +70,7 @@ async function main() {
   }
 
   {
-    const npc = new CharacterWithOpenRTPSpritesheet(
+    const npc = new CharacterWithOpenRTPSpriteSheet(
       "char-sets/People1.png",
       game.app.stage,
       {
@@ -80,11 +80,11 @@ async function main() {
     )
     npc.x = 7.5 * 32
     npc.y = 5 * 32
-    await npc.loadSpritesheet()
-    npc.sprite.canInteractWith = function () {
+    await npc.loadSpriteSheet()
+    ;(npc.sprite as any).canInteractWith = function () {
       return true
     }
-    npc.sprite.interact = async function () {
+    ;(npc.sprite as any).interact = async function () {
       const hasPlayerDoneContinueAction = await TextMessage.show(
         "<strong>Vendor:</strong> What would you like to buy?",
         { html: true },
@@ -102,44 +102,46 @@ async function main() {
             const amount = await game.askForNumber({
               minimum: 1,
             })
-            npc.direction = Direction.Right
-            await game.wait(1)
-            npc.direction = Direction.Down
-            await game.wait(1)
-            await TextMessage.show(
-              "<strong>Vendor:</strong> Here you go. ;-)",
-              {
-                html: true,
-              },
-            )
-            const prices = new Map([
-              [flourOption, 1],
-              [tomatoesOption, 1],
-            ])
-            const pricePerUnit = prices.get(option)!
-            const total = amount * pricePerUnit
-            await TextMessage.show(
-              `<strong>Vendor:</strong> That makes ${total} €.`,
-              {
-                html: true,
-              },
-            )
-            const giveMoneyOption = new Option("Give the money.")
-            const notEnoughMoneyOption = new Option(
-              "Oops, it seems that I don't have enough money with me.",
-            )
-            const payOptions = []
-            if (game.money >= total) {
-              payOptions.push(giveMoneyOption)
-            } else {
-              payOptions.push(notEnoughMoneyOption)
-            }
-            const payOption = await game.showOptions(payOptions)
-            if (payOption === giveMoneyOption) {
-              game.lowerMoneyBy(total)
-              await TextMessage.show(`<strong>Vendor:</strong> Thanks.`, {
-                html: true,
-              })
+            if (amount) {
+              npc.direction = Direction.Right
+              await game.wait(1)
+              npc.direction = Direction.Down
+              await game.wait(1)
+              await TextMessage.show(
+                "<strong>Vendor:</strong> Here you go. ;-)",
+                {
+                  html: true,
+                },
+              )
+              const prices = new Map([
+                [flourOption, 1],
+                [tomatoesOption, 1],
+              ])
+              const pricePerUnit = prices.get(option)!
+              const total = amount * pricePerUnit
+              await TextMessage.show(
+                `<strong>Vendor:</strong> That makes ${total} €.`,
+                {
+                  html: true,
+                },
+              )
+              const giveMoneyOption = new Option("Give the money.")
+              const notEnoughMoneyOption = new Option(
+                "Oops, it seems that I don't have enough money with me.",
+              )
+              const payOptions = []
+              if (game.money >= total) {
+                payOptions.push(giveMoneyOption)
+              } else {
+                payOptions.push(notEnoughMoneyOption)
+              }
+              const payOption = await game.showOptions(payOptions)
+              if (payOption === giveMoneyOption) {
+                game.lowerMoneyBy(total)
+                await TextMessage.show(`<strong>Vendor:</strong> Thanks.`, {
+                  html: true,
+                })
+              }
             }
           }
         }
