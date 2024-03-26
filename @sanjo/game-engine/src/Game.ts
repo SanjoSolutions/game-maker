@@ -281,6 +281,7 @@ export class Game {
           }
         }
         this.layers[levelNumber] = tileMap
+        this.app.stage.addChild(tileMap)
       }
     } else {
       const container = new Container()
