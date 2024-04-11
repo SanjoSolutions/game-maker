@@ -36,6 +36,7 @@ export class Game {
   layers: (CompositeTilemap | Container)[] = []
   #canCharacterMove: boolean = true
   money: number = 0
+  isInteracting: boolean = false
 
   constructor(database: Database) {
     this.database = database
@@ -77,30 +78,32 @@ export class Game {
       ["ArrowDown", false],
     ])
 
-    window.addEventListener("keydown", function (event) {
+    window.addEventListener("keydown", async (event) => {
       if (keyStates.has(event.code)) {
         event.preventDefault()
         keyStates.set(event.code, true)
+      }
+
+      if (!this.isInteracting) {
+        if (event.code === "Space" || event.code === "Enter") {
+          event.preventDefault()
+          if (this.#objectInHand) {
+            this.#objectInHand = null
+          } else {
+            const object = this.findClosestInteractableObject()
+            if (object) {
+              this.isInteracting = true
+              await object.interact(this.man!)
+              this.isInteracting = false
+            }
+          }
+        }
       }
     })
 
     window.addEventListener("keyup", function (event) {
       if (keyStates.has(event.code)) {
         keyStates.set(event.code, false)
-      }
-    })
-
-    window.addEventListener("keypress", (event) => {
-      if (event.code === "Space") {
-        event.preventDefault()
-        if (this.#objectInHand) {
-          this.#objectInHand = null
-        } else {
-          const object = this.findClosestInteractableObject()
-          if (object) {
-            object.interact(this.man!)
-          }
-        }
       }
     })
 
