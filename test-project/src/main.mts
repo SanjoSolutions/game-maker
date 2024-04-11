@@ -1,4 +1,4 @@
-import { Database, Direction, Game } from "@sanjo/game-engine"
+import { Database, Direction, Game as GameBase } from "@sanjo/game-engine"
 import { Location } from "@sanjo/game-engine/Location.js"
 import { CharacterWithOpenRTPSpriteSheet } from "@sanjo/game-engine/CharacterWithOpenRTPSpriteSheet.js"
 import {
@@ -16,10 +16,35 @@ if (window.IS_DEVELOPMENT) {
   )
 }
 
+class GameServer {
+  money: number = 0
+  hasMentorGivenMoney: boolean = false
+
+  requestMoneyFromMentor() {
+    if (this.hasMentorGivenMoney) {
+      throw new Error(
+        "The mentor has already given money and only gives money once.",
+      )
+    } else {
+      this.money += 50
+      this.hasMentorGivenMoney = true
+      return {
+        money: this.money,
+        hasMentorGivenMoney: this.hasMentorGivenMoney,
+      }
+    }
+  }
+}
+
+class Game<T> extends GameBase<T> {
+  hasMentorGivenMoney: boolean = false
+}
+
 async function main() {
+  const server = new GameServer()
   const database = new Database()
   await database.open()
-  const game = new Game(database)
+  const game = new Game(server, database)
   document.body.appendChild(game.app.view as any)
 
   await game.loadMap("maps/teleporter_test2.map.gz")
@@ -50,18 +75,22 @@ async function main() {
       return true
     }
     ;(npc.sprite as any).interact = async function () {
-      const continueDialog = await TextMessage.show("Hi!")
+      const continueDialog = await TextMessage.showMessageFrom("Mentor", "Hi!")
       if (continueDialog) {
         const requireMoneyOption = new Option(
           "I require some money for the restaurant",
         )
-        const option = await game.showOptions([
-          requireMoneyOption,
-          new Option("b"),
-        ])
+        const options = []
+        if (!game.hasMentorGivenMoney) {
+          options.push(requireMoneyOption)
+        }
+        options.push(new Option("b"))
+        const option = await game.showOptions(options)
         if (option === requireMoneyOption) {
-          await TextMessage.show("Here are 50 gold. ;-)")
-          game.money += 50
+          const newState = game.server.requestMoneyFromMentor()
+          game.money = newState.money
+          game.hasMentorGivenMoney = newState.hasMentorGivenMoney
+          await TextMessage.showMessageFrom("Mentor", "Here are 50 gold. ;-)")
           console.log("Money: " + game.money)
         }
       }
@@ -85,9 +114,9 @@ async function main() {
       return true
     }
     ;(npc.sprite as any).interact = async function () {
-      const hasPlayerDoneContinueAction = await TextMessage.show(
-        "<strong>Vendor:</strong> What would you like to buy?",
-        { html: true },
+      const hasPlayerDoneContinueAction = await TextMessage.showMessageFrom(
+        "Vendor",
+        "What would you like to buy?",
       )
       if (hasPlayerDoneContinueAction) {
         const flourOption = new Option("Flour")
@@ -95,10 +124,7 @@ async function main() {
         const option = await game.showOptions([flourOption, tomatoesOption])
         if (option) {
           if (option === flourOption) {
-            await TextMessage.show(
-              "<strong>Vendor:</strong> How many packages?",
-              { html: true },
-            )
+            await TextMessage.showMessageFrom("Vendor", "How many packages?")
             const amount = await game.askForNumber({
               minimum: 1,
             })
@@ -107,23 +133,16 @@ async function main() {
               await game.wait(1)
               npc.direction = Direction.Down
               await game.wait(1)
-              await TextMessage.show(
-                "<strong>Vendor:</strong> Here you go. ;-)",
-                {
-                  html: true,
-                },
-              )
+              await TextMessage.showMessageFrom("Vendor", "Here you go. ;-)")
               const prices = new Map([
                 [flourOption, 1],
                 [tomatoesOption, 1],
               ])
               const pricePerUnit = prices.get(option)!
               const total = amount * pricePerUnit
-              await TextMessage.show(
-                `<strong>Vendor:</strong> That makes ${total} €.`,
-                {
-                  html: true,
-                },
+              await TextMessage.showMessageFrom(
+                "Vendor",
+                `That makes ${total} €.`,
               )
               const giveMoneyOption = new Option("Give the money.")
               const notEnoughMoneyOption = new Option(
@@ -138,9 +157,7 @@ async function main() {
               const payOption = await game.showOptions(payOptions)
               if (payOption === giveMoneyOption) {
                 game.lowerMoneyBy(total)
-                await TextMessage.show(`<strong>Vendor:</strong> Thanks.`, {
-                  html: true,
-                })
+                await TextMessage.showMessageFrom("Vendor", `Thanks.`)
               }
             }
           }
