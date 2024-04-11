@@ -25,11 +25,12 @@ export const numberOfTilesPerColumn = 65
 export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
-export class Game {
+export class Game<T> {
+  server: T
+  database: Database
   man: CharacterWithOneSpriteSheet | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
-  database: Database
   #walkableInFrom: Side[]
   map: TileMap | null = null
   walkable: Walkable = new Walkable()
@@ -38,7 +39,8 @@ export class Game {
   money: number = 0
   isInteracting: boolean = false
 
-  constructor(database: Database) {
+  constructor(server: T, database: Database) {
+    this.server = server
     this.database = database
     this.app = new Application({
       resizeTo: window,
