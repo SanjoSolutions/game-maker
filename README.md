@@ -47,21 +47,18 @@ cd game-maker
 npm install
 ```
 
-#### Linking game-engine
-
-This is currently also required for game-maker to function:
-
-```bash
-git clone https://github.com/SanjoSolutions/game-engine.git
-cd game-engine/@sanjo/game-engine
-npm install
-npm link
-cd ../../../game-maker
-npm link @sanjo/game-engine
-```
-
 ### Running
 
 ```bash
+npm run start
+```
+
+### Test project
+
+There is a test project that showcases some of the features.
+
+```sh
+cd test-project
+npm install
 npm run start
 ```
