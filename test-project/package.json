@@ -4,6 +4,6 @@
     "build": "esbuild src/main.mts --bundle --outdir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=false"
   },
   "dependencies": {
-    "@sanjo/game-engine": "https://gitpkg.now.sh/SanjoSolutions/game-engine/@sanjo/game-engine?main"
+    "@sanjo/game-engine": "file:../@sanjo/game-engine"
   }
 }

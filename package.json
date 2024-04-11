@@ -43,7 +43,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@sanjo/game-engine": "https://gitpkg.now.sh/SanjoSolutions/game-engine/@sanjo/game-engine?main",
+    "@sanjo/game-engine": "file:./@sanjo/game-engine",
     "bootstrap": "^5.3.1",
     "electron-squirrel-startup": "^1.0.0",
     "firebase": "^10.3.1",
