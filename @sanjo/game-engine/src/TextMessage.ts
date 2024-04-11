@@ -38,6 +38,12 @@ export class TextMessage {
     })
   }
 
+  static async showMessageFrom(name: string, message: string) {
+    return await TextMessage.show(`<strong>${name}:</strong> ${message}`, {
+      html: true,
+    })
+  }
+
   static #hideMessage(hasPlayerDoneContinueAction: boolean) {
     TextMessage.#message!.remove()
     TextMessage.#message = null
