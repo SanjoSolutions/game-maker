@@ -1,0 +1,36 @@
+{
+  "name": "@sanjo/game-engine",
+  "type": "module",
+  "version": "0.0.0",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./package.json": "./package.json",
+    "./*.js": {
+      "types": "./build/*.d.ts",
+      "default": "./build/*.js"
+    },
+    "./*.css": {
+      "default": "./src/*.css"
+    }
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
+    "pixi.js": "^7.3.2",
+    "rxjs": "^7.8.1",
+    "@sanjo/mmog-client": "file:../../projects/mmog/packages/client"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.2",
+    "typescript": "^5.2.2",
+    "esbuild": "^0.19.2"
+  }
+}

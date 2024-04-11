@@ -1,0 +1,34 @@
+{
+  "name": "@sanjo/game-engine-dynamodb",
+  "type": "module",
+  "version": "0.0.0",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity": "^3.398.0",
+    "@aws-sdk/client-dynamodb": "^3.398.0",
+    "@aws-sdk/client-iam": "^3.398.0",
+    "@aws-sdk/credential-provider-cognito-identity": "^3.398.0",
+    "@pixi/display": "^7.2.4",
+    "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
+    "@sanjo/game-engine": "file:../game-engine",
+    "pixi.js": "^7.2.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.2",
+    "prettier": "^3.0.2",
+    "prettier-plugin-organize-imports": "^3.2.3",
+    "typescript": "^5.2.2"
+  }
+}
