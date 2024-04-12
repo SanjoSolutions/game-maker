@@ -1,9 +1,16 @@
-import { Any } from "test-project-shared/protos/google/protobuf/any.js"
-import { RequestMoneyFromMentor } from "test-project-shared/protos/RequestMoneyFromMentor.js"
+import { Any } from "./shared/protos/google/protobuf/any.js"
+import { RequestMoneyFromMentor } from "./shared/protos/RequestMoneyFromMentor.js"
 import { WebSocketServer } from "ws"
-import { Error as ErrorMessage } from "test-project-shared/protos/Error.js"
-import { RequestMoneyFromMentorResponse } from "test-project-shared/protos/RequestMoneyFromMentorResponse.js"
-import { SynchronizedState } from "test-project/shared/protos/SynchronizedState.js"
+import { Error as ErrorProto } from "./shared/protos/Error.js"
+import { RequestMoneyFromMentorResponse } from "./shared/protos/RequestMoneyFromMentorResponse.js"
+import { SynchronizedState } from "./shared/protos/SynchronizedState.js"
+import { Message } from "./shared/protos/Message.js"
+import {
+  createError,
+  createRequestMoneyFromMentorResponse,
+  createSynchronizedState,
+} from "./shared/clientServerCommunication/messageFactories.js"
+import { MessageType } from "./shared/clientServerCommunication/MessageType.js"
 
 class GameServer implements SynchronizedState {
   money: number = 0
@@ -17,34 +24,39 @@ class GameServer implements SynchronizedState {
 
       webSocket.on("message", (data: Buffer) => {
         console.log("data", data)
-        const deserialized = Any.fromBinary(data)
-        if (Any.contains(deserialized, RequestMoneyFromMentor)) {
-          const message = Any.unpack(deserialized, RequestMoneyFromMentor)
+        const message = Message.fromBinary(data)
+
+        if (message.body.oneofKind === MessageType.RequestMoneyFromMentor) {
           console.log("RequestMoneyFromMentor", message)
           try {
             const updatedState = this.requestMoneyFromMentor()
-            const response = RequestMoneyFromMentorResponse.create(updatedState)
             webSocket.send(
-              Any.toBinary(Any.pack(response, RequestMoneyFromMentorResponse)),
+              Message.toBinary(
+                createRequestMoneyFromMentorResponse(
+                  RequestMoneyFromMentorResponse.create(updatedState),
+                ),
+              ),
             )
           } catch (error: any) {
-            const response = ErrorMessage.create({
-              message: error.message,
-            })
-            webSocket.send(Any.toBinary(Any.pack(response, ErrorMessage)))
+            webSocket.send(
+              Message.toBinary(
+                createError(
+                  ErrorProto.create({
+                    message: error.message,
+                  }),
+                ),
+              ),
+            )
           }
         }
       })
 
       webSocket.send(
-        Any.toBinary(
-          Any.pack(
-            {
-              money: this.money,
-              hasMentorGivenMoney: this.hasMentorGivenMoney,
-            },
-            SynchronizedState,
-          ),
+        Message.toBinary(
+          createSynchronizedState({
+            money: this.money,
+            hasMentorGivenMoney: this.hasMentorGivenMoney,
+          }),
         ),
       )
     })

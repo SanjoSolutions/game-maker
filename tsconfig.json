@@ -14,5 +14,6 @@
     "outDir": "dist",
     "moduleResolution": "Node16",
     "resolveJsonModule": true
-  }
+  },
+  "include": ["./**/src"]
 }

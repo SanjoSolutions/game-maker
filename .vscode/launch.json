@@ -1,6 +1,15 @@
 {
   "configurations": [
     {
+      "name": "Launch Server",
+      "request": "launch",
+      "runtimeArgs": ["run", "start"],
+      "cwd": "${workspaceFolder}/test-project/server",
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
       "type": "chrome",
       "name": "http://localhost:8000",
       "request": "launch",

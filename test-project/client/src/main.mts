@@ -9,13 +9,16 @@ import { TextMessage } from "@sanjo/game-engine/TextMessage.js"
 import { Option } from "@sanjo/game-engine/Dialog.js"
 import "@sanjo/game-engine/TextMessage.css"
 import "@sanjo/game-engine/Dialog.css"
-import { Any } from "test-project-shared/protos/google/protobuf/any.js"
-import { RequestMoneyFromMentor } from "test-project-shared/protos/RequestMoneyFromMentor.js"
-import { RequestMoneyFromMentorResponse } from "test-project-shared/protos/RequestMoneyFromMentorResponse.js"
-import { Error as ErrorMessage } from "test-project-shared/protos/Error.js"
+import { Any } from "./shared/protos/google/protobuf/any.js"
+import { RequestMoneyFromMentor } from "./shared/protos/RequestMoneyFromMentor.js"
+import { RequestMoneyFromMentorResponse } from "./shared/protos/RequestMoneyFromMentorResponse.js"
+import { Error as ErrorMessage } from "./shared/protos/Error.js"
 import { Subject, find, firstValueFrom } from "rxjs"
 import { SynchronizedState } from "test-project/shared/protos/SynchronizedState.js"
 import { IGameServer } from "@sanjo/game-engine/IGameServer.js"
+import { Message } from "./shared/protos/Message.js"
+import { MessageType } from "./shared/clientServerCommunication/MessageType.js"
+import { createRequestMoneyFromMentor } from "./shared/clientServerCommunication/messageFactories.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -25,7 +28,7 @@ if (window.IS_DEVELOPMENT) {
 
 class GameServer implements IGameServer {
   #webSocket: WebSocket | null = null
-  stream: Subject<any> = new Subject<any>()
+  stream: Subject<Message> = new Subject<Message>()
 
   async connect(): Promise<void> {
     return new Promise((resolve) => {
@@ -39,25 +42,21 @@ class GameServer implements IGameServer {
 
       this.#webSocket.onmessage = async (event) => {
         const arrayBuffer = await event.data.arrayBuffer()
-        const deserialized = Any.fromBinary(new Uint8Array(arrayBuffer))
-        this.stream.next(deserialized)
+        const message = Message.fromBinary(new Uint8Array(arrayBuffer))
+        this.stream.next(message)
       }
     })
   }
 
-  async requestMoneyFromMentor(): Promise<
-    RequestMoneyFromMentorResponse | ErrorMessage
-  > {
-    const message = RequestMoneyFromMentor.create()
-    this.#webSocket!.send(
-      Any.toBinary(Any.pack(message, RequestMoneyFromMentor)),
-    )
+  async requestMoneyFromMentor(): Promise<Message | undefined> {
+    this.#webSocket!.send(Message.toBinary(createRequestMoneyFromMentor()))
     const response = await firstValueFrom(
       this.stream.pipe(
         find(
           (message) =>
-            Any.contains(message, RequestMoneyFromMentorResponse) ||
-            Any.contains(message, ErrorMessage),
+            message.body.oneofKind ===
+              MessageType.RequestMoneyFromMentorResponse ||
+            message.body.oneofKind === MessageType.Error,
         ),
       ),
     )
@@ -65,18 +64,15 @@ class GameServer implements IGameServer {
   }
 }
 
-class Game<T extends IGameServer>
-  extends GameBase<T>
-  implements SynchronizedState
-{
+class Game extends GameBase<GameServer> implements SynchronizedState {
   money: number = 0
   hasMentorGivenMoney: boolean = false
 
-  constructor(server: T, database: Database) {
+  constructor(server: GameServer, database: Database) {
     super(server, database)
-    server.stream.subscribe((message) => {
-      if (Any.contains(message, SynchronizedState)) {
-        const stateFromServer = Any.unpack(message, SynchronizedState)
+    server.stream.subscribe((message: Message) => {
+      if (message.body.oneofKind === MessageType.SynchronizedState) {
+        const stateFromServer = message.body.synchronizedState
         Object.assign(this, stateFromServer)
         console.log("Money: " + this.money)
         console.log("hasMentorGivenMoney", this.hasMentorGivenMoney)
@@ -86,17 +82,23 @@ class Game<T extends IGameServer>
 
   async requestMoneyFromMentor(): Promise<boolean> {
     const response = await this.server.requestMoneyFromMentor()
-    if (Any.contains(response, ErrorMessage)) {
-      const error = Any.unpack(response, ErrorMessage)
-      console.error(error.message)
-      return false
-    } else if (Any.contains(response, RequestMoneyFromMentorResponse)) {
-      const updatedState = Any.unpack(response, RequestMoneyFromMentorResponse)
-      this.money = updatedState.money
-      this.hasMentorGivenMoney = updatedState.hasMentorGivenMoney
-      return true
+    if (response) {
+      if (response.body.oneofKind === MessageType.Error) {
+        const error = response.body.error
+        console.error(error.message)
+        return false
+      } else if (
+        response.body.oneofKind === MessageType.RequestMoneyFromMentorResponse
+      ) {
+        const updatedState = response.body.requestMoneyFromMentorResponse
+        this.money = updatedState.money
+        this.hasMentorGivenMoney = updatedState.hasMentorGivenMoney
+        return true
+      } else {
+        // For TypeScript
+        return false
+      }
     } else {
-      // For TypeScript
       return false
     }
   }

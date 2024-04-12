@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-enum MessageType {
-  None = 0;
-  RequestMoneyFromMentor = 1;
-  RequestMoneyFromMentorResponse = 2;
-  Error = 3;
-}

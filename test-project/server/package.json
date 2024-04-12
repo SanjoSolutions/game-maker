@@ -1,10 +1,11 @@
 {
+  "name": "test-project-server",
   "scripts": {
     "start": "node src/buildWatch.mjs",
     "build": "node src/build.mjs"
   },
   "dependencies": {
-    "test-project-shared": "file:../shared",
+    "@protobuf-ts/runtime": "^2.9.4",
     "ws": "^8.16.0"
   },
   "devDependencies": {
