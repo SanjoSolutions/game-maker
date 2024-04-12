@@ -9,6 +9,13 @@ import { TextMessage } from "@sanjo/game-engine/TextMessage.js"
 import { Option } from "@sanjo/game-engine/Dialog.js"
 import "@sanjo/game-engine/TextMessage.css"
 import "@sanjo/game-engine/Dialog.css"
+import { Any } from "test-project-shared/protos/google/protobuf/any.js"
+import { RequestMoneyFromMentor } from "test-project-shared/protos/RequestMoneyFromMentor.js"
+import { RequestMoneyFromMentorResponse } from "test-project-shared/protos/RequestMoneyFromMentorResponse.js"
+import { Error as ErrorMessage } from "test-project-shared/protos/Error.js"
+import { Subject, find, firstValueFrom } from "rxjs"
+import { SynchronizedState } from "test-project/shared/protos/SynchronizedState.js"
+import { IGameServer } from "@sanjo/game-engine/IGameServer.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -16,28 +23,83 @@ if (window.IS_DEVELOPMENT) {
   )
 }
 
-class GameServer {
-  money: number = 0
-  hasMentorGivenMoney: boolean = false
+class GameServer implements IGameServer {
+  #webSocket: WebSocket | null = null
+  stream: Subject<any> = new Subject<any>()
 
-  requestMoneyFromMentor() {
-    if (this.hasMentorGivenMoney) {
-      throw new Error(
-        "The mentor has already given money and only gives money once.",
-      )
-    } else {
-      this.money += 50
-      this.hasMentorGivenMoney = true
-      return {
-        money: this.money,
-        hasMentorGivenMoney: this.hasMentorGivenMoney,
+  async connect(): Promise<void> {
+    return new Promise((resolve) => {
+      this.#webSocket = new WebSocket("ws://localhost:8080")
+
+      this.#webSocket.onerror = console.error
+
+      this.#webSocket.onopen = () => {
+        resolve()
       }
-    }
+
+      this.#webSocket.onmessage = async (event) => {
+        const arrayBuffer = await event.data.arrayBuffer()
+        const deserialized = Any.fromBinary(new Uint8Array(arrayBuffer))
+        this.stream.next(deserialized)
+      }
+    })
+  }
+
+  async requestMoneyFromMentor(): Promise<
+    RequestMoneyFromMentorResponse | ErrorMessage
+  > {
+    const message = RequestMoneyFromMentor.create()
+    this.#webSocket!.send(
+      Any.toBinary(Any.pack(message, RequestMoneyFromMentor)),
+    )
+    const response = await firstValueFrom(
+      this.stream.pipe(
+        find(
+          (message) =>
+            Any.contains(message, RequestMoneyFromMentorResponse) ||
+            Any.contains(message, ErrorMessage),
+        ),
+      ),
+    )
+    return response
   }
 }
 
-class Game<T> extends GameBase<T> {
+class Game<T extends IGameServer>
+  extends GameBase<T>
+  implements SynchronizedState
+{
+  money: number = 0
   hasMentorGivenMoney: boolean = false
+
+  constructor(server: T, database: Database) {
+    super(server, database)
+    server.stream.subscribe((message) => {
+      if (Any.contains(message, SynchronizedState)) {
+        const stateFromServer = Any.unpack(message, SynchronizedState)
+        Object.assign(this, stateFromServer)
+        console.log("Money: " + this.money)
+        console.log("hasMentorGivenMoney", this.hasMentorGivenMoney)
+      }
+    })
+  }
+
+  async requestMoneyFromMentor(): Promise<boolean> {
+    const response = await this.server.requestMoneyFromMentor()
+    if (Any.contains(response, ErrorMessage)) {
+      const error = Any.unpack(response, ErrorMessage)
+      console.error(error.message)
+      return false
+    } else if (Any.contains(response, RequestMoneyFromMentorResponse)) {
+      const updatedState = Any.unpack(response, RequestMoneyFromMentorResponse)
+      this.money = updatedState.money
+      this.hasMentorGivenMoney = updatedState.hasMentorGivenMoney
+      return true
+    } else {
+      // For TypeScript
+      return false
+    }
+  }
 }
 
 async function main() {
@@ -45,6 +107,7 @@ async function main() {
   const database = new Database()
   await database.open()
   const game = new Game(server, database)
+  await server.connect()
   document.body.appendChild(game.app.view as any)
 
   await game.loadMap("maps/teleporter_test2.map.gz")
@@ -87,10 +150,9 @@ async function main() {
         options.push(new Option("b"))
         const option = await game.showOptions(options)
         if (option === requireMoneyOption) {
-          const newState = game.server.requestMoneyFromMentor()
-          game.money = newState.money
-          game.hasMentorGivenMoney = newState.hasMentorGivenMoney
-          await TextMessage.showMessageFrom("Mentor", "Here are 50 gold. ;-)")
+          if (await game.requestMoneyFromMentor()) {
+            await TextMessage.showMessageFrom("Mentor", "Here are 50 gold. ;-)")
+          }
           console.log("Money: " + game.money)
         }
       }

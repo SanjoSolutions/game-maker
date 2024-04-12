@@ -19,13 +19,14 @@ import {
   type AskForNumberOptions,
   type AskForNumberReturnType,
 } from "@sanjo/game-engine/Dialog.js"
+import { IGameServer } from "./IGameServer.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
 export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
-export class Game<T> {
+export class Game<T extends IGameServer> {
   server: T
   database: Database
   man: CharacterWithOneSpriteSheet | undefined | null = null

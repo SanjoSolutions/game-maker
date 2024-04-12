@@ -1,0 +1,10 @@
+{
+  "name": "test-project-shared",
+  "scripts": {
+    "build": "npm run build:proto",
+    "build:proto": "protoc --ts_out protos --proto_path protos protos/*.proto"
+  },
+  "devDependencies": {
+    "@protobuf-ts/plugin": "^2.9.4"
+  }
+}

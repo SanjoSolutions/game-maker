@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "start": "node src/buildWatch.mjs",
+    "build": "node src/build.mjs"
+  },
+  "dependencies": {
+    "test-project-shared": "file:../shared",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@es-exec/esbuild-plugin-start": "^0.0.5",
+    "@types/ws": "^8.5.10"
+  }
+}

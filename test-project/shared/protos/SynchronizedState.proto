@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message SynchronizedState {
+  uint32 money = 1;
+  bool hasMentorGivenMoney = 2;
+}
