@@ -11,47 +11,26 @@ import {
   createSynchronizedState,
 } from "./shared/clientServerCommunication/messageFactories.js"
 import { MessageType } from "./shared/clientServerCommunication/MessageType.js"
+import { Subject } from "rxjs"
+
+interface Socket {
+  send(data: any): void
+}
+
+interface MessageFromSocket {
+  message: Message
+  socket: Socket
+}
 
 class GameServer implements SynchronizedState {
   money: number = 0
   hasMentorGivenMoney: boolean = false
+  onConnect: Subject<{ socket: Socket }> = new Subject()
+  inStream: Subject<MessageFromSocket> = new Subject()
 
-  listen() {
-    const webSocketServer = new WebSocketServer({ port: 8080 })
-
-    webSocketServer.on("connection", (webSocket) => {
-      webSocket.on("error", console.error)
-
-      webSocket.on("message", (data: Buffer) => {
-        console.log("data", data)
-        const message = Message.fromBinary(data)
-
-        if (message.body.oneofKind === MessageType.RequestMoneyFromMentor) {
-          console.log("RequestMoneyFromMentor", message)
-          try {
-            const updatedState = this.requestMoneyFromMentor()
-            webSocket.send(
-              Message.toBinary(
-                createRequestMoneyFromMentorResponse(
-                  RequestMoneyFromMentorResponse.create(updatedState),
-                ),
-              ),
-            )
-          } catch (error: any) {
-            webSocket.send(
-              Message.toBinary(
-                createError(
-                  ErrorProto.create({
-                    message: error.message,
-                  }),
-                ),
-              ),
-            )
-          }
-        }
-      })
-
-      webSocket.send(
+  constructor() {
+    this.onConnect.subscribe(({ socket }: { socket: Socket }) => {
+      socket.send(
         Message.toBinary(
           createSynchronizedState({
             money: this.money,
@@ -59,6 +38,32 @@ class GameServer implements SynchronizedState {
           }),
         ),
       )
+    })
+
+    this.inStream.subscribe(({ message, socket }: MessageFromSocket) => {
+      if (message.body.oneofKind === MessageType.RequestMoneyFromMentor) {
+        console.log("RequestMoneyFromMentor", message)
+        try {
+          const updatedState = this.requestMoneyFromMentor()
+          socket.send(
+            Message.toBinary(
+              createRequestMoneyFromMentorResponse(
+                RequestMoneyFromMentorResponse.create(updatedState),
+              ),
+            ),
+          )
+        } catch (error: any) {
+          socket.send(
+            Message.toBinary(
+              createError(
+                ErrorProto.create({
+                  message: error.message,
+                }),
+              ),
+            ),
+          )
+        }
+      }
     })
   }
 
@@ -78,5 +83,23 @@ class GameServer implements SynchronizedState {
   }
 }
 
-const server = new GameServer()
+class GameServerWithWebSocket extends GameServer {
+  listen() {
+    const webSocketServer = new WebSocketServer({ port: 8080 })
+
+    webSocketServer.on("connection", (webSocket) => {
+      webSocket.on("error", console.error)
+
+      webSocket.on("message", (data: Buffer) => {
+        console.log("data", data)
+        const message = Message.fromBinary(data)
+        this.inStream.next({ message, socket: webSocket })
+      })
+
+      this.onConnect.next({ socket: webSocket })
+    })
+  }
+}
+
+const server = new GameServerWithWebSocket()
 server.listen()
