@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../@sanjo/game-engine/tsconfig-build.json"
+    },
+    {
+      "path": "../test-project/shared/tsconfig-build.json"
+    }
+  ]
+}

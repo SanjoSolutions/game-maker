@@ -19,7 +19,7 @@ import {
   type AskForNumberOptions,
   type AskForNumberReturnType,
 } from "@sanjo/game-engine/Dialog.js"
-import { IGameServerAPI } from "./IGameServerAPI.js"
+import type { IGameServerAPI } from "./IGameServerAPI.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65

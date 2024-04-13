@@ -1,12 +1,11 @@
 {
   "extends": "./tsconfig-base.json",
   "compilerOptions": {
-    "lib": ["ES2022", "DOM"]
-  },
-  "types": ["jest"],
-  "references": [
-    {
-      "path": "./test-project/shared/tsconfig-build.json"
+    "lib": ["ES2022", "DOM"],
+    "paths": {
+      "@sanjo/game-engine/*": ["./@sanjo/game-engine/src/*"],
+      "@sanjo/test-project-shared/*": ["./test-project/shared/src/*"]
     }
-  ]
+  },
+  "types": ["jest"]
 }

@@ -10,13 +10,12 @@ import { Option } from "@sanjo/game-engine/Dialog.js"
 import "@sanjo/game-engine/TextMessage.css"
 import "@sanjo/game-engine/Dialog.css"
 import { Subject, find, firstValueFrom } from "rxjs"
-import { SynchronizedState } from "test-project/shared/protos/SynchronizedState.js"
-import { IGameServerAPI } from "@sanjo/game-engine/IGameServerAPI.js"
-import { Message } from "./shared/protos/Message.js"
-import { MessageType } from "./shared/clientServerCommunication/MessageType.js"
-import { createRequestMoneyFromMentor } from "./shared/clientServerCommunication/messageFactories.js"
-import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/src/CharacterWithOneSpritesheet.js"
-import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/src/GameServerAPI.js"
+import type { SynchronizedState } from "@sanjo/test-project-shared/src/protos/SynchronizedState.js"
+import { Message } from "@sanjo/test-project-shared/src/protos/Message.js"
+import { MessageType } from "@sanjo/test-project-shared/src/clientServerCommunication/MessageType.js"
+import { createRequestMoneyFromMentor } from "@sanjo/test-project-shared/src/clientServerCommunication/messageFactories.js"
+import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/CharacterWithOneSpritesheet.js"
+import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/GameServerAPI.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -24,9 +23,9 @@ if (window.IS_DEVELOPMENT) {
   )
 }
 
-class GameServerAPI extends GameServerAPIBase {
+class GameServerAPI extends GameServerAPIBase<Message> {
   async requestMoneyFromMentor(): Promise<Message | undefined> {
-    this.#webSocket!.send(Message.toBinary(createRequestMoneyFromMentor()))
+    this.webSocket!.send(Message.toBinary(createRequestMoneyFromMentor()))
     const response = await firstValueFrom(
       this.stream.pipe(
         find(

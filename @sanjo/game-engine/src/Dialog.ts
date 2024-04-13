@@ -36,7 +36,7 @@ export class Dialog {
         Dialog.#$options[0].classList.add("dialog-option--selected")
       }
 
-      const eventHandler = function (event) {
+      const eventHandler = function (event: KeyboardEvent) {
         if (event.code === "ArrowUp") {
           Dialog.#selectOption(Math.max(Dialog.selectedOptionIndex - 1, 0))
         } else if (event.code === "ArrowDown") {

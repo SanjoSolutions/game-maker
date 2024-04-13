@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "main": ".vite/build/main.js",
   "scripts": {
-    "start": "concurrently --names \"@sanjo/game-engine building,server,client\" \"cd @sanjo/game-engine && npm run dev\" \"cd test-project/server && npm run start\" \"cd test-project/client && npm run start\"",
-    "build": "build:proto && tsc --build",
+    "start": "concurrently --names \"TypeScript,server,client\" \"npm run build:typescript:watch\" \"cd test-project/server && npm run start\" \"cd test-project/client && npm run start\"",
+    "build": "npm run build:proto && npm run build:typescript",
     "build:proto": "cd @sanjo/game-engine && npm run build:proto && cd ../.. && cd test-project/shared && npm run build:proto",
-    "build:watch": "tsc --build --watch",
+    "build:typescript": "cd build && tsc --build",
+    "build:typescript:watch": "cd build && tsc --build --watch",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish"
@@ -37,7 +38,7 @@
     "prettier": "^3.0.3",
     "ts-jest-resolver": "^2.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.2.2",
+    "typescript": "^5.4.5",
     "vite": "^5.1.4"
   },
   "keywords": [],

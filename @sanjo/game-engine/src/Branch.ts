@@ -4,13 +4,14 @@ import {
   type IBaseTextureOptions,
   type SpriteSource,
 } from "pixi.js"
-import { Game } from "./Game.js"
+import type { Game } from "./Game.js"
 import { Interactable } from "./Interactable.js"
 import { isPlayerCharacter } from "./isPlayerCharacter.js"
 import type { Object } from "./Object.js"
+import type { IGameServerAPI } from "./IGameServerAPI.js"
 
 export class Branch extends Interactable {
-  #game: Game | null = null
+  #game: Game<IGameServerAPI> | null = null
 
   /**
    * Helper function that creates a new branch sprite based on the source you provide.
@@ -27,7 +28,7 @@ export class Branch extends Interactable {
     return new this(texture)
   }
 
-  set game(value: Game | null) {
+  set game(value: Game<IGameServerAPI> | null) {
     this.#game = value
   }
 
