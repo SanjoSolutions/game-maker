@@ -3,4 +3,5 @@ export enum MessageType {
   RequestMoneyFromMentorResponse = "requestMoneyFromMentorResponse",
   Error = "error",
   SynchronizedState = "synchronizedState",
+  Character = "character",
 }

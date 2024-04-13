@@ -19,14 +19,14 @@ import {
   type AskForNumberOptions,
   type AskForNumberReturnType,
 } from "@sanjo/game-engine/Dialog.js"
-import { IGameServer } from "./IGameServer.js"
+import { IGameServerAPI } from "./IGameServerAPI.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
 export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
-export class Game<T extends IGameServer> {
+export class Game<T extends IGameServerAPI> {
   server: T
   database: Database
   man: CharacterWithOneSpriteSheet | undefined | null = null
@@ -110,6 +110,9 @@ export class Game<T extends IGameServer> {
       }
     })
 
+    let previousFacingDirection = Direction.None
+    let previousMovingDirection = Direction.None
+
     this.app.ticker.add((delta) => {
       if (this.#canCharacterMove) {
         const left = keyStates.get("ArrowLeft")
@@ -155,6 +158,32 @@ export class Game<T extends IGameServer> {
 
         const hasYChanged = newPosition.y !== this.man!.y
         const hasPositionChanged = newPosition.x !== this.man!.x || hasYChanged
+
+        const facingDirection = this.man!.direction
+        let movingDirection = Direction.None
+        if (left && !right) {
+          movingDirection |= Direction.Left
+        } else if (right && !left) {
+          movingDirection |= Direction.Right
+        }
+        if (up && !down) {
+          movingDirection |= Direction.Up
+        } else if (down && !up) {
+          movingDirection |= Direction.Down
+        }
+
+        if (
+          facingDirection !== previousFacingDirection ||
+          movingDirection !== previousMovingDirection
+        ) {
+          this.server.move({
+            facingDirection,
+            movingDirection,
+          })
+
+          previousFacingDirection = facingDirection
+          previousMovingDirection = movingDirection
+        }
 
         if (hasPositionChanged) {
           this.man!.isMoving = true

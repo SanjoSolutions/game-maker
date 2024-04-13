@@ -11,10 +11,12 @@ import "@sanjo/game-engine/TextMessage.css"
 import "@sanjo/game-engine/Dialog.css"
 import { Subject, find, firstValueFrom } from "rxjs"
 import { SynchronizedState } from "test-project/shared/protos/SynchronizedState.js"
-import { IGameServer } from "@sanjo/game-engine/IGameServer.js"
+import { IGameServerAPI } from "@sanjo/game-engine/IGameServerAPI.js"
 import { Message } from "./shared/protos/Message.js"
 import { MessageType } from "./shared/clientServerCommunication/MessageType.js"
 import { createRequestMoneyFromMentor } from "./shared/clientServerCommunication/messageFactories.js"
+import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/src/CharacterWithOneSpritesheet.js"
+import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/src/GameServerAPI.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -22,28 +24,7 @@ if (window.IS_DEVELOPMENT) {
   )
 }
 
-class GameServer implements IGameServer {
-  #webSocket: WebSocket | null = null
-  stream: Subject<Message> = new Subject<Message>()
-
-  async connect(): Promise<void> {
-    return new Promise((resolve) => {
-      this.#webSocket = new WebSocket("ws://localhost:8080")
-
-      this.#webSocket.onerror = console.error
-
-      this.#webSocket.onopen = () => {
-        resolve()
-      }
-
-      this.#webSocket.onmessage = async (event) => {
-        const arrayBuffer = await event.data.arrayBuffer()
-        const message = Message.fromBinary(new Uint8Array(arrayBuffer))
-        this.stream.next(message)
-      }
-    })
-  }
-
+class GameServerAPI extends GameServerAPIBase {
   async requestMoneyFromMentor(): Promise<Message | undefined> {
     this.#webSocket!.send(Message.toBinary(createRequestMoneyFromMentor()))
     const response = await firstValueFrom(
@@ -60,18 +41,26 @@ class GameServer implements IGameServer {
   }
 }
 
-class Game extends GameBase<GameServer> implements SynchronizedState {
+class Game extends GameBase<GameServerAPI> implements SynchronizedState {
   money: number = 0
   hasMentorGivenMoney: boolean = false
 
-  constructor(server: GameServer, database: Database) {
+  constructor(server: GameServerAPI, database: Database) {
     super(server, database)
-    server.stream.subscribe((message: Message) => {
+    server.stream.subscribe(async (message: Message) => {
       if (message.body.oneofKind === MessageType.SynchronizedState) {
         const stateFromServer = message.body.synchronizedState
         Object.assign(this, stateFromServer)
         console.log("Money: " + this.money)
         console.log("hasMentorGivenMoney", this.hasMentorGivenMoney)
+      } else if (message.body.oneofKind === MessageType.Character) {
+        const character = new CharacterWithOneSpriteSheet(
+          "character.png",
+          this.app.stage,
+        )
+        Object.assign(character, message.body.character)
+        await character.loadSpriteSheet()
+        this.layers[3].addChild(character.sprite)
       }
     })
   }
@@ -101,7 +90,7 @@ class Game extends GameBase<GameServer> implements SynchronizedState {
 }
 
 async function main() {
-  const server = new GameServer()
+  const server = new GameServerAPI()
   const database = new Database()
   await database.open()
   const game = new Game(server, database)

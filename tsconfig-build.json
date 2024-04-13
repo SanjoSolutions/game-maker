@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./test-project/shared/tsconfig-build.json"
+    }
+  ]
+}

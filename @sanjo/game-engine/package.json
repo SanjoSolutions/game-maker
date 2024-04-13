@@ -20,7 +20,8 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc"
+    "build": "npm run build:proto && tsc",
+    "build:proto": "protoc --ts_opt generate_dependencies --ts_out src/protos --proto_path src/protos src/protos/*.proto"
   },
   "dependencies": {
     "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",

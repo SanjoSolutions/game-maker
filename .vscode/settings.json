@@ -1,4 +1,11 @@
 {
-  "js/ts.implicitProjectConfig.checkJs": false
-  "cSpell.words": ["interacter", "pixi"]
+  "js/ts.implicitProjectConfig.checkJs": false,
+  "cSpell.words": ["interacter", "pixi"],
+  "protoc": {
+    "compile_on_save": false,
+    "options": [
+      "--proto_path=${workspaceRoot}/test-project/shared/src/protos",
+      "--proto_path=${workspaceRoot}/@sanjo/game-engine/src/protos"
+    ]
+  }
 }

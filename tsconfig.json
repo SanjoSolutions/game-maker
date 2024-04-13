@@ -1,19 +1,12 @@
 {
+  "extends": "./tsconfig-base.json",
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
-    "target": "ESNext",
-    "module": "Node16",
-    "allowJs": true,
-    "checkJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "outDir": "dist",
-    "moduleResolution": "Node16",
-    "resolveJsonModule": true
+    "lib": ["ES2022", "DOM"]
   },
-  "include": ["./**/src"]
+  "types": ["jest"],
+  "references": [
+    {
+      "path": "./test-project/shared/tsconfig-build.json"
+    }
+  ]
 }

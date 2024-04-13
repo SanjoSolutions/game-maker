@@ -1,17 +1,17 @@
-import { Any } from "./shared/protos/google/protobuf/any.js"
-import { RequestMoneyFromMentor } from "./shared/protos/RequestMoneyFromMentor.js"
 import { WebSocketServer } from "ws"
 import { Error as ErrorProto } from "./shared/protos/Error.js"
 import { RequestMoneyFromMentorResponse } from "./shared/protos/RequestMoneyFromMentorResponse.js"
 import { SynchronizedState } from "./shared/protos/SynchronizedState.js"
 import { Message } from "./shared/protos/Message.js"
 import {
+  createCharacterMessage,
   createError,
   createRequestMoneyFromMentorResponse,
   createSynchronizedState,
 } from "./shared/clientServerCommunication/messageFactories.js"
 import { MessageType } from "./shared/clientServerCommunication/MessageType.js"
 import { Subject } from "rxjs"
+import { Character } from "./shared/Character.js"
 
 interface Socket {
   send(data: any): void
@@ -27,9 +27,19 @@ class GameServer implements SynchronizedState {
   hasMentorGivenMoney: boolean = false
   onConnect: Subject<{ socket: Socket }> = new Subject()
   inStream: Subject<MessageFromSocket> = new Subject()
+  clients: Socket[] = []
 
   constructor() {
     this.onConnect.subscribe(({ socket }: { socket: Socket }) => {
+      const otherClients = Array.from(this.clients)
+      this.clients.push(socket)
+
+      const character = new Character()
+      character.x = 32
+      character.y = 6 * 32
+
+      this.sendCharacterToClients(character, otherClients)
+
       socket.send(
         Message.toBinary(
           createSynchronizedState({
@@ -65,6 +75,16 @@ class GameServer implements SynchronizedState {
         }
       }
     })
+  }
+
+  sendCharacterToClients(character: Character, clients) {
+    for (const client of clients) {
+      this.sendCharacterToClient(character, client)
+    }
+  }
+
+  sendCharacterToClient(character: Character, client: Socket) {
+    client.send(Message.toBinary(createCharacterMessage(character)))
   }
 
   requestMoneyFromMentor() {

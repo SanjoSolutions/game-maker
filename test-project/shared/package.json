@@ -1,0 +1,10 @@
+{
+  "name": "test-project-shared",
+  "scripts": {
+    "build:proto": "protoc --ts_opt generate_dependencies --ts_out src/protos --proto_path src/protos --proto_path ../../node_modules/@sanjo/game-engine/src/protos src/protos/*.proto"
+  },
+  "devDependencies": {
+    "@protobuf-ts/plugin": "^2.9.4",
+    "typescript": "^5.4.5"
+  }
+}

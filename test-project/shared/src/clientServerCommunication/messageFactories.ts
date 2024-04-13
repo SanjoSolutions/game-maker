@@ -44,3 +44,12 @@ export function createSynchronizedState(
     },
   })
 }
+
+export function createCharacterMessage(character: Character): Message {
+  return Message.create({
+    body: {
+      oneofKind: MessageType.Character,
+      character,
+    },
+  })
+}

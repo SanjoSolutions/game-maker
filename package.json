@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "main": ".vite/build/main.js",
   "scripts": {
+    "build": "cd @sanjo/game-engine && npm run build:proto && cd ../.. && cd test-project/shared && npm run build:proto && cd ../.. && tsc --build",
+    "build:watch": "tsc --build --watch",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
@@ -51,6 +53,8 @@
     "rxjs": "^7.8.1"
   },
   "workspaces": [
-    "test-project"
+    "@sanjo/game-engine",
+    "test-project/server",
+    "test-project/client"
   ]
 }

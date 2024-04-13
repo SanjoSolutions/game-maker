@@ -3779,40 +3779,40 @@ var require_binary_format_contract = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.WireType = exports.mergeBinaryOptions = exports.UnknownFieldHandler = void 0;
-    var UnknownFieldHandler6;
-    (function(UnknownFieldHandler7) {
-      UnknownFieldHandler7.symbol = Symbol.for("protobuf-ts/unknown");
-      UnknownFieldHandler7.onRead = (typeName, message, fieldNo, wireType, data) => {
-        let container = is(message) ? message[UnknownFieldHandler7.symbol] : message[UnknownFieldHandler7.symbol] = [];
+    var UnknownFieldHandler7;
+    (function(UnknownFieldHandler8) {
+      UnknownFieldHandler8.symbol = Symbol.for("protobuf-ts/unknown");
+      UnknownFieldHandler8.onRead = (typeName, message, fieldNo, wireType, data) => {
+        let container = is(message) ? message[UnknownFieldHandler8.symbol] : message[UnknownFieldHandler8.symbol] = [];
         container.push({ no: fieldNo, wireType, data });
       };
-      UnknownFieldHandler7.onWrite = (typeName, message, writer) => {
-        for (let { no, wireType, data } of UnknownFieldHandler7.list(message))
+      UnknownFieldHandler8.onWrite = (typeName, message, writer) => {
+        for (let { no, wireType, data } of UnknownFieldHandler8.list(message))
           writer.tag(no, wireType).raw(data);
       };
-      UnknownFieldHandler7.list = (message, fieldNo) => {
+      UnknownFieldHandler8.list = (message, fieldNo) => {
         if (is(message)) {
-          let all = message[UnknownFieldHandler7.symbol];
+          let all = message[UnknownFieldHandler8.symbol];
           return fieldNo ? all.filter((uf) => uf.no == fieldNo) : all;
         }
         return [];
       };
-      UnknownFieldHandler7.last = (message, fieldNo) => UnknownFieldHandler7.list(message, fieldNo).slice(-1)[0];
-      const is = (message) => message && Array.isArray(message[UnknownFieldHandler7.symbol]);
-    })(UnknownFieldHandler6 = exports.UnknownFieldHandler || (exports.UnknownFieldHandler = {}));
+      UnknownFieldHandler8.last = (message, fieldNo) => UnknownFieldHandler8.list(message, fieldNo).slice(-1)[0];
+      const is = (message) => message && Array.isArray(message[UnknownFieldHandler8.symbol]);
+    })(UnknownFieldHandler7 = exports.UnknownFieldHandler || (exports.UnknownFieldHandler = {}));
     function mergeBinaryOptions(a, b) {
       return Object.assign(Object.assign({}, a), b);
     }
     exports.mergeBinaryOptions = mergeBinaryOptions;
-    var WireType5;
-    (function(WireType6) {
-      WireType6[WireType6["Varint"] = 0] = "Varint";
-      WireType6[WireType6["Bit64"] = 1] = "Bit64";
-      WireType6[WireType6["LengthDelimited"] = 2] = "LengthDelimited";
-      WireType6[WireType6["StartGroup"] = 3] = "StartGroup";
-      WireType6[WireType6["EndGroup"] = 4] = "EndGroup";
-      WireType6[WireType6["Bit32"] = 5] = "Bit32";
-    })(WireType5 = exports.WireType || (exports.WireType = {}));
+    var WireType6;
+    (function(WireType7) {
+      WireType7[WireType7["Varint"] = 0] = "Varint";
+      WireType7[WireType7["Bit64"] = 1] = "Bit64";
+      WireType7[WireType7["LengthDelimited"] = 2] = "LengthDelimited";
+      WireType7[WireType7["StartGroup"] = 3] = "StartGroup";
+      WireType7[WireType7["EndGroup"] = 4] = "EndGroup";
+      WireType7[WireType7["Bit32"] = 5] = "Bit32";
+    })(WireType6 = exports.WireType || (exports.WireType = {}));
   }
 });
 
@@ -6094,7 +6094,7 @@ var require_reflection_merge_partial = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.reflectionMergePartial = void 0;
-    function reflectionMergePartial6(info, target, source) {
+    function reflectionMergePartial7(info, target, source) {
       let fieldValue, input = source, output;
       for (let field of info.fields) {
         let name = field.localName;
@@ -6154,7 +6154,7 @@ var require_reflection_merge_partial = __commonJS({
         }
       }
     }
-    exports.reflectionMergePartial = reflectionMergePartial6;
+    exports.reflectionMergePartial = reflectionMergePartial7;
   }
 });
 
@@ -6250,7 +6250,7 @@ var require_message_type = __commonJS({
     var binary_writer_1 = require_binary_writer();
     var binary_reader_1 = require_binary_reader();
     var baseDescriptors = Object.getOwnPropertyDescriptors(Object.getPrototypeOf({}));
-    var MessageType7 = class {
+    var MessageType8 = class {
       constructor(name, fields, options) {
         this.defaultCheckDepth = 16;
         this.typeName = name;
@@ -6402,7 +6402,7 @@ var require_message_type = __commonJS({
         return message;
       }
     };
-    exports.MessageType = MessageType7;
+    exports.MessageType = MessageType8;
   }
 });
 
@@ -16395,17 +16395,86 @@ var RequestMoneyFromMentorResponse$Type = class extends import_runtime8.MessageT
 var RequestMoneyFromMentorResponse = new RequestMoneyFromMentorResponse$Type();
 
 // ../shared/protos/Message.ts
-var import_runtime16 = __toESM(require_commonjs());
-var import_runtime17 = __toESM(require_commonjs());
-var import_runtime18 = __toESM(require_commonjs());
-var import_runtime19 = __toESM(require_commonjs());
+var import_runtime20 = __toESM(require_commonjs());
+var import_runtime21 = __toESM(require_commonjs());
+var import_runtime22 = __toESM(require_commonjs());
+var import_runtime23 = __toESM(require_commonjs());
 
-// ../shared/protos/SynchronizedState.ts
+// ../shared/protos/Character.ts
 var import_runtime9 = __toESM(require_commonjs());
 var import_runtime10 = __toESM(require_commonjs());
 var import_runtime11 = __toESM(require_commonjs());
 var import_runtime12 = __toESM(require_commonjs());
-var SynchronizedState$Type = class extends import_runtime12.MessageType {
+var Character$Type = class extends import_runtime12.MessageType {
+  constructor() {
+    super("Character", [
+      {
+        no: 1,
+        name: "x",
+        kind: "scalar",
+        T: 13
+        /*ScalarType.UINT32*/
+      },
+      {
+        no: 2,
+        name: "y",
+        kind: "scalar",
+        T: 13
+        /*ScalarType.UINT32*/
+      }
+    ]);
+  }
+  create(value) {
+    const message = globalThis.Object.create(this.messagePrototype);
+    message.x = 0;
+    message.y = 0;
+    if (value !== void 0)
+      (0, import_runtime11.reflectionMergePartial)(this, message, value);
+    return message;
+  }
+  internalBinaryRead(reader, length, options, target) {
+    let message = target ?? this.create(), end = reader.pos + length;
+    while (reader.pos < end) {
+      let [fieldNo, wireType] = reader.tag();
+      switch (fieldNo) {
+        case /* uint32 x */
+        1:
+          message.x = reader.uint32();
+          break;
+        case /* uint32 y */
+        2:
+          message.y = reader.uint32();
+          break;
+        default:
+          let u = options.readUnknownField;
+          if (u === "throw")
+            throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+          let d = reader.skip(wireType);
+          if (u !== false)
+            (u === true ? import_runtime10.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+      }
+    }
+    return message;
+  }
+  internalBinaryWrite(message, writer, options) {
+    if (message.x !== 0)
+      writer.tag(1, import_runtime9.WireType.Varint).uint32(message.x);
+    if (message.y !== 0)
+      writer.tag(2, import_runtime9.WireType.Varint).uint32(message.y);
+    let u = options.writeUnknownFields;
+    if (u !== false)
+      (u == true ? import_runtime10.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+    return writer;
+  }
+};
+var Character = new Character$Type();
+
+// ../shared/protos/SynchronizedState.ts
+var import_runtime13 = __toESM(require_commonjs());
+var import_runtime14 = __toESM(require_commonjs());
+var import_runtime15 = __toESM(require_commonjs());
+var import_runtime16 = __toESM(require_commonjs());
+var SynchronizedState$Type = class extends import_runtime16.MessageType {
   constructor() {
     super("SynchronizedState", [
       {
@@ -16429,7 +16498,7 @@ var SynchronizedState$Type = class extends import_runtime12.MessageType {
     message.money = 0;
     message.hasMentorGivenMoney = false;
     if (value !== void 0)
-      (0, import_runtime11.reflectionMergePartial)(this, message, value);
+      (0, import_runtime15.reflectionMergePartial)(this, message, value);
     return message;
   }
   internalBinaryRead(reader, length, options, target) {
@@ -16451,36 +16520,36 @@ var SynchronizedState$Type = class extends import_runtime12.MessageType {
             throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
           let d = reader.skip(wireType);
           if (u !== false)
-            (u === true ? import_runtime10.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            (u === true ? import_runtime14.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
       }
     }
     return message;
   }
   internalBinaryWrite(message, writer, options) {
     if (message.money !== 0)
-      writer.tag(1, import_runtime9.WireType.Varint).uint32(message.money);
+      writer.tag(1, import_runtime13.WireType.Varint).uint32(message.money);
     if (message.hasMentorGivenMoney !== false)
-      writer.tag(2, import_runtime9.WireType.Varint).bool(message.hasMentorGivenMoney);
+      writer.tag(2, import_runtime13.WireType.Varint).bool(message.hasMentorGivenMoney);
     let u = options.writeUnknownFields;
     if (u !== false)
-      (u == true ? import_runtime10.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+      (u == true ? import_runtime14.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
     return writer;
   }
 };
 var SynchronizedState = new SynchronizedState$Type();
 
 // ../shared/protos/RequestMoneyFromMentor.ts
-var import_runtime13 = __toESM(require_commonjs());
-var import_runtime14 = __toESM(require_commonjs());
-var import_runtime15 = __toESM(require_commonjs());
-var RequestMoneyFromMentor$Type = class extends import_runtime15.MessageType {
+var import_runtime17 = __toESM(require_commonjs());
+var import_runtime18 = __toESM(require_commonjs());
+var import_runtime19 = __toESM(require_commonjs());
+var RequestMoneyFromMentor$Type = class extends import_runtime19.MessageType {
   constructor() {
     super("RequestMoneyFromMentor", []);
   }
   create(value) {
     const message = globalThis.Object.create(this.messagePrototype);
     if (value !== void 0)
-      (0, import_runtime14.reflectionMergePartial)(this, message, value);
+      (0, import_runtime18.reflectionMergePartial)(this, message, value);
     return message;
   }
   internalBinaryRead(reader, length, options, target) {
@@ -16489,27 +16558,28 @@ var RequestMoneyFromMentor$Type = class extends import_runtime15.MessageType {
   internalBinaryWrite(message, writer, options) {
     let u = options.writeUnknownFields;
     if (u !== false)
-      (u == true ? import_runtime13.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+      (u == true ? import_runtime17.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
     return writer;
   }
 };
 var RequestMoneyFromMentor = new RequestMoneyFromMentor$Type();
 
 // ../shared/protos/Message.ts
-var Message$Type = class extends import_runtime19.MessageType {
+var Message$Type = class extends import_runtime23.MessageType {
   constructor() {
     super("Message", [
       { no: 1, name: "requestMoneyFromMentor", kind: "message", oneof: "body", T: () => RequestMoneyFromMentor },
       { no: 2, name: "requestMoneyFromMentorResponse", kind: "message", oneof: "body", T: () => RequestMoneyFromMentorResponse },
       { no: 3, name: "error", kind: "message", oneof: "body", T: () => Error2 },
-      { no: 4, name: "synchronizedState", kind: "message", oneof: "body", T: () => SynchronizedState }
+      { no: 4, name: "synchronizedState", kind: "message", oneof: "body", T: () => SynchronizedState },
+      { no: 5, name: "character", kind: "message", oneof: "body", T: () => Character }
     ]);
   }
   create(value) {
     const message = globalThis.Object.create(this.messagePrototype);
     message.body = { oneofKind: void 0 };
     if (value !== void 0)
-      (0, import_runtime18.reflectionMergePartial)(this, message, value);
+      (0, import_runtime22.reflectionMergePartial)(this, message, value);
     return message;
   }
   internalBinaryRead(reader, length, options, target) {
@@ -16545,29 +16615,38 @@ var Message$Type = class extends import_runtime19.MessageType {
             synchronizedState: SynchronizedState.internalBinaryRead(reader, reader.uint32(), options, message.body.synchronizedState)
           };
           break;
+        case /* Character character */
+        5:
+          message.body = {
+            oneofKind: "character",
+            character: Character.internalBinaryRead(reader, reader.uint32(), options, message.body.character)
+          };
+          break;
         default:
           let u = options.readUnknownField;
           if (u === "throw")
             throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
           let d = reader.skip(wireType);
           if (u !== false)
-            (u === true ? import_runtime17.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            (u === true ? import_runtime21.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
       }
     }
     return message;
   }
   internalBinaryWrite(message, writer, options) {
     if (message.body.oneofKind === "requestMoneyFromMentor")
-      RequestMoneyFromMentor.internalBinaryWrite(message.body.requestMoneyFromMentor, writer.tag(1, import_runtime16.WireType.LengthDelimited).fork(), options).join();
+      RequestMoneyFromMentor.internalBinaryWrite(message.body.requestMoneyFromMentor, writer.tag(1, import_runtime20.WireType.LengthDelimited).fork(), options).join();
     if (message.body.oneofKind === "requestMoneyFromMentorResponse")
-      RequestMoneyFromMentorResponse.internalBinaryWrite(message.body.requestMoneyFromMentorResponse, writer.tag(2, import_runtime16.WireType.LengthDelimited).fork(), options).join();
+      RequestMoneyFromMentorResponse.internalBinaryWrite(message.body.requestMoneyFromMentorResponse, writer.tag(2, import_runtime20.WireType.LengthDelimited).fork(), options).join();
     if (message.body.oneofKind === "error")
-      Error2.internalBinaryWrite(message.body.error, writer.tag(3, import_runtime16.WireType.LengthDelimited).fork(), options).join();
+      Error2.internalBinaryWrite(message.body.error, writer.tag(3, import_runtime20.WireType.LengthDelimited).fork(), options).join();
     if (message.body.oneofKind === "synchronizedState")
-      SynchronizedState.internalBinaryWrite(message.body.synchronizedState, writer.tag(4, import_runtime16.WireType.LengthDelimited).fork(), options).join();
+      SynchronizedState.internalBinaryWrite(message.body.synchronizedState, writer.tag(4, import_runtime20.WireType.LengthDelimited).fork(), options).join();
+    if (message.body.oneofKind === "character")
+      Character.internalBinaryWrite(message.body.character, writer.tag(5, import_runtime20.WireType.LengthDelimited).fork(), options).join();
     let u = options.writeUnknownFields;
     if (u !== false)
-      (u == true ? import_runtime17.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+      (u == true ? import_runtime21.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
     return writer;
   }
 };
@@ -16598,16 +16677,39 @@ function createSynchronizedState(synchronizedState) {
     }
   });
 }
+function createCharacterMessage(character) {
+  return Message.create({
+    body: {
+      oneofKind: "character" /* Character */,
+      character
+    }
+  });
+}
 
 // src/server.mts
 var import_rxjs = __toESM(require_cjs(), 1);
+
+// ../shared/Character.ts
+var Character2 = class {
+  x;
+  y;
+};
+
+// src/server.mts
 var GameServer = class {
   money = 0;
   hasMentorGivenMoney = false;
   onConnect = new import_rxjs.Subject();
   inStream = new import_rxjs.Subject();
+  clients = [];
   constructor() {
     this.onConnect.subscribe(({ socket }) => {
+      const otherClients = Array.from(this.clients);
+      this.clients.push(socket);
+      const character = new Character2();
+      character.x = 32;
+      character.y = 6 * 32;
+      this.sendCharacterToClients(character, otherClients);
       socket.send(
         Message.toBinary(
           createSynchronizedState({
@@ -16642,6 +16744,14 @@ var GameServer = class {
         }
       }
     });
+  }
+  sendCharacterToClients(character, clients) {
+    for (const client of clients) {
+      this.sendCharacterToClient(character, client);
+    }
+  }
+  sendCharacterToClient(character, client) {
+    client.send(Message.toBinary(createCharacterMessage(character)));
   }
   requestMoneyFromMentor() {
     if (this.hasMentorGivenMoney) {
