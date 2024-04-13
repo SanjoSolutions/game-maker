@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "main": ".vite/build/main.js",
   "scripts": {
-    "build": "cd @sanjo/game-engine && npm run build:proto && cd ../.. && cd test-project/shared && npm run build:proto && cd ../.. && tsc --build",
+    "start": "concurrently --names \"@sanjo/game-engine building,server,client\" \"cd @sanjo/game-engine && npm run dev\" \"cd test-project/server && npm run start\" \"cd test-project/client && npm run start\"",
+    "build": "build:proto && tsc --build",
+    "build:proto": "cd @sanjo/game-engine && npm run build:proto && cd ../.. && cd test-project/shared && npm run build:proto",
     "build:watch": "tsc --build --watch",
-    "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish"
@@ -29,6 +30,7 @@
     "@types/jest": "^29.5.4",
     "@types/lodash-es": "^4.17.9",
     "babel-jest": "^29.6.4",
+    "concurrently": "^8.2.2",
     "electron": "29.1.0",
     "jest": "^29.6.4",
     "jest-environment-jsdom": "^29.6.4",
