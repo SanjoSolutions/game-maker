@@ -1,14 +1,13 @@
-import { Message } from "../protos/Message"
-import { Error as ErrorProto } from "../protos/Error"
-import { MessageType } from "./MessageType"
-import { RequestMoneyFromMentorResponse } from "../protos/RequestMoneyFromMentorResponse"
-import { SynchronizedState } from "../protos/SynchronizedState"
-import { RequestMoneyFromMentor } from "../protos/RequestMoneyFromMentor"
+import { Message } from "../protos/Message.js"
+import { ProjectMessageType } from "./MessageType.js"
+import type { RequestMoneyFromMentorResponse } from "../protos/RequestMoneyFromMentorResponse.js"
+import type { SynchronizedState } from "../protos/SynchronizedState.js"
+import { RequestMoneyFromMentor } from "../protos/RequestMoneyFromMentor.js"
 
 export function createRequestMoneyFromMentor(): Message {
   return Message.create({
     body: {
-      oneofKind: MessageType.RequestMoneyFromMentor,
+      oneofKind: ProjectMessageType.RequestMoneyFromMentor,
       requestMoneyFromMentor: RequestMoneyFromMentor.create(),
     },
   })
@@ -19,17 +18,8 @@ export function createRequestMoneyFromMentorResponse(
 ): Message {
   return Message.create({
     body: {
-      oneofKind: MessageType.RequestMoneyFromMentorResponse,
+      oneofKind: ProjectMessageType.RequestMoneyFromMentorResponse,
       requestMoneyFromMentorResponse,
-    },
-  })
-}
-
-export function createError(error: ErrorProto): Message {
-  return Message.create({
-    body: {
-      oneofKind: MessageType.Error,
-      error,
     },
   })
 }
@@ -39,17 +29,8 @@ export function createSynchronizedState(
 ): Message {
   return Message.create({
     body: {
-      oneofKind: MessageType.SynchronizedState,
+      oneofKind: ProjectMessageType.SynchronizedState,
       synchronizedState,
-    },
-  })
-}
-
-export function createCharacterMessage(character: Character): Message {
-  return Message.create({
-    body: {
-      oneofKind: MessageType.Character,
-      character,
     },
   })
 }

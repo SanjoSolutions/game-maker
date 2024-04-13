@@ -1,8 +1,9 @@
 {
   "name": "@sanjo/test-project-client",
+  "type": "module",
   "scripts": {
-    "start": "esbuild src/main.mts --bundle --watch --outdir=public --servedir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=true --sourcemap",
-    "build": "esbuild src/main.mts --bundle --outdir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=false"
+    "start": "esbuild src/main.ts --bundle --watch --outdir=public --servedir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=true --sourcemap",
+    "build": "esbuild src/main.ts --bundle --outdir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=false"
   },
   "dependencies": {
     "@protobuf-ts/runtime": "^2.9.4",

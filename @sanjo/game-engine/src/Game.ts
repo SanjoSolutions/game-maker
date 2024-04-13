@@ -6,13 +6,13 @@ import { calculateDistance } from "./calculateDistance.js"
 import { TILE_HEIGHT, TILE_WIDTH } from "./config.js"
 import { findClosest } from "./findClosest.js"
 import type { Database } from "./persistence.js"
-import { CharacterWithOneSpriteSheet } from "./CharacterWithOneSpritesheet.js"
+import { CharacterWithOneSpriteSheet } from "./CharacterWithOneSpriteSheet.js"
 import { Direction } from "./Direction.js"
 import { settings } from "@pixi/tilemap"
 import { CompositeTilemap } from "@pixi/tilemap"
 import { TileMap } from "./TileMap/TileMap.js"
 import * as PIXI from "pixi.js"
-import { Location } from "@sanjo/game-engine/Location.js"
+import type { Location } from "@sanjo/game-engine/Location.js"
 import {
   Option,
   Dialog,
@@ -20,6 +20,10 @@ import {
   type AskForNumberReturnType,
 } from "@sanjo/game-engine/Dialog.js"
 import type { IGameServerAPI } from "./IGameServerAPI.js"
+import {
+  isInteractableObject,
+  type InteractableObject,
+} from "./InteractableObject.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -215,7 +219,7 @@ export class Game<T extends IGameServerAPI> {
             this.updateViewport()
             // this.database.saveObject(this.man!)
 
-            const entityOver = this.map.entities.find(
+            const entityOver = this.map!.entities.find(
               (entity) =>
                 this.man!.x >= entity.column * this.map!.tileSize.width &&
                 this.man!.x <
@@ -239,7 +243,7 @@ export class Game<T extends IGameServerAPI> {
 
   public async loadMap(mapFilePath: string): Promise<void> {
     const response = await fetch(mapFilePath)
-    const stream = createDecompressedStream(response.body)
+    const stream = createDecompressedStream(response.body!)
     const content = await readReadableStreamAsUTF8(stream)
     const map = parseJSONTileMap(content)
 
@@ -360,7 +364,7 @@ export class Game<T extends IGameServerAPI> {
     this.updateObjectInHandPosition()
   }
 
-  public findClosestInteractableObject(): Sprite | null {
+  public findClosestInteractableObject(): InteractableObject | null {
     const close = 32
     const manPoint = {
       x: this.man!.x,
@@ -372,12 +376,11 @@ export class Game<T extends IGameServerAPI> {
         .concat(this.layers[3].children)
         .filter(
           (object) =>
-            object.canInteractWith &&
-            object.interact &&
+            isInteractableObject(object) &&
             object.canInteractWith(this.man!) &&
             calculateDistance(object, manPoint) <= close,
-        ),
-    ) as Sprite | null
+        ) as InteractableObject[],
+    )
   }
 
   public updateObjectInHandPosition(): void {

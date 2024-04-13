@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "main": "public/server.js",
   "scripts": {
-    "dev": "esbuild src/main.mts --bundle --watch --outdir=public --servedir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=true --sourcemap",
-    "build": "esbuild src/main.mts --bundle --outdir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=false",
+    "dev": "esbuild src/main.ts --bundle --watch --outdir=public --servedir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=true --sourcemap",
+    "build": "esbuild src/main.ts --bundle --outdir=public --target=chrome116 --format=esm --define:window.IS_DEVELOPMENT=false",
     "serve": "cd public && python3 -m http.server",
     "test": "jest",
     "electron-start": "electron-forge start",

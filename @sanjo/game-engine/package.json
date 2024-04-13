@@ -19,9 +19,10 @@
     }
   },
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "npm run build:proto && tsc",
-    "build:proto": "protoc --ts_opt generate_dependencies --ts_out src/protos --proto_path src/protos src/protos/*.proto"
+    "build": "npm run build:proto && tsc --project tsconfig-build.json",
+    "build:watch": "concurrently \"npm run build:proto:watch\" \"tsc --project tsconfig-build.json --watch\"",
+    "build:proto": "protoc --ts_opt generate_dependencies --ts_out src/protos --proto_path src/protos src/protos/*.proto",
+    "build:proto:watch": "chokidar \"src/protos/*.proto\" -c \"npm run build:proto\""
   },
   "dependencies": {
     "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
@@ -31,8 +32,10 @@
   },
   "devDependencies": {
     "@protobuf-ts/plugin": "^2.9.4",
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.19.2",
     "prettier": "^3.0.2",
-    "typescript": "^5.2.2",
-    "esbuild": "^0.19.2"
+    "typescript": "^5.2.2"
   }
 }

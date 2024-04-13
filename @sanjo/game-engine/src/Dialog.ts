@@ -13,48 +13,53 @@ export class Dialog {
   static #$options: HTMLLIElement[] = []
 
   static async showOptions(options: Option[]): Promise<Option> {
-    return new Promise((resolve) => {
-      Dialog.options = options
-      const $options = document.createElement("div")
-      Dialog.#container = $options
-      $options.className = "dialog-options"
-      const $list = document.createElement("ol")
-      $list.className = "dialog-options-list"
-      $options.appendChild($list)
-      Dialog.#$options = []
-      for (const option of options) {
-        const $option = document.createElement("li")
-        $option.className = "dialog-option"
-        $option.textContent = option.name
-        $list.appendChild($option)
-        Dialog.#$options.push($option)
-      }
-      document.body.appendChild($options)
+    return new Promise((resolve, error) => {
+      if (options.length >= 1) {
+        Dialog.options = options
+        const $options = document.createElement("div")
+        Dialog.#container = $options
+        $options.className = "dialog-options"
+        const $list = document.createElement("ol")
+        $list.className = "dialog-options-list"
+        $options.appendChild($list)
+        Dialog.#$options = []
+        for (const option of options) {
+          const $option = document.createElement("li")
+          $option.className = "dialog-option"
+          $option.textContent = option.name
+          $list.appendChild($option)
+          Dialog.#$options.push($option)
+        }
+        document.body.appendChild($options)
 
-      if (Dialog.#$options.length >= 1) {
         Dialog.selectedOptionIndex = 0
         Dialog.#$options[0].classList.add("dialog-option--selected")
-      }
 
-      const eventHandler = function (event: KeyboardEvent) {
-        if (event.code === "ArrowUp") {
-          Dialog.#selectOption(Math.max(Dialog.selectedOptionIndex - 1, 0))
-        } else if (event.code === "ArrowDown") {
-          Dialog.#selectOption(
-            Math.min(Dialog.selectedOptionIndex + 1, Dialog.options.length - 1),
-          )
-        } else if (event.code === "Enter") {
-          const option = Dialog.options[Dialog.selectedOptionIndex]
-          Dialog.#container.remove()
-          Dialog.options = []
-          Dialog.#container = null
-          Dialog.#$options = []
-          window.removeEventListener("keydown", eventHandler)
-          resolve(option)
+        const eventHandler = function (event: KeyboardEvent) {
+          if (event.code === "ArrowUp") {
+            Dialog.#selectOption(Math.max(Dialog.selectedOptionIndex! - 1, 0))
+          } else if (event.code === "ArrowDown") {
+            Dialog.#selectOption(
+              Math.min(
+                Dialog.selectedOptionIndex! + 1,
+                Dialog.options.length - 1,
+              ),
+            )
+          } else if (event.code === "Enter") {
+            const option = Dialog.options[Dialog.selectedOptionIndex!]
+            Dialog.#container!.remove()
+            Dialog.options = []
+            Dialog.#container = null
+            Dialog.#$options = []
+            window.removeEventListener("keydown", eventHandler)
+            resolve(option)
+          }
         }
-      }
 
-      window.addEventListener("keydown", eventHandler)
+        window.addEventListener("keydown", eventHandler)
+      } else {
+        error(new Error("At least one option is required."))
+      }
     })
   }
 

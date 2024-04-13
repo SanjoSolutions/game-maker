@@ -1,17 +1,19 @@
 import { WebSocketServer } from "ws"
-import { Error as ErrorProto } from "./shared/protos/Error.js"
-import { RequestMoneyFromMentorResponse } from "./shared/protos/RequestMoneyFromMentorResponse.js"
-import { SynchronizedState } from "./shared/protos/SynchronizedState.js"
-import { Message } from "./shared/protos/Message.js"
+import { Error as ErrorProto } from "@sanjo/test-project-shared/protos/Error.js"
+import { RequestMoneyFromMentorResponse } from "@sanjo/test-project-shared/protos/RequestMoneyFromMentorResponse.js"
+import type { SynchronizedState } from "@sanjo/test-project-shared/protos/SynchronizedState.js"
+import { Message } from "@sanjo/test-project-shared/protos/Message.js"
 import {
   createCharacterMessage,
   createError,
+} from "@sanjo/game-engine/clientServerCommunication/messageFactories.js"
+import {
   createRequestMoneyFromMentorResponse,
   createSynchronizedState,
-} from "./shared/clientServerCommunication/messageFactories.js"
-import { MessageType } from "./shared/clientServerCommunication/MessageType.js"
+} from "@sanjo/test-project-shared/clientServerCommunication/messageFactories.js"
 import { Subject } from "rxjs"
-import { Character } from "./shared/Character.js"
+import { Character } from "@sanjo/test-project-shared/Character.js"
+import { ProjectMessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
 
 interface Socket {
   send(data: any): void
@@ -51,7 +53,9 @@ class GameServer implements SynchronizedState {
     })
 
     this.inStream.subscribe(({ message, socket }: MessageFromSocket) => {
-      if (message.body.oneofKind === MessageType.RequestMoneyFromMentor) {
+      if (
+        message.body.oneofKind === ProjectMessageType.RequestMoneyFromMentor
+      ) {
         console.log("RequestMoneyFromMentor", message)
         try {
           const updatedState = this.requestMoneyFromMentor()
@@ -77,7 +81,7 @@ class GameServer implements SynchronizedState {
     })
   }
 
-  sendCharacterToClients(character: Character, clients) {
+  sendCharacterToClients(character: Character, clients: Socket[]) {
     for (const client of clients) {
       this.sendCharacterToClient(character, client)
     }
@@ -111,7 +115,6 @@ class GameServerWithWebSocket extends GameServer {
       webSocket.on("error", console.error)
 
       webSocket.on("message", (data: Buffer) => {
-        console.log("data", data)
         const message = Message.fromBinary(data)
         this.inStream.next({ message, socket: webSocket })
       })

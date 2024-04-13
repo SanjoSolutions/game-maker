@@ -1,8 +1,9 @@
 {
   "name": "test-project-server",
+  "type": "module",
   "scripts": {
-    "start": "node src/buildWatch.mjs",
-    "build": "node src/build.mjs"
+    "start": "node src/buildWatch.js",
+    "build": "node src/build.js"
   },
   "dependencies": {
     "@protobuf-ts/runtime": "^2.9.4",

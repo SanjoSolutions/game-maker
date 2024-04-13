@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message Move {
+  uint32 facingDirection = 1;
+  uint32 movingDirection = 2;
+}

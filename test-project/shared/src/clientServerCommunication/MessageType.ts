@@ -1,7 +1,9 @@
-export enum MessageType {
+import type { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
+
+export enum ProjectMessageType {
   RequestMoneyFromMentor = "requestMoneyFromMentor",
   RequestMoneyFromMentorResponse = "requestMoneyFromMentorResponse",
-  Error = "error",
   SynchronizedState = "synchronizedState",
-  Character = "character",
 }
+
+export type MessageType = EngineMessageType | ProjectMessageType

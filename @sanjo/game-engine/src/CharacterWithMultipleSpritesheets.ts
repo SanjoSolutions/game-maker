@@ -9,14 +9,14 @@ import { createAnimatedSprite } from "./createAnimatedSprite.js"
 import { createUniversalSpriteSheet } from "./createUniversalSpriteSheet.js"
 import { Character } from "./Character.js"
 
-export class CharacterWithMultipleSpritesheets extends Character {
-  static #haveSpritesheetsBeenLoaded: boolean = false
-  static #bodySpritesheet: any | null = null
-  static #headSpritesheet: any | null = null
-  static #hairSpritesheet: any | null = null
+export class CharacterWithMultipleSpriteSheets extends Character {
+  static #haveSpriteSheetsBeenLoaded: boolean = false
+  static #bodySpriteSheet: any | null = null
+  static #headSpriteSheet: any | null = null
+  static #hairSpriteSheet: any | null = null
 
-  static async loadSpritesheets() {
-    if (!CharacterWithMultipleSpritesheets.#haveSpritesheetsBeenLoaded) {
+  static async loadSpriteSheets() {
+    if (!CharacterWithMultipleSpriteSheets.#haveSpriteSheetsBeenLoaded) {
       Assets.add(
         "body",
         "assets/spritesheets/body/bodies/male/universal/light.png",
@@ -37,14 +37,14 @@ export class CharacterWithMultipleSpritesheets extends Character {
         plants: Spritesheet
       } = (await Assets.load(["body", "head", "hair"])) as any
 
-      CharacterWithMultipleSpritesheets.#bodySpritesheet =
+      CharacterWithMultipleSpriteSheets.#bodySpriteSheet =
         await createUniversalSpriteSheet("body", body)
-      CharacterWithMultipleSpritesheets.#headSpritesheet =
+      CharacterWithMultipleSpriteSheets.#headSpriteSheet =
         await createUniversalSpriteSheet("head", head)
-      CharacterWithMultipleSpritesheets.#hairSpritesheet =
+      CharacterWithMultipleSpriteSheets.#hairSpriteSheet =
         await createUniversalSpriteSheet("hair", hair)
 
-      CharacterWithMultipleSpritesheets.#haveSpritesheetsBeenLoaded = true
+      CharacterWithMultipleSpriteSheets.#haveSpriteSheetsBeenLoaded = true
     }
   }
 
@@ -57,17 +57,17 @@ export class CharacterWithMultipleSpritesheets extends Character {
 
     this.sprite.addChild(
       createAnimatedSprite(
-        CharacterWithMultipleSpritesheets.#bodySpritesheet.animations.down,
+        CharacterWithMultipleSpriteSheets.#bodySpriteSheet.animations.down,
       ),
     )
     this.sprite.addChild(
       createAnimatedSprite(
-        CharacterWithMultipleSpritesheets.#headSpritesheet.animations.down,
+        CharacterWithMultipleSpriteSheets.#headSpriteSheet.animations.down,
       ),
     )
     this.sprite.addChild(
       createAnimatedSprite(
-        CharacterWithMultipleSpritesheets.#hairSpritesheet.animations.down,
+        CharacterWithMultipleSpriteSheets.#hairSpriteSheet.animations.down,
       ),
     )
   }
@@ -80,19 +80,19 @@ export class CharacterWithMultipleSpritesheets extends Character {
 
   private _determineBodyTextures(): Texture<Resource>[] {
     return this._determineTexture(
-      CharacterWithMultipleSpritesheets.#bodySpritesheet,
+      CharacterWithMultipleSpriteSheets.#bodySpriteSheet,
     )
   }
 
   private _determineHeadTextures(): Texture<Resource>[] {
     return this._determineTexture(
-      CharacterWithMultipleSpritesheets.#headSpritesheet,
+      CharacterWithMultipleSpriteSheets.#headSpriteSheet,
     )
   }
 
   private _determineHairTextures(): Texture<Resource>[] {
     return this._determineTexture(
-      CharacterWithMultipleSpritesheets.#hairSpritesheet,
+      CharacterWithMultipleSpriteSheets.#hairSpriteSheet,
     )
   }
 }

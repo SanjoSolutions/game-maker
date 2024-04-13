@@ -1,21 +1,24 @@
-import type { IGameServerAPI } from "./IGameServerAPI.js"
 import { Subject } from "rxjs"
-import { Message as MessageBase } from "./protos/Message.js"
-import type { Direction } from "./Direction.js"
+import { Message as MessageBase } from "../protos/Message.js"
 import type { MessageType } from "@protobuf-ts/runtime"
+import { ServerConnection } from "../ServerConnection.js"
 
-export class GameServerAPI<T> implements IGameServerAPI {
+export class WebSocketServerConnection<T> implements ServerConnection {
   protected webSocket: WebSocket | null = null
-  stream: Subject<T> = new Subject<T>()
+  inStream: Subject<T> = new Subject<T>()
+  outStream: Subject<T> = new Subject<T>()
   Message: MessageType<any>
 
   constructor(Message: MessageType<any> = MessageBase) {
     this.Message = Message
   }
 
-  async connect(): Promise<void> {
+  async connect(
+    url: string | URL,
+    protocols?: string | string[],
+  ): Promise<void> {
     return new Promise((resolve) => {
-      this.webSocket = new WebSocket("ws://localhost:8080")
+      this.webSocket = new WebSocket(url, protocols)
 
       this.webSocket.onerror = console.error
 
@@ -26,15 +29,12 @@ export class GameServerAPI<T> implements IGameServerAPI {
       this.webSocket.onmessage = async (event) => {
         const arrayBuffer = await event.data.arrayBuffer()
         const message = this.Message.fromBinary(new Uint8Array(arrayBuffer))
-        this.stream.next(message)
+        this.inStream.next(message)
       }
-    })
-  }
 
-  move(direction: {
-    facingDirection: Direction
-    movingDirection: Direction
-  }): void {
-    // TODO
+      this.outStream.subscribe((message) => {
+        this.webSocket!.send(this.Message.toBinary(message))
+      })
+    })
   }
 }

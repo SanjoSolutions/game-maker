@@ -1,7 +1,11 @@
 {
   "name": "@sanjo/test-project-shared",
+  "type": "module",
   "scripts": {
-    "build:proto": "protoc --ts_opt generate_dependencies --ts_out src/protos --proto_path src/protos --proto_path ../../node_modules/@sanjo/game-engine/src/protos src/protos/*.proto"
+    "build": "npm run build:proto && tsc --project tsconfig-build.json",
+    "build:watch": "concurrently \"npm run build:proto:watch\" \"tsc --project tsconfig-build.json --watch\"",
+    "build:proto": "protoc --ts_opt generate_dependencies --ts_out src/protos --proto_path src/protos --proto_path ../../node_modules/@sanjo/game-engine/src/protos src/protos/*.proto",
+    "build:proto:watch": "chokidar \"src/protos/*.proto\" \"../../node_modules/@sanjo/game-engine/src/protos/*.proto\" -c \"npm run build:proto\""
   },
   "devDependencies": {
     "@protobuf-ts/plugin": "^2.9.4",

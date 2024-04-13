@@ -3,7 +3,7 @@
     "ignoreDeprecations": "5.0",
     "incremental": true,
     "target": "ES2022",
-    "module": "NodeNext",
+    "module": "Node16",
     "lib": ["ES2022"],
     "allowJs": true,
     "checkJs": true,

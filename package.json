@@ -4,11 +4,8 @@
   "version": "0.0.0",
   "main": ".vite/build/main.js",
   "scripts": {
-    "start": "concurrently --names \"TypeScript,server,client\" \"npm run build:typescript:watch\" \"cd test-project/server && npm run start\" \"cd test-project/client && npm run start\"",
-    "build": "npm run build:proto && npm run build:typescript",
-    "build:proto": "cd @sanjo/game-engine && npm run build:proto && cd ../.. && cd test-project/shared && npm run build:proto",
-    "build:typescript": "cd build && tsc --build",
-    "build:typescript:watch": "cd build && tsc --build --watch",
+    "start": "concurrently --names \"@sanjo/game-engine,@sanjo/test-project-shared,@sanjo/test-project-server,@sanjo/test-project-client\" \"cd @sanjo/game-engine && npm run build:watch\" \"cd test-project/shared && npm run build:watch\" \"cd test-project/server && npm run start\" \"cd test-project/client && npm run start\"",
+    "build": "cd @sanjo/game-engine && npm run build && cd ../.. && cd test-project/shared && npm run build && cd ../.. && cd test-project/server && npm run build && cd ../.. && cd test-project/client && npm run build",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish"
@@ -31,6 +28,7 @@
     "@types/jest": "^29.5.4",
     "@types/lodash-es": "^4.17.9",
     "babel-jest": "^29.6.4",
+    "chokidar-cli": "^3.0.0",
     "concurrently": "^8.2.2",
     "electron": "29.1.0",
     "jest": "^29.6.4",

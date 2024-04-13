@@ -9,13 +9,15 @@ import { TextMessage } from "@sanjo/game-engine/TextMessage.js"
 import { Option } from "@sanjo/game-engine/Dialog.js"
 import "@sanjo/game-engine/TextMessage.css"
 import "@sanjo/game-engine/Dialog.css"
-import { Subject, find, firstValueFrom } from "rxjs"
+import { find, firstValueFrom } from "rxjs"
 import type { SynchronizedState } from "@sanjo/test-project-shared/src/protos/SynchronizedState.js"
 import { Message } from "@sanjo/test-project-shared/src/protos/Message.js"
-import { MessageType } from "@sanjo/test-project-shared/src/clientServerCommunication/MessageType.js"
 import { createRequestMoneyFromMentor } from "@sanjo/test-project-shared/src/clientServerCommunication/messageFactories.js"
-import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/CharacterWithOneSpritesheet.js"
+import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/CharacterWithOneSpriteSheet.js"
 import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/GameServerAPI.js"
+import { WebSocketServerConnection } from "@sanjo/game-engine/clientServerCommunication/WebSocketServerConnection.js"
+import { ProjectMessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
+import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -25,14 +27,14 @@ if (window.IS_DEVELOPMENT) {
 
 class GameServerAPI extends GameServerAPIBase<Message> {
   async requestMoneyFromMentor(): Promise<Message | undefined> {
-    this.webSocket!.send(Message.toBinary(createRequestMoneyFromMentor()))
+    this.serverConnection.outStream.next(createRequestMoneyFromMentor())
     const response = await firstValueFrom(
-      this.stream.pipe(
+      this.serverConnection.inStream.pipe(
         find(
           (message) =>
             message.body.oneofKind ===
-              MessageType.RequestMoneyFromMentorResponse ||
-            message.body.oneofKind === MessageType.Error,
+              ProjectMessageType.RequestMoneyFromMentorResponse ||
+            message.body.oneofKind === EngineMessageType.Error,
         ),
       ),
     )
@@ -46,13 +48,13 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
 
   constructor(server: GameServerAPI, database: Database) {
     super(server, database)
-    server.stream.subscribe(async (message: Message) => {
-      if (message.body.oneofKind === MessageType.SynchronizedState) {
+    server.serverConnection.inStream.subscribe(async (message: Message) => {
+      if (message.body.oneofKind === ProjectMessageType.SynchronizedState) {
         const stateFromServer = message.body.synchronizedState
         Object.assign(this, stateFromServer)
         console.log("Money: " + this.money)
         console.log("hasMentorGivenMoney", this.hasMentorGivenMoney)
-      } else if (message.body.oneofKind === MessageType.Character) {
+      } else if (message.body.oneofKind === EngineMessageType.Character) {
         const character = new CharacterWithOneSpriteSheet(
           "character.png",
           this.app.stage,
@@ -67,12 +69,13 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
   async requestMoneyFromMentor(): Promise<boolean> {
     const response = await this.server.requestMoneyFromMentor()
     if (response) {
-      if (response.body.oneofKind === MessageType.Error) {
+      if (response.body.oneofKind === EngineMessageType.Error) {
         const error = response.body.error
         console.error(error.message)
         return false
       } else if (
-        response.body.oneofKind === MessageType.RequestMoneyFromMentorResponse
+        response.body.oneofKind ===
+        ProjectMessageType.RequestMoneyFromMentorResponse
       ) {
         const updatedState = response.body.requestMoneyFromMentorResponse
         this.money = updatedState.money
@@ -89,11 +92,12 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
 }
 
 async function main() {
-  const server = new GameServerAPI()
+  const serverConnection = new WebSocketServerConnection(Message)
+  const server = new GameServerAPI(serverConnection, Message)
   const database = new Database()
   await database.open()
   const game = new Game(server, database)
-  await server.connect()
+  await serverConnection.connect("ws://localhost:8080")
   document.body.appendChild(game.app.view as any)
 
   await game.loadMap("maps/teleporter_test2.map.gz")
@@ -133,13 +137,16 @@ async function main() {
         if (!game.hasMentorGivenMoney) {
           options.push(requireMoneyOption)
         }
-        options.push(new Option("b"))
+        const sayHiBackOption = new Option('Say "Hi" back.')
+        options.push(sayHiBackOption)
         const option = await game.showOptions(options)
         if (option === requireMoneyOption) {
           if (await game.requestMoneyFromMentor()) {
             await TextMessage.showMessageFrom("Mentor", "Here are 50 gold. ;-)")
           }
           console.log("Money: " + game.money)
+        } else if (option === sayHiBackOption) {
+          await TextMessage.showMessageFrom("Character", "Hi.")
         }
       }
     }

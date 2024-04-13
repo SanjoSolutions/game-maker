@@ -7,5 +7,9 @@
       "--proto_path=${workspaceRoot}/test-project/shared/src/protos",
       "--proto_path=${workspaceRoot}/@sanjo/game-engine/src/protos"
     ]
-  }
+  },
+  "files.exclude": {
+    "*/**/build": true
+  },
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }
