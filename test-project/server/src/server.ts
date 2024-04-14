@@ -163,22 +163,27 @@ class GameServer implements SynchronizedState {
 }
 
 class GameServerWithWebSocket extends GameServer {
-  listen() {
-    const webSocketServer = new WebSocketServer({ port: 8080 })
-
-    webSocketServer.on("connection", (webSocket) => {
-      webSocket.on("error", console.error)
-
-      webSocket.on("message", (data: Buffer) => {
-        const message = Message.fromBinary(data)
-        this.inStream.next({ message, socket: webSocket })
+  async listen() {
+    return new Promise((resolve, onError) => {
+      const webSocketServer = new WebSocketServer({ port: 8080 }, () => {
+        resolve(null)
       })
 
-      this.onConnect.next({ socket: webSocket })
+      webSocketServer.once("error", onError)
+
+      webSocketServer.on("connection", (webSocket) => {
+        webSocket.on("error", console.error)
+
+        webSocket.on("message", (data: Buffer) => {
+          const message = Message.fromBinary(data)
+          this.inStream.next({ message, socket: webSocket })
+        })
+
+        this.onConnect.next({ socket: webSocket })
+      })
     })
   }
 }
 
 const server = new GameServerWithWebSocket()
-console.log("aaa")
-server.listen()
+await server.listen()
