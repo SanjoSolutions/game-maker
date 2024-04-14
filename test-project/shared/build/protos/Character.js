@@ -6,14 +6,18 @@ import { MessageType } from "@protobuf-ts/runtime";
 class Character$Type extends MessageType {
     constructor() {
         super("Character", [
-            { no: 1, name: "x", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 2, name: "y", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
+            { no: 1, name: "GUID", kind: "scalar", localName: "GUID", jsonName: "GUID", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "x", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 3, name: "y", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 4, name: "isPlayed", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value) {
         const message = globalThis.Object.create((this.messagePrototype));
+        message.GUID = "";
         message.x = 0;
         message.y = 0;
+        message.isPlayed = false;
         if (value !== undefined)
             reflectionMergePartial(this, message, value);
         return message;
@@ -23,11 +27,17 @@ class Character$Type extends MessageType {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint32 x */ 1:
+                case /* string GUID = 1 [json_name = "GUID"];*/ 1:
+                    message.GUID = reader.string();
+                    break;
+                case /* uint32 x */ 2:
                     message.x = reader.uint32();
                     break;
-                case /* uint32 y */ 2:
+                case /* uint32 y */ 3:
                     message.y = reader.uint32();
+                    break;
+                case /* bool isPlayed */ 4:
+                    message.isPlayed = reader.bool();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -41,12 +51,18 @@ class Character$Type extends MessageType {
         return message;
     }
     internalBinaryWrite(message, writer, options) {
-        /* uint32 x = 1; */
+        /* string GUID = 1 [json_name = "GUID"]; */
+        if (message.GUID !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.GUID);
+        /* uint32 x = 2; */
         if (message.x !== 0)
-            writer.tag(1, WireType.Varint).uint32(message.x);
-        /* uint32 y = 2; */
+            writer.tag(2, WireType.Varint).uint32(message.x);
+        /* uint32 y = 3; */
         if (message.y !== 0)
-            writer.tag(2, WireType.Varint).uint32(message.y);
+            writer.tag(3, WireType.Varint).uint32(message.y);
+        /* bool isPlayed = 4; */
+        if (message.isPlayed !== false)
+            writer.tag(4, WireType.Varint).bool(message.isPlayed);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

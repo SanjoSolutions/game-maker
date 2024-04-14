@@ -96,3 +96,5 @@ out/
 /playwright-report/
 /playwright/.cache/
 /.firebase/
+
+*/**/build

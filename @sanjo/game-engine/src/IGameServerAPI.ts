@@ -1,8 +1,8 @@
-import type { Direction } from "./Direction.js"
+import type { ServerConnection } from "./ServerConnection.js"
+import type { Move } from "./protos/Move.js"
 
 export interface IGameServerAPI {
-  move(direction: {
-    facingDirection: Direction
-    movingDirection: Direction
-  }): void
+  serverConnection: ServerConnection
+
+  move(move: Move): void
 }

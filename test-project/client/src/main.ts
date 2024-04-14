@@ -14,10 +14,11 @@ import type { SynchronizedState } from "@sanjo/test-project-shared/src/protos/Sy
 import { Message } from "@sanjo/test-project-shared/src/protos/Message.js"
 import { createRequestMoneyFromMentor } from "@sanjo/test-project-shared/src/clientServerCommunication/messageFactories.js"
 import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/CharacterWithOneSpriteSheet.js"
-import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/GameServerAPI.js"
+import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/clientServerCommunication/GameServerAPI.js"
 import { WebSocketServerConnection } from "@sanjo/game-engine/clientServerCommunication/WebSocketServerConnection.js"
 import { ProjectMessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
 import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
+import type { GUID } from "@sanjo/game-engine/GUID.js"
 
 if (window.IS_DEVELOPMENT) {
   new EventSource("/esbuild").addEventListener("change", () =>
@@ -43,6 +44,7 @@ class GameServerAPI extends GameServerAPIBase<Message> {
 }
 
 class Game extends GameBase<GameServerAPI> implements SynchronizedState {
+  characterGUID: GUID = ""
   money: number = 0
   hasMentorGivenMoney: boolean = false
 
@@ -54,14 +56,6 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
         Object.assign(this, stateFromServer)
         console.log("Money: " + this.money)
         console.log("hasMentorGivenMoney", this.hasMentorGivenMoney)
-      } else if (message.body.oneofKind === EngineMessageType.Character) {
-        const character = new CharacterWithOneSpriteSheet(
-          "character.png",
-          this.app.stage,
-        )
-        Object.assign(character, message.body.character)
-        await character.loadSpriteSheet()
-        this.layers[3].addChild(character.sprite)
       }
     })
   }
@@ -97,7 +91,6 @@ async function main() {
   const database = new Database()
   await database.open()
   const game = new Game(server, database)
-  await serverConnection.connect("ws://localhost:8080")
   document.body.appendChild(game.app.view as any)
 
   await game.loadMap("maps/teleporter_test2.map.gz")
@@ -108,9 +101,7 @@ async function main() {
     )
   })
   await game.initialize()
-  game.man!.y = 6 * 32
-  game.layers[3].sortChildren()
-  game.updateViewport()
+  await serverConnection.connect("ws://localhost:8080")
 
   {
     const npc = new CharacterWithOpenRTPSpriteSheet(

@@ -1,6 +1,8 @@
 syntax = "proto3";
 
 message Character {
-  uint32 x = 1;
-  uint32 y = 2;
+  string GUID = 1;
+  uint32 x = 2;
+  uint32 y = 3;
+  bool isPlayed = 4;
 }

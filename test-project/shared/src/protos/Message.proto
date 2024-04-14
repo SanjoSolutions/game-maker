@@ -5,11 +5,14 @@ import "RequestMoneyFromMentorResponse.proto";
 import "Error.proto";
 import "SynchronizedState.proto";
 import "Character.proto";
+import "Move.proto";
 
 message Message {
   oneof body {
     Error error = 1;
     Character character = 2;
+    Move move = 3;
+
     RequestMoneyFromMentor requestMoneyFromMentor = 1000;
     RequestMoneyFromMentorResponse requestMoneyFromMentorResponse = 1001;
     SynchronizedState synchronizedState = 1002;

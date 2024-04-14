@@ -24,6 +24,11 @@ import {
   isInteractableObject,
   type InteractableObject,
 } from "./InteractableObject.js"
+import type { Message } from "./protos/Message.js"
+import { MessageType } from "./clientServerCommunication/MessageType.js"
+import type { GUID } from "./GUID.js"
+import { isFlagSet } from "./isFlagSet.js"
+import type { Character } from "./Character.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -43,6 +48,7 @@ export class Game<T extends IGameServerAPI> {
   #canCharacterMove: boolean = true
   money: number = 0
   isInteracting: boolean = false
+  characters: Map<GUID, CharacterWithOneSpriteSheet> = new Map()
 
   constructor(server: T, database: Database) {
     this.server = server
@@ -59,6 +65,36 @@ export class Game<T extends IGameServerAPI> {
           Side.Top | Side.Right | Side.Bottom | Side.Left
       }
     }
+
+    this.server.serverConnection.inStream.subscribe(
+      async (message: Message) => {
+        if (message.body.oneofKind === MessageType.Character) {
+          const character = new CharacterWithOneSpriteSheet(
+            "character.png",
+            this.app.stage,
+          )
+          Object.assign(character, message.body.character)
+          await character.loadSpriteSheet()
+          if (character.GUID) {
+            this.characters.set(character.GUID, character)
+          }
+          this.layers[3].addChild(character.sprite)
+          if (character.isPlayed) {
+            this.man = character
+            this.updateViewport()
+          }
+        } else if (message.body.oneofKind === MessageType.MoveFromServer) {
+          console.log("moveFromServer", message)
+          const data = message.body.moveFromServer
+          const character = this.characters.get(data.GUID)
+          if (character) {
+            character.direction = data.facingDirection
+            character.movingDirection = data.movingDirection
+            character.isMoving = true
+          }
+        }
+      },
+    )
   }
 
   lowerMoneyBy(amount: number) {
@@ -67,13 +103,6 @@ export class Game<T extends IGameServerAPI> {
 
   async initialize(): Promise<void> {
     settings.use32bitIndex = true
-    this.man = new CharacterWithOneSpriteSheet("character.png", this.app.stage)
-    this.man!.x = 32
-    this.man!.y = 32
-    await this.man.loadSpriteSheet()
-    this.layers[3].addChild(this.man.sprite)
-
-    await this.database.saveState(this.app)
 
     this.updateViewport()
     // this.updateObjectInHandPosition()
@@ -118,7 +147,36 @@ export class Game<T extends IGameServerAPI> {
     let previousMovingDirection = Direction.None
 
     this.app.ticker.add((delta) => {
-      if (this.#canCharacterMove) {
+      for (const character of this.characters.values()) {
+        if (character.isMoving) {
+          const { hasYChanged } = this.move(character, delta)
+
+          if (character === this.man) {
+            if (hasYChanged) {
+              this.updateManAndObjectInHandIndex()
+            }
+            this.updateObjectInHandPosition()
+            this.updateViewport()
+
+            const entityOver = this.map!.entities.find(
+              (entity) =>
+                this.man!.x >= entity.column * this.map!.tileSize.width &&
+                this.man!.x <
+                  entity.column * this.map!.tileSize.width +
+                    this.map!.tileSize.width &&
+                this.man!.y >= entity.row * this.map!.tileSize.height &&
+                this.man!.y <
+                  entity.row * this.map!.tileSize.height +
+                    this.map!.tileSize.height,
+            )
+            if (entityOver) {
+              entityOver.onOver.next(null)
+            }
+          }
+        }
+      }
+
+      if (this.man && this.#canCharacterMove) {
         const left = keyStates.get("ArrowLeft")
         const right = keyStates.get("ArrowRight")
         const up = keyStates.get("ArrowUp")
@@ -136,34 +194,17 @@ export class Game<T extends IGameServerAPI> {
           !isStillPressedInDirection
         ) {
           if (down && !up) {
-            this.man!.direction = Direction.Down
+            this.man.direction = Direction.Down
           } else if (up && !down) {
-            this.man!.direction = Direction.Up
+            this.man.direction = Direction.Up
           } else if (left && !right) {
-            this.man!.direction = Direction.Left
+            this.man.direction = Direction.Left
           } else if (right && !left) {
-            this.man!.direction = Direction.Right
+            this.man.direction = Direction.Right
           }
         }
 
-        const newPosition = { x: this.man!.x, y: this.man!.y }
-
-        if (left && !right) {
-          newPosition.x -= delta
-        } else if (right && !left) {
-          newPosition.x += delta
-        }
-
-        if (up && !down) {
-          newPosition.y -= delta
-        } else if (down && !up) {
-          newPosition.y += delta
-        }
-
-        const hasYChanged = newPosition.y !== this.man!.y
-        const hasPositionChanged = newPosition.x !== this.man!.x || hasYChanged
-
-        const facingDirection = this.man!.direction
+        const facingDirection = this.man.direction
         let movingDirection = Direction.None
         if (left && !right) {
           movingDirection |= Direction.Left
@@ -180,65 +221,85 @@ export class Game<T extends IGameServerAPI> {
           facingDirection !== previousFacingDirection ||
           movingDirection !== previousMovingDirection
         ) {
-          this.server.move({
-            facingDirection,
-            movingDirection,
-          })
+          if (this.man?.GUID) {
+            this.server.move({
+              GUID: this.man.GUID,
+              facingDirection,
+              movingDirection,
+            })
+          }
 
           previousFacingDirection = facingDirection
           previousMovingDirection = movingDirection
         }
-
-        if (hasPositionChanged) {
-          this.man!.isMoving = true
-
-          let x = newPosition.x
-          let y = newPosition.y
-          const radius = 12
-          if (left && !right) {
-            x -= radius
-          } else if (right && !left) {
-            x += radius
-          }
-          if (up && !down) {
-            y -= radius
-          }
-
-          const tile = {
-            row: Math.floor(y / this.map!.tileSize.height),
-            column: Math.floor(x / this.map!.tileSize.width),
-          }
-
-          if (this.walkable.isWalkableAt(tile.row, tile.column)) {
-            this.man!.x = newPosition.x
-            this.man!.y = newPosition.y
-            if (hasYChanged) {
-              this.updateManAndObjectInHandIndex()
-            }
-            this.updateObjectInHandPosition()
-            this.updateViewport()
-            // this.database.saveObject(this.man!)
-
-            const entityOver = this.map!.entities.find(
-              (entity) =>
-                this.man!.x >= entity.column * this.map!.tileSize.width &&
-                this.man!.x <
-                  entity.column * this.map!.tileSize.width +
-                    this.map!.tileSize.width &&
-                this.man!.y >= entity.row * this.map!.tileSize.height &&
-                this.man!.y <
-                  entity.row * this.map!.tileSize.height +
-                    this.map!.tileSize.height,
-            )
-            if (entityOver) {
-              entityOver.onOver.next(null)
-            }
-          }
-        } else {
-          this.man!.isMoving = false
-        }
       }
     })
+  }
+
+  move(character: Character, delta: number) {
+    const newPosition = { x: character.x, y: character.y }
+
+    if (
+      isFlagSet(character.movingDirection, Direction.Left) &&
+      !isFlagSet(character.movingDirection, Direction.Right)
+    ) {
+      newPosition.x -= delta
+    } else if (
+      isFlagSet(character.movingDirection, Direction.Right) &&
+      !isFlagSet(character.movingDirection, Direction.Left)
+    ) {
+      newPosition.x += delta
+    }
+
+    if (
+      isFlagSet(character.movingDirection, Direction.Up) &&
+      !isFlagSet(character.movingDirection, Direction.Down)
+    ) {
+      newPosition.y -= delta
+    } else if (
+      isFlagSet(character.movingDirection, Direction.Down) &&
+      !isFlagSet(character.movingDirection, Direction.Up)
+    ) {
+      newPosition.y += delta
+    }
+
+    const hasYChanged = newPosition.y !== character.y
+    const hasPositionChanged = newPosition.x !== character.x || hasYChanged
+
+    if (hasPositionChanged) {
+      let x = newPosition.x
+      let y = newPosition.y
+      const radius = 12
+      if (
+        isFlagSet(character.movingDirection, Direction.Left) &&
+        !isFlagSet(character.movingDirection, Direction.Right)
+      ) {
+        x -= radius
+      } else if (
+        isFlagSet(character.movingDirection, Direction.Right) &&
+        !isFlagSet(character.movingDirection, Direction.Left)
+      ) {
+        x += radius
+      }
+      if (
+        isFlagSet(character.movingDirection, Direction.Up) &&
+        !isFlagSet(character.movingDirection, Direction.Down)
+      ) {
+        y -= radius
+      }
+
+      const tile = {
+        row: Math.floor(y / this.map!.tileSize.height),
+        column: Math.floor(x / this.map!.tileSize.width),
+      }
+
+      if (this.walkable.isWalkableAt(tile.row, tile.column)) {
+        character.x = newPosition.x
+        character.y = newPosition.y
+      }
+    }
+
+    return { hasYChanged }
   }
 
   public async loadMap(mapFilePath: string): Promise<void> {
@@ -396,8 +457,10 @@ export class Game<T extends IGameServerAPI> {
   }
 
   public updateViewport() {
-    this.app.stage.x = 0.5 * this.app.view.width - this.man!.x
-    this.app.stage.y = 0.5 * this.app.view.height - this.man!.y
+    if (this.man) {
+      this.app.stage.x = 0.5 * this.app.view.width - this.man.x
+      this.app.stage.y = 0.5 * this.app.view.height - this.man.y
+    }
   }
 
   private calculateIndex(tile: TilePosition): number {

@@ -2,15 +2,19 @@
   "name": "test-project-server",
   "type": "module",
   "scripts": {
-    "start": "node src/buildWatch.js",
-    "build": "node src/build.js"
+    "start": "run-p --print-label start:**",
+    "start:build": "tsc --project tsconfig-build.json --watch --preserveWatchOutput",
+    "start:server": "chokidar \"build/server.js\" -c \"node build/server.js\"",
+    "build": "tsc --project tsconfig-build.json"
   },
   "dependencies": {
     "@protobuf-ts/runtime": "^2.9.4",
+    "@sanjo/test-project-shared": "file:../shared",
     "ws": "^8.16.0"
   },
   "devDependencies": {
-    "@es-exec/esbuild-plugin-start": "^0.0.5",
-    "@types/ws": "^8.5.10"
+    "@types/ws": "^8.5.10",
+    "chokidar-cli": "^3.0.0",
+    "npm-run-all": "^4.1.5"
   }
 }

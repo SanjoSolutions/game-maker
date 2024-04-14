@@ -4,11 +4,12 @@ import type { BinaryReadOptions } from "@protobuf-ts/runtime";
 import type { IBinaryReader } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { SynchronizedState } from "./SynchronizedState";
-import { RequestMoneyFromMentorResponse } from "./RequestMoneyFromMentorResponse";
-import { RequestMoneyFromMentor } from "./RequestMoneyFromMentor";
-import { Character } from "./Character";
-import { Error } from "./Error";
+import { SynchronizedState } from "./SynchronizedState.js";
+import { RequestMoneyFromMentorResponse } from "./RequestMoneyFromMentorResponse.js";
+import { RequestMoneyFromMentor } from "./RequestMoneyFromMentor.js";
+import { Move } from "./Move.js";
+import { Character } from "./Character.js";
+import { Error } from "./Error.js";
 /**
  * @generated from protobuf message Message
  */
@@ -28,6 +29,12 @@ export interface Message {
          * @generated from protobuf field: Character character = 2;
          */
         character: Character;
+    } | {
+        oneofKind: "move";
+        /**
+         * @generated from protobuf field: Move move = 3;
+         */
+        move: Move;
     } | {
         oneofKind: "requestMoneyFromMentor";
         /**

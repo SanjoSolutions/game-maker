@@ -3,6 +3,7 @@ import type { Direction } from "../Direction.js"
 import type { MessageType, PartialMessage } from "@protobuf-ts/runtime"
 import type { ServerConnection } from "../ServerConnection.js"
 import { Move } from "../protos/Move.js"
+import type { Move as Move2 } from "./Move.js"
 import { MessageType as EngineMessageType } from "./MessageType.js"
 
 interface Message {
@@ -32,15 +33,12 @@ export class GameServerAPI<T extends Message> implements IGameServerAPI {
     this.Message = Message
   }
 
-  move(direction: {
-    facingDirection: Direction
-    movingDirection: Direction
-  }): void {
+  move(move: Move2): void {
     this.serverConnection.outStream.next(
       this.Message.create({
         body: {
           oneofKind: EngineMessageType.Move,
-          move: Move.create(direction),
+          move: Move.create(move),
         },
       } as any),
     )

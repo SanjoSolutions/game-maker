@@ -1,5 +1,5 @@
 import { WebSocketServer } from "ws"
-import { Error as ErrorProto } from "@sanjo/test-project-shared/protos/Error.js"
+import { Error as ErrorProto } from "@sanjo/game-engine/protos/Error.js"
 import { RequestMoneyFromMentorResponse } from "@sanjo/test-project-shared/protos/RequestMoneyFromMentorResponse.js"
 import type { SynchronizedState } from "@sanjo/test-project-shared/protos/SynchronizedState.js"
 import { Message } from "@sanjo/test-project-shared/protos/Message.js"
@@ -12,8 +12,13 @@ import {
   createSynchronizedState,
 } from "@sanjo/test-project-shared/clientServerCommunication/messageFactories.js"
 import { Subject } from "rxjs"
-import { Character } from "@sanjo/test-project-shared/Character.js"
 import { ProjectMessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
+import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
+import type { Move } from "@sanjo/game-engine/clientServerCommunication/Move.js"
+import { randomUUID } from "node:crypto"
+import type { GUID } from "@sanjo/game-engine/GUID.js"
+import { createMoveFromServerMessage } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js"
+import type { Character } from "@sanjo/game-engine/protos/Character.js"
 
 interface Socket {
   send(data: any): void
@@ -24,23 +29,51 @@ interface MessageFromSocket {
   socket: Socket
 }
 
+interface Client {
+  socket: Socket
+  characterGUID: GUID
+}
+
 class GameServer implements SynchronizedState {
   money: number = 0
   hasMentorGivenMoney: boolean = false
   onConnect: Subject<{ socket: Socket }> = new Subject()
   inStream: Subject<MessageFromSocket> = new Subject()
-  clients: Socket[] = []
+  clients: Client[] = []
+  socketToClient: Map<Socket, Client> = new Map()
 
   constructor() {
     this.onConnect.subscribe(({ socket }: { socket: Socket }) => {
       const otherClients = Array.from(this.clients)
-      this.clients.push(socket)
 
-      const character = new Character()
-      character.x = 32
-      character.y = 6 * 32
+      const character = {
+        GUID: randomUUID(),
+        x: 32,
+        y: 6 * 32,
+      }
 
-      this.sendCharacterToClients(character, otherClients)
+      const client = {
+        socket,
+        characterGUID: character.GUID,
+      }
+
+      this.clients.push(client)
+      this.socketToClient.set(socket, client)
+
+      this.sendCharacterToClient(
+        {
+          ...character,
+          isPlayed: true,
+        },
+        client,
+      )
+      this.sendCharacterToClients(
+        {
+          ...character,
+          isPlayed: false,
+        },
+        otherClients,
+      )
 
       socket.send(
         Message.toBinary(
@@ -70,6 +103,7 @@ class GameServer implements SynchronizedState {
           socket.send(
             Message.toBinary(
               createError(
+                Message,
                 ErrorProto.create({
                   message: error.message,
                 }),
@@ -77,18 +111,39 @@ class GameServer implements SynchronizedState {
             ),
           )
         }
+      } else if (message.body.oneofKind === EngineMessageType.Move) {
+        if (
+          message.body.move.GUID ===
+          this.socketToClient.get(socket)?.characterGUID
+        ) {
+          this.sendMoveToClients(message.body.move)
+        }
       }
     })
   }
 
-  sendCharacterToClients(character: Character, clients: Socket[]) {
+  sendMoveToClients(move: Move) {
+    for (const client of this.clients) {
+      this.sendMoveToClient(move, client)
+    }
+  }
+
+  sendMoveToClient(move: Move, client: Client) {
+    client.socket.send(
+      Message.toBinary(createMoveFromServerMessage<Message>(Message, move)),
+    )
+  }
+
+  sendCharacterToClients(character: Character, clients: Client[]) {
     for (const client of clients) {
       this.sendCharacterToClient(character, client)
     }
   }
 
-  sendCharacterToClient(character: Character, client: Socket) {
-    client.send(Message.toBinary(createCharacterMessage(character)))
+  sendCharacterToClient(character: Character, client: Client) {
+    client.socket.send(
+      Message.toBinary(createCharacterMessage(Message, character)),
+    )
   }
 
   requestMoneyFromMentor() {
@@ -125,4 +180,5 @@ class GameServerWithWebSocket extends GameServer {
 }
 
 const server = new GameServerWithWebSocket()
+console.log("aaa")
 server.listen()

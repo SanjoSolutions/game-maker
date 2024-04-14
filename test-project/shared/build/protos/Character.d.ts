@@ -9,13 +9,21 @@ import { MessageType } from "@protobuf-ts/runtime";
  */
 export interface Character {
     /**
-     * @generated from protobuf field: uint32 x = 1;
+     * @generated from protobuf field: string GUID = 1 [json_name = "GUID"];
+     */
+    GUID: string;
+    /**
+     * @generated from protobuf field: uint32 x = 2;
      */
     x: number;
     /**
-     * @generated from protobuf field: uint32 y = 2;
+     * @generated from protobuf field: uint32 y = 3;
      */
     y: number;
+    /**
+     * @generated from protobuf field: bool isPlayed = 4;
+     */
+    isPlayed: boolean;
 }
 declare class Character$Type extends MessageType<Character> {
     constructor();

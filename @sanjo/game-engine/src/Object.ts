@@ -5,6 +5,7 @@ import { updatePosition } from "./updatePosition.js"
 export abstract class Object {
   lastI: number | null = null
   _direction: Direction = Direction.Down
+  movingDirection: Direction = Direction.None
   protected _isMoving: boolean = false
   sprite: Sprite = new Sprite()
   baseX: number | null = null
