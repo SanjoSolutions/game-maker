@@ -4,7 +4,7 @@
   "scripts": {
     "start": "run-p --print-label start:**",
     "start:build": "tsc --project tsconfig-build.json --watch --preserveWatchOutput",
-    "start:server": "supervisor --watch build/server.js build/server.js",
+    "start:server": "node --watch build/server.js",
     "build": "tsc --project tsconfig-build.json"
   },
   "dependencies": {
@@ -14,7 +14,6 @@
   },
   "devDependencies": {
     "@types/ws": "^8.5.10",
-    "npm-run-all": "^4.1.5",
-    "supervisor": "^0.12.0"
+    "npm-run-all": "^4.1.5"
   }
 }

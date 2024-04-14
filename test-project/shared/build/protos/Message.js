@@ -13,39 +13,15 @@ class Message$Type extends MessageType {
     constructor() {
         super("Message", [
             { no: 1, name: "error", kind: "message", oneof: "body", T: () => Error },
-            {
-                no: 2,
-                name: "character",
-                kind: "message",
-                oneof: "body",
-                T: () => Character,
-            },
+            { no: 2, name: "character", kind: "message", oneof: "body", T: () => Character },
             { no: 3, name: "move", kind: "message", oneof: "body", T: () => Move },
-            {
-                no: 1000,
-                name: "requestMoneyFromMentor",
-                kind: "message",
-                oneof: "body",
-                T: () => RequestMoneyFromMentor,
-            },
-            {
-                no: 1001,
-                name: "requestMoneyFromMentorResponse",
-                kind: "message",
-                oneof: "body",
-                T: () => RequestMoneyFromMentorResponse,
-            },
-            {
-                no: 1002,
-                name: "synchronizedState",
-                kind: "message",
-                oneof: "body",
-                T: () => SynchronizedState,
-            },
+            { no: 1000, name: "requestMoneyFromMentor", kind: "message", oneof: "body", T: () => RequestMoneyFromMentor },
+            { no: 1001, name: "requestMoneyFromMentorResponse", kind: "message", oneof: "body", T: () => RequestMoneyFromMentorResponse },
+            { no: 1002, name: "synchronizedState", kind: "message", oneof: "body", T: () => SynchronizedState }
         ]);
     }
     create(value) {
-        const message = globalThis.Object.create(this.messagePrototype);
+        const message = globalThis.Object.create((this.messagePrototype));
         message.body = { oneofKind: undefined };
         if (value !== undefined)
             reflectionMergePartial(this, message, value);
@@ -59,37 +35,37 @@ class Message$Type extends MessageType {
                 case /* Error error */ 1:
                     message.body = {
                         oneofKind: "error",
-                        error: Error.internalBinaryRead(reader, reader.uint32(), options, message.body.error),
+                        error: Error.internalBinaryRead(reader, reader.uint32(), options, message.body.error)
                     };
                     break;
                 case /* Character character */ 2:
                     message.body = {
                         oneofKind: "character",
-                        character: Character.internalBinaryRead(reader, reader.uint32(), options, message.body.character),
+                        character: Character.internalBinaryRead(reader, reader.uint32(), options, message.body.character)
                     };
                     break;
                 case /* Move move */ 3:
                     message.body = {
                         oneofKind: "move",
-                        move: Move.internalBinaryRead(reader, reader.uint32(), options, message.body.move),
+                        move: Move.internalBinaryRead(reader, reader.uint32(), options, message.body.move)
                     };
                     break;
                 case /* RequestMoneyFromMentor requestMoneyFromMentor */ 1000:
                     message.body = {
                         oneofKind: "requestMoneyFromMentor",
-                        requestMoneyFromMentor: RequestMoneyFromMentor.internalBinaryRead(reader, reader.uint32(), options, message.body.requestMoneyFromMentor),
+                        requestMoneyFromMentor: RequestMoneyFromMentor.internalBinaryRead(reader, reader.uint32(), options, message.body.requestMoneyFromMentor)
                     };
                     break;
                 case /* RequestMoneyFromMentorResponse requestMoneyFromMentorResponse */ 1001:
                     message.body = {
                         oneofKind: "requestMoneyFromMentorResponse",
-                        requestMoneyFromMentorResponse: RequestMoneyFromMentorResponse.internalBinaryRead(reader, reader.uint32(), options, message.body.requestMoneyFromMentorResponse),
+                        requestMoneyFromMentorResponse: RequestMoneyFromMentorResponse.internalBinaryRead(reader, reader.uint32(), options, message.body.requestMoneyFromMentorResponse)
                     };
                     break;
                 case /* SynchronizedState synchronizedState */ 1002:
                     message.body = {
                         oneofKind: "synchronizedState",
-                        synchronizedState: SynchronizedState.internalBinaryRead(reader, reader.uint32(), options, message.body.synchronizedState),
+                        synchronizedState: SynchronizedState.internalBinaryRead(reader, reader.uint32(), options, message.body.synchronizedState)
                     };
                     break;
                 default:
