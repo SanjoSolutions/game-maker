@@ -91,7 +91,7 @@ export class Game<T extends IGameServerAPI, M> {
           if (character) {
             character.direction = data.facingDirection
             character.movingDirection = data.movingDirection
-            character.isMoving = true
+            character.isMoving = data.movingDirection !== Direction.None
           }
         }
       },

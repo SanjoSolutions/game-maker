@@ -1,7 +1,7 @@
 import { Subject } from "rxjs"
 import { Message as MessageBase } from "../protos/Message.js"
 import type { MessageType } from "@protobuf-ts/runtime"
-import { ServerConnection } from "../ServerConnection.js"
+import type { ServerConnection } from "../ServerConnection.js"
 
 export class WebSocketServerConnection<T> implements ServerConnection {
   protected webSocket: WebSocket | null = null

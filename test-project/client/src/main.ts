@@ -16,7 +16,7 @@ import { createRequestMoneyFromMentor } from "@sanjo/test-project-shared/clientS
 import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/CharacterWithOneSpriteSheet.js"
 import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/clientServerCommunication/GameServerAPI.js"
 import { WebSocketServerConnection } from "@sanjo/game-engine/clientServerCommunication/WebSocketServerConnection.js"
-import { ProjectMessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
+import { MessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
 import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
 import type { GUID } from "@sanjo/game-engine/GUID.js"
 
@@ -34,7 +34,7 @@ class GameServerAPI extends GameServerAPIBase<Message> {
         find(
           (message) =>
             message.body.oneofKind ===
-              ProjectMessageType.RequestMoneyFromMentorResponse ||
+              MessageType.RequestMoneyFromMentorResponse ||
             message.body.oneofKind === EngineMessageType.Error,
         ),
       ),
@@ -51,7 +51,7 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
   constructor(server: GameServerAPI, database: Database) {
     super(server, database)
     server.serverConnection.inStream.subscribe(async (message: Message) => {
-      if (message.body.oneofKind === ProjectMessageType.SynchronizedState) {
+      if (message.body.oneofKind === MessageType.SynchronizedState) {
         const stateFromServer = message.body.synchronizedState
         Object.assign(this, stateFromServer)
         console.log("Money: " + this.money)
@@ -68,8 +68,7 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
         console.error(error.message)
         return false
       } else if (
-        response.body.oneofKind ===
-        ProjectMessageType.RequestMoneyFromMentorResponse
+        response.body.oneofKind === MessageType.RequestMoneyFromMentorResponse
       ) {
         const updatedState = response.body.requestMoneyFromMentorResponse
         this.money = updatedState.money

@@ -12,7 +12,7 @@ import {
   createSynchronizedState,
 } from "@sanjo/test-project-shared/clientServerCommunication/messageFactories.js"
 import { Subject } from "rxjs"
-import { ProjectMessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
+import { MessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
 import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
 import type { Move } from "@sanjo/game-engine/clientServerCommunication/Move.js"
 import { randomUUID } from "node:crypto"
@@ -86,9 +86,7 @@ class GameServer implements SynchronizedState {
     })
 
     this.inStream.subscribe(({ message, socket }: MessageFromSocket) => {
-      if (
-        message.body.oneofKind === ProjectMessageType.RequestMoneyFromMentor
-      ) {
+      if (message.body.oneofKind === MessageType.RequestMoneyFromMentor) {
         console.log("RequestMoneyFromMentor", message)
         try {
           const updatedState = this.requestMoneyFromMentor()

@@ -7,6 +7,7 @@ import { MessageType } from "@protobuf-ts/runtime";
 import { SynchronizedState } from "./SynchronizedState.js";
 import { RequestMoneyFromMentorResponse } from "./RequestMoneyFromMentorResponse.js";
 import { RequestMoneyFromMentor } from "./RequestMoneyFromMentor.js";
+import { MoveFromServer } from "./MoveFromServer.js";
 import { Move } from "./Move.js";
 import { Character } from "./Character.js";
 import { Error } from "./Error.js";
@@ -35,6 +36,12 @@ export interface Message {
          * @generated from protobuf field: Move move = 3;
          */
         move: Move;
+    } | {
+        oneofKind: "moveFromServer";
+        /**
+         * @generated from protobuf field: MoveFromServer moveFromServer = 4;
+         */
+        moveFromServer: MoveFromServer;
     } | {
         oneofKind: "requestMoneyFromMentor";
         /**

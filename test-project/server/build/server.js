@@ -5,7 +5,7 @@ import { Message } from "@sanjo/test-project-shared/protos/Message.js";
 import { createCharacterMessage, createError, } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js";
 import { createRequestMoneyFromMentorResponse, createSynchronizedState, } from "@sanjo/test-project-shared/clientServerCommunication/messageFactories.js";
 import { Subject } from "rxjs";
-import { ProjectMessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js";
+import { MessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js";
 import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js";
 import { randomUUID } from "node:crypto";
 import { createMoveFromServerMessage } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js";
@@ -44,7 +44,7 @@ class GameServer {
             })));
         });
         this.inStream.subscribe(({ message, socket }) => {
-            if (message.body.oneofKind === ProjectMessageType.RequestMoneyFromMentor) {
+            if (message.body.oneofKind === MessageType.RequestMoneyFromMentor) {
                 console.log("RequestMoneyFromMentor", message);
                 try {
                     const updatedState = this.requestMoneyFromMentor();
