@@ -26,6 +26,7 @@
     "build:watch:typescript": "tsc --project tsconfig-build.json --watch --preserveWatchOutput"
   },
   "dependencies": {
+    "@msgpack/msgpack": "^3.0.0-beta2",
     "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
     "@protobuf-ts/runtime": "^2.9.4",
     "pixi.js": "^7.3.2",

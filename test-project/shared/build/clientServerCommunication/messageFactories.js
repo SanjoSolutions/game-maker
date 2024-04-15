@@ -1,10 +1,10 @@
 import { Message } from "../protos/Message.js";
-import { ProjectMessageType } from "./MessageType.js";
+import { MessageType } from "./MessageType.js";
 import { RequestMoneyFromMentor } from "../protos/RequestMoneyFromMentor.js";
 export function createRequestMoneyFromMentor() {
     return Message.create({
         body: {
-            oneofKind: ProjectMessageType.RequestMoneyFromMentor,
+            oneofKind: MessageType.RequestMoneyFromMentor,
             requestMoneyFromMentor: RequestMoneyFromMentor.create(),
         },
     });
@@ -12,7 +12,7 @@ export function createRequestMoneyFromMentor() {
 export function createRequestMoneyFromMentorResponse(requestMoneyFromMentorResponse) {
     return Message.create({
         body: {
-            oneofKind: ProjectMessageType.RequestMoneyFromMentorResponse,
+            oneofKind: MessageType.RequestMoneyFromMentorResponse,
             requestMoneyFromMentorResponse,
         },
     });
@@ -20,7 +20,7 @@ export function createRequestMoneyFromMentorResponse(requestMoneyFromMentorRespo
 export function createSynchronizedState(synchronizedState) {
     return Message.create({
         body: {
-            oneofKind: ProjectMessageType.SynchronizedState,
+            oneofKind: MessageType.SynchronizedState,
             synchronizedState,
         },
     });

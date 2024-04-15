@@ -1,6 +1,6 @@
 export enum MessageType {
-  Error = "error",
-  Character = "character",
-  Move = "move",
-  MoveFromServer = "moveFromServer",
+  Error = 1,
+  Character = 2,
+  Move = 3,
+  MoveFromServer = 4,
 }

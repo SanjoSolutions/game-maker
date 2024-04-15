@@ -112,6 +112,7 @@ class GameServer implements SynchronizedState {
           )
         }
       } else if (message.body.oneofKind === EngineMessageType.Move) {
+        console.log("a")
         if (
           message.body.move.GUID ===
           this.socketToClient.get(socket)?.characterGUID
@@ -123,7 +124,9 @@ class GameServer implements SynchronizedState {
   }
 
   sendMoveToClients(move: Move) {
+    console.log("b")
     for (const client of this.clients) {
+      console.log("c")
       this.sendMoveToClient(move, client)
     }
   }

@@ -21,7 +21,8 @@
     "forceConsistentCasingInFileNames": true,
     "newLine": "lf",
     "importsNotUsedAsValues": "error",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "experimentalDecorators": true
   },
   "exclude": ["**/babel.config.cjs"]
 }

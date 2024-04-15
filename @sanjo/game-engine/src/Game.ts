@@ -24,18 +24,18 @@ import {
   isInteractableObject,
   type InteractableObject,
 } from "./InteractableObject.js"
-import type { Message } from "./protos/Message.js"
 import { MessageType } from "./clientServerCommunication/MessageType.js"
 import type { GUID } from "./GUID.js"
 import { isFlagSet } from "./isFlagSet.js"
 import type { Character } from "./Character.js"
+import type { Message } from "./protos/Message.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
 export const mapWidth = numberOfTilesPerRow * TILE_WIDTH
 export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 
-export class Game<T extends IGameServerAPI> {
+export class Game<T extends IGameServerAPI, M> {
   server: T
   database: Database
   man: CharacterWithOneSpriteSheet | undefined | null = null
@@ -68,6 +68,7 @@ export class Game<T extends IGameServerAPI> {
 
     this.server.serverConnection.inStream.subscribe(
       async (message: Message) => {
+        console.log("message", message)
         if (message.body.oneofKind === MessageType.Character) {
           const character = new CharacterWithOneSpriteSheet(
             "character.png",

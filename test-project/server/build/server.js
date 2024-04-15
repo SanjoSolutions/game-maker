@@ -57,6 +57,7 @@ class GameServer {
                 }
             }
             else if (message.body.oneofKind === EngineMessageType.Move) {
+                console.log("a");
                 if (message.body.move.GUID ===
                     this.socketToClient.get(socket)?.characterGUID) {
                     this.sendMoveToClients(message.body.move);
@@ -65,7 +66,9 @@ class GameServer {
         });
     }
     sendMoveToClients(move) {
+        console.log("b");
         for (const client of this.clients) {
+            console.log("c");
             this.sendMoveToClient(move, client);
         }
     }
