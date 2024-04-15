@@ -59,6 +59,7 @@
   "workspaces": [
     "@sanjo/game-engine",
     "test-project/server",
-    "test-project/client"
+    "test-project/client",
+    "test-project/shared"
   ]
 }
