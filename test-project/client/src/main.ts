@@ -17,7 +17,6 @@ import { CharacterWithOneSpriteSheet } from "@sanjo/game-engine/CharacterWithOne
 import { GameServerAPI as GameServerAPIBase } from "@sanjo/game-engine/clientServerCommunication/GameServerAPI.js"
 import { WebSocketServerConnection } from "@sanjo/game-engine/clientServerCommunication/WebSocketServerConnection.js"
 import { MessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
-import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
 import type { GUID } from "@sanjo/game-engine/GUID.js"
 
 if (window.IS_DEVELOPMENT) {
@@ -35,7 +34,7 @@ class GameServerAPI extends GameServerAPIBase<Message> {
           (message) =>
             message.body.oneofKind ===
               MessageType.RequestMoneyFromMentorResponse ||
-            message.body.oneofKind === EngineMessageType.Error,
+            message.body.oneofKind === MessageType.Error,
         ),
       ),
     )
@@ -53,7 +52,8 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
     server.serverConnection.inStream.subscribe(async (message: Message) => {
       if (message.body.oneofKind === MessageType.SynchronizedState) {
         const stateFromServer = message.body.synchronizedState
-        Object.assign(this, stateFromServer)
+        this.money = stateFromServer.money
+        this.hasMentorGivenMoney = stateFromServer.hasMentorGivenMoney
         console.log("Money: " + this.money)
         console.log("hasMentorGivenMoney", this.hasMentorGivenMoney)
       }
@@ -63,7 +63,7 @@ class Game extends GameBase<GameServerAPI> implements SynchronizedState {
   async requestMoneyFromMentor(): Promise<boolean> {
     const response = await this.server.requestMoneyFromMentor()
     if (response) {
-      if (response.body.oneofKind === EngineMessageType.Error) {
+      if (response.body.oneofKind === MessageType.Error) {
         const error = response.body.error
         console.error(error.message)
         return false

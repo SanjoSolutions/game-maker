@@ -10,6 +10,7 @@ import { UnknownFieldHandler } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { SynchronizedState } from "./SynchronizedState.js";
 import { MoveFromServer } from "./MoveFromServer.js";
 import { Move } from "./Move.js";
 import { Character } from "./Character.js";
@@ -46,6 +47,12 @@ export interface Message {
          */
         moveFromServer: MoveFromServer;
     } | {
+        oneofKind: "synchronizedState";
+        /**
+         * @generated from protobuf field: SynchronizedState synchronizedState = 5;
+         */
+        synchronizedState: SynchronizedState;
+    } | {
         oneofKind: undefined;
     };
 }
@@ -56,7 +63,8 @@ class Message$Type extends MessageType<Message> {
             { no: 1, name: "error", kind: "message", oneof: "body", T: () => Error },
             { no: 2, name: "character", kind: "message", oneof: "body", T: () => Character },
             { no: 3, name: "move", kind: "message", oneof: "body", T: () => Move },
-            { no: 4, name: "moveFromServer", kind: "message", oneof: "body", T: () => MoveFromServer }
+            { no: 4, name: "moveFromServer", kind: "message", oneof: "body", T: () => MoveFromServer },
+            { no: 5, name: "synchronizedState", kind: "message", oneof: "body", T: () => SynchronizedState }
         ]);
     }
     create(value?: PartialMessage<Message>): Message {
@@ -95,6 +103,12 @@ class Message$Type extends MessageType<Message> {
                         moveFromServer: MoveFromServer.internalBinaryRead(reader, reader.uint32(), options, (message.body as any).moveFromServer)
                     };
                     break;
+                case /* SynchronizedState synchronizedState */ 5:
+                    message.body = {
+                        oneofKind: "synchronizedState",
+                        synchronizedState: SynchronizedState.internalBinaryRead(reader, reader.uint32(), options, (message.body as any).synchronizedState)
+                    };
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -119,6 +133,9 @@ class Message$Type extends MessageType<Message> {
         /* MoveFromServer moveFromServer = 4; */
         if (message.body.oneofKind === "moveFromServer")
             MoveFromServer.internalBinaryWrite(message.body.moveFromServer, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        /* SynchronizedState synchronizedState = 5; */
+        if (message.body.oneofKind === "synchronizedState")
+            SynchronizedState.internalBinaryWrite(message.body.synchronizedState, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

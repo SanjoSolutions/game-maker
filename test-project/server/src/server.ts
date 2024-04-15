@@ -13,12 +13,14 @@ import {
 } from "@sanjo/test-project-shared/clientServerCommunication/messageFactories.js"
 import { Subject } from "rxjs"
 import { MessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
-import { MessageType as EngineMessageType } from "@sanjo/game-engine/clientServerCommunication/MessageType.js"
 import type { Move } from "@sanjo/game-engine/clientServerCommunication/Move.js"
 import { randomUUID } from "node:crypto"
 import type { GUID } from "@sanjo/game-engine/GUID.js"
 import { createMoveFromServerMessage } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js"
 import type { Character } from "@sanjo/game-engine/protos/Character.js"
+import { isFlagSet } from "@sanjo/game-engine/isFlagSet.js"
+import { Direction } from "@sanjo/game-engine"
+import type { MoveFromServer } from "@sanjo/test-project-shared/protos/MoveFromServer.js"
 
 interface Socket {
   send(data: any): void
@@ -32,9 +34,15 @@ interface MessageFromSocket {
 interface Client {
   socket: Socket
   characterGUID: GUID
+  character: CharacterOnServer
 }
 
-class GameServer implements SynchronizedState {
+interface CharacterOnServer extends Character {
+  hasStartedMovingTime: number
+  positionUpdateTime: number
+}
+
+class GameServer {
   money: number = 0
   hasMentorGivenMoney: boolean = false
   onConnect: Subject<{ socket: Socket }> = new Subject()
@@ -50,36 +58,35 @@ class GameServer implements SynchronizedState {
         GUID: randomUUID(),
         x: 32,
         y: 6 * 32,
+        isPlayed: false,
+        movingDirection: Direction.None,
+        facingDirection: Direction.Down,
+        isMoving: false,
       }
 
       const client = {
         socket,
         characterGUID: character.GUID,
+        character,
       }
 
       this.clients.push(client)
       this.socketToClient.set(socket, client)
 
-      this.sendCharacterToClient(
-        {
-          ...character,
-          isPlayed: true,
-        },
-        client,
-      )
-      this.sendCharacterToClients(
-        {
-          ...character,
-          isPlayed: false,
-        },
-        otherClients,
-      )
+      this.sendCharacterToClients(character, otherClients)
+
+      this.updateCharacterPositions()
 
       socket.send(
         Message.toBinary(
           createSynchronizedState({
             money: this.money,
             hasMentorGivenMoney: this.hasMentorGivenMoney,
+            characters: this.clients.map((client) =>
+              client.socket === socket
+                ? { ...client.character, isPlayed: true }
+                : client.character,
+            ),
           }),
         ),
       )
@@ -109,29 +116,88 @@ class GameServer implements SynchronizedState {
             ),
           )
         }
-      } else if (message.body.oneofKind === EngineMessageType.Move) {
-        console.log("a")
-        if (
-          message.body.move.GUID ===
-          this.socketToClient.get(socket)?.characterGUID
-        ) {
-          this.sendMoveToClients(message.body.move)
+      } else if (message.body.oneofKind === MessageType.Move) {
+        const client = this.socketToClient.get(socket)
+        const move = message.body.move
+        if (client && this.isCharacterOfClient(move.GUID, client)) {
+          const character = client.character
+          character.movingDirection = move.movingDirection
+          character.facingDirection = move.facingDirection
+          character.isMoving = move.movingDirection !== Direction.None
+          const moveFromServer = {
+            GUID: move.GUID,
+            facingDirection: character.facingDirection,
+            movingDirection: character.movingDirection,
+            isMoving: character.isMoving,
+          }
+          this.sendMoveFromServerToClients(moveFromServer)
         }
       }
     })
   }
 
-  sendMoveToClients(move: Move) {
-    console.log("b")
-    for (const client of this.clients) {
-      console.log("c")
-      this.sendMoveToClient(move, client)
+  updateCharacterPositions() {
+    for (const character of this.clients.map((client) => client.character)) {
+      this.updateCharacterPosition(character)
     }
   }
 
-  sendMoveToClient(move: Move, client: Client) {
+  updateCharacterPosition(character: CharacterOnServer) {
+    console.log("a", character)
+    if (character.isMoving) {
+      let xFactor
+      if (
+        isFlagSet(character.movingDirection, Direction.Left) &&
+        !isFlagSet(character.movingDirection, Direction.Right)
+      ) {
+        xFactor = 1
+      } else if (
+        isFlagSet(character.movingDirection, Direction.Right) &&
+        !isFlagSet(character.movingDirection, Direction.Left)
+      ) {
+        xFactor = -1
+      } else {
+        xFactor = 0
+      }
+      let yFactor
+      if (
+        isFlagSet(character.movingDirection, Direction.Down) &&
+        !isFlagSet(character.movingDirection, Direction.Up)
+      ) {
+        yFactor = 1
+      } else if (
+        isFlagSet(character.movingDirection, Direction.Up) &&
+        !isFlagSet(character.movingDirection, Direction.Down)
+      ) {
+        yFactor = -1
+      } else {
+        yFactor = 0
+      }
+      const time = Date.now()
+      const duration =
+        time - (character.positionUpdateTime || character.hasStartedMovingTime)
+      const speed = 1
+      character.x = xFactor * duration * speed
+      character.y = yFactor * duration * speed
+      character.positionUpdateTime = time
+    }
+  }
+
+  isCharacterOfClient(GUID: GUID, client: Client) {
+    return GUID === client.characterGUID
+  }
+
+  sendMoveFromServerToClients(moveFromServer: MoveFromServer) {
+    for (const client of this.clients) {
+      this.sendMoveFromServerToClient(moveFromServer, client)
+    }
+  }
+
+  sendMoveFromServerToClient(moveFromServer: MoveFromServer, client: Client) {
     client.socket.send(
-      Message.toBinary(createMoveFromServerMessage<Message>(Message, move)),
+      Message.toBinary(
+        createMoveFromServerMessage<Message>(Message, moveFromServer),
+      ),
     )
   }
 

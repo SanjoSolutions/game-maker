@@ -29,6 +29,7 @@ import type { GUID } from "./GUID.js"
 import { isFlagSet } from "./isFlagSet.js"
 import type { Character } from "./Character.js"
 import type { Message } from "./protos/Message.js"
+import type { Character as CharacterProto } from "./protos/Character.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -69,21 +70,13 @@ export class Game<T extends IGameServerAPI, M> {
     this.server.serverConnection.inStream.subscribe(
       async (message: Message) => {
         console.log("message", message)
-        if (message.body.oneofKind === MessageType.Character) {
-          const character = new CharacterWithOneSpriteSheet(
-            "character.png",
-            this.app.stage,
-          )
-          Object.assign(character, message.body.character)
-          await character.loadSpriteSheet()
-          if (character.GUID) {
-            this.characters.set(character.GUID, character)
+        if (message.body.oneofKind === MessageType.SynchronizedState) {
+          const stateFromServer = message.body.synchronizedState
+          for (const character of stateFromServer.characters) {
+            await this.createCharacter(character)
           }
-          this.layers[3].addChild(character.sprite)
-          if (character.isPlayed) {
-            this.man = character
-            this.updateViewport()
-          }
+        } else if (message.body.oneofKind === MessageType.Character) {
+          await this.createCharacter(message.body.character)
         } else if (message.body.oneofKind === MessageType.MoveFromServer) {
           console.log("moveFromServer", message)
           const data = message.body.moveFromServer
@@ -91,11 +84,28 @@ export class Game<T extends IGameServerAPI, M> {
           if (character) {
             character.direction = data.facingDirection
             character.movingDirection = data.movingDirection
-            character.isMoving = data.movingDirection !== Direction.None
+            character.isMoving = data.isMoving
           }
         }
       },
     )
+  }
+
+  async createCharacter(characterData: CharacterProto) {
+    const character = new CharacterWithOneSpriteSheet(
+      "character.png",
+      this.app.stage,
+    )
+    Object.assign(character, characterData)
+    await character.loadSpriteSheet()
+    if (character.GUID) {
+      this.characters.set(character.GUID, character)
+    }
+    this.layers[3].addChild(character.sprite)
+    if (character.isPlayed) {
+      this.man = character
+      this.updateViewport()
+    }
   }
 
   lowerMoneyBy(amount: number) {

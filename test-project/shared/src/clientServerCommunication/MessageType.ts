@@ -7,3 +7,4 @@ enum ProjectMessageType {
 }
 
 export const MessageType = { ...EngineMessageType, ...ProjectMessageType }
+export type MessageType = EngineMessageType | ProjectMessageType

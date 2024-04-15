@@ -4,4 +4,5 @@ message MoveFromServer {
   string GUID = 1;
   uint32 facingDirection = 2;
   uint32 movingDirection = 3;
+  bool isMoving = 4;
 }

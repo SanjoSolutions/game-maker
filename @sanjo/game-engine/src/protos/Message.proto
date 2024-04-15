@@ -4,6 +4,7 @@ import "Error.proto";
 import "Character.proto";
 import "Move.proto";
 import "MoveFromServer.proto";
+import "SynchronizedState.proto";
 
 message Message {
   oneof body {
@@ -11,5 +12,6 @@ message Message {
     Character character = 2;
     Move move = 3;
     MoveFromServer moveFromServer = 4;
+    SynchronizedState synchronizedState = 5;
   }
 }

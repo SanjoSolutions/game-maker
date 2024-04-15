@@ -1,6 +1,7 @@
 export enum MessageType {
-  Error = 'error',
-  Character = 'character',
-  Move = 'move',
-  MoveFromServer = 'moveFromServer',
+  Error = "error",
+  Character = "character",
+  Move = "move",
+  MoveFromServer = "moveFromServer",
+  SynchronizedState = "synchronizedState",
 }

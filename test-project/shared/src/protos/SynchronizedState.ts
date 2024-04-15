@@ -10,16 +10,21 @@ import { UnknownFieldHandler } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { Character } from "./Character.js";
 /**
  * @generated from protobuf message SynchronizedState
  */
 export interface SynchronizedState {
     /**
-     * @generated from protobuf field: uint32 money = 1;
+     * @generated from protobuf field: repeated Character characters = 1;
+     */
+    characters: Character[];
+    /**
+     * @generated from protobuf field: uint32 money = 1000;
      */
     money: number;
     /**
-     * @generated from protobuf field: bool hasMentorGivenMoney = 2;
+     * @generated from protobuf field: bool hasMentorGivenMoney = 1001;
      */
     hasMentorGivenMoney: boolean;
 }
@@ -27,12 +32,14 @@ export interface SynchronizedState {
 class SynchronizedState$Type extends MessageType<SynchronizedState> {
     constructor() {
         super("SynchronizedState", [
-            { no: 1, name: "money", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 2, name: "hasMentorGivenMoney", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
+            { no: 1, name: "characters", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Character },
+            { no: 1000, name: "money", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 1001, name: "hasMentorGivenMoney", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<SynchronizedState>): SynchronizedState {
         const message = globalThis.Object.create((this.messagePrototype!));
+        message.characters = [];
         message.money = 0;
         message.hasMentorGivenMoney = false;
         if (value !== undefined)
@@ -44,10 +51,13 @@ class SynchronizedState$Type extends MessageType<SynchronizedState> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint32 money */ 1:
+                case /* repeated Character characters */ 1:
+                    message.characters.push(Character.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                case /* uint32 money */ 1000:
                     message.money = reader.uint32();
                     break;
-                case /* bool hasMentorGivenMoney */ 2:
+                case /* bool hasMentorGivenMoney */ 1001:
                     message.hasMentorGivenMoney = reader.bool();
                     break;
                 default:
@@ -62,12 +72,15 @@ class SynchronizedState$Type extends MessageType<SynchronizedState> {
         return message;
     }
     internalBinaryWrite(message: SynchronizedState, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint32 money = 1; */
+        /* repeated Character characters = 1; */
+        for (let i = 0; i < message.characters.length; i++)
+            Character.internalBinaryWrite(message.characters[i], writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* uint32 money = 1000; */
         if (message.money !== 0)
-            writer.tag(1, WireType.Varint).uint32(message.money);
-        /* bool hasMentorGivenMoney = 2; */
+            writer.tag(1000, WireType.Varint).uint32(message.money);
+        /* bool hasMentorGivenMoney = 1001; */
         if (message.hasMentorGivenMoney !== false)
-            writer.tag(2, WireType.Varint).bool(message.hasMentorGivenMoney);
+            writer.tag(1001, WireType.Varint).bool(message.hasMentorGivenMoney);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

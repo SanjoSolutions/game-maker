@@ -13,5 +13,6 @@ export declare const MessageType: {
     Move: EngineMessageType.Move;
     MoveFromServer: EngineMessageType.MoveFromServer;
 };
+export type MessageType = EngineMessageType | ProjectMessageType;
 export {};
 //# sourceMappingURL=MessageType.d.ts.map

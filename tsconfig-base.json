@@ -10,7 +10,7 @@
     "declaration": true,
     "declarationMap": true,
     "composite": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "strict": true,
     "sourceMap": true,
     "moduleResolution": "NodeNext",
