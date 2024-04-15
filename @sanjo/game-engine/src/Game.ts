@@ -82,9 +82,16 @@ export class Game<T extends IGameServerAPI, M> {
           const data = message.body.moveFromServer
           const character = this.characters.get(data.GUID)
           if (character) {
-            character.direction = data.facingDirection
+            character.facingDirection = data.facingDirection
             character.movingDirection = data.movingDirection
             character.isMoving = data.isMoving
+          }
+        } else if (message.body.oneofKind === MessageType.Disconnect) {
+          const GUID = message.body.disconnect.GUID
+          const character = this.characters.get(GUID)
+          if (character) {
+            this.layers[3].removeChild(character.sprite)
+            this.characters.delete(GUID)
           }
         }
       },
@@ -96,8 +103,8 @@ export class Game<T extends IGameServerAPI, M> {
       "character.png",
       this.app.stage,
     )
-    Object.assign(character, characterData)
     await character.loadSpriteSheet()
+    Object.assign(character, characterData)
     if (character.GUID) {
       this.characters.set(character.GUID, character)
     }
@@ -194,28 +201,28 @@ export class Game<T extends IGameServerAPI, M> {
         const down = keyStates.get("ArrowDown")
 
         const isStillPressedInDirection =
-          this.man!.direction !== Direction.None &&
-          ((this.man!.direction === Direction.Left && left) ||
-            (this.man!.direction === Direction.Right && right) ||
-            (this.man!.direction === Direction.Up && up) ||
-            (this.man!.direction === Direction.Down && down))
+          this.man!.facingDirection !== Direction.None &&
+          ((this.man!.facingDirection === Direction.Left && left) ||
+            (this.man!.facingDirection === Direction.Right && right) ||
+            (this.man!.facingDirection === Direction.Up && up) ||
+            (this.man!.facingDirection === Direction.Down && down))
 
         if (
-          this.man!.direction === Direction.None ||
+          this.man!.facingDirection === Direction.None ||
           !isStillPressedInDirection
         ) {
           if (down && !up) {
-            this.man.direction = Direction.Down
+            this.man.facingDirection = Direction.Down
           } else if (up && !down) {
-            this.man.direction = Direction.Up
+            this.man.facingDirection = Direction.Up
           } else if (left && !right) {
-            this.man.direction = Direction.Left
+            this.man.facingDirection = Direction.Left
           } else if (right && !left) {
-            this.man.direction = Direction.Right
+            this.man.facingDirection = Direction.Right
           }
         }
 
-        const facingDirection = this.man.direction
+        const facingDirection = this.man.facingDirection
         let movingDirection = Direction.None
         if (left && !right) {
           movingDirection |= Direction.Left

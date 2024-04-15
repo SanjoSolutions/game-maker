@@ -3,6 +3,7 @@ import { MessageType } from "./MessageType.js"
 import type { RequestMoneyFromMentorResponse } from "../protos/RequestMoneyFromMentorResponse.js"
 import type { SynchronizedState } from "../protos/SynchronizedState.js"
 import { RequestMoneyFromMentor } from "../protos/RequestMoneyFromMentor.js"
+import { convertPositionToUnsignedIntegers } from "@sanjo/game-engine/convertPositionToUnsignedIntegers.js"
 
 export function createRequestMoneyFromMentor(): Message {
   return Message.create({
@@ -30,7 +31,12 @@ export function createSynchronizedState(
   return Message.create({
     body: {
       oneofKind: MessageType.SynchronizedState,
-      synchronizedState,
+      synchronizedState: {
+        ...synchronizedState,
+        characters: synchronizedState.characters.map(
+          convertPositionToUnsignedIntegers,
+        ),
+      },
     },
   })
 }

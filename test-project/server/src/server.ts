@@ -1,7 +1,6 @@
 import { WebSocketServer } from "ws"
 import { Error as ErrorProto } from "@sanjo/game-engine/protos/Error.js"
 import { RequestMoneyFromMentorResponse } from "@sanjo/test-project-shared/protos/RequestMoneyFromMentorResponse.js"
-import type { SynchronizedState } from "@sanjo/test-project-shared/protos/SynchronizedState.js"
 import { Message } from "@sanjo/test-project-shared/protos/Message.js"
 import {
   createCharacterMessage,
@@ -13,7 +12,6 @@ import {
 } from "@sanjo/test-project-shared/clientServerCommunication/messageFactories.js"
 import { Subject } from "rxjs"
 import { MessageType } from "@sanjo/test-project-shared/clientServerCommunication/MessageType.js"
-import type { Move } from "@sanjo/game-engine/clientServerCommunication/Move.js"
 import { randomUUID } from "node:crypto"
 import type { GUID } from "@sanjo/game-engine/GUID.js"
 import { createMoveFromServerMessage } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js"
@@ -21,6 +19,7 @@ import type { Character } from "@sanjo/game-engine/protos/Character.js"
 import { isFlagSet } from "@sanjo/game-engine/isFlagSet.js"
 import { Direction } from "@sanjo/game-engine"
 import type { MoveFromServer } from "@sanjo/test-project-shared/protos/MoveFromServer.js"
+import { createDisconnectMessage } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js"
 
 interface Socket {
   send(data: any): void
@@ -46,13 +45,13 @@ class GameServer {
   money: number = 0
   hasMentorGivenMoney: boolean = false
   onConnect: Subject<{ socket: Socket }> = new Subject()
+  onDisconnect: Subject<{ socket: Socket }> = new Subject()
   inStream: Subject<MessageFromSocket> = new Subject()
-  clients: Client[] = []
   socketToClient: Map<Socket, Client> = new Map()
 
   constructor() {
     this.onConnect.subscribe(({ socket }: { socket: Socket }) => {
-      const otherClients = Array.from(this.clients)
+      const otherClients = Array.from(this.socketToClient.values())
 
       const character = {
         GUID: randomUUID(),
@@ -70,7 +69,6 @@ class GameServer {
         character,
       }
 
-      this.clients.push(client)
       this.socketToClient.set(socket, client)
 
       this.sendCharacterToClients(character, otherClients)
@@ -82,14 +80,23 @@ class GameServer {
           createSynchronizedState({
             money: this.money,
             hasMentorGivenMoney: this.hasMentorGivenMoney,
-            characters: this.clients.map((client) =>
-              client.socket === socket
-                ? { ...client.character, isPlayed: true }
-                : client.character,
+            characters: Array.from(this.socketToClient.values()).map(
+              (client) =>
+                client.socket === socket
+                  ? { ...client.character, isPlayed: true }
+                  : client.character,
             ),
           }),
         ),
       )
+    })
+
+    this.onDisconnect.subscribe(({ socket }: { socket: Socket }) => {
+      const client = this.socketToClient.get(socket)
+      if (client) {
+        this.socketToClient.delete(socket)
+        this.sendDisconnect(client.character)
+      }
     })
 
     this.inStream.subscribe(({ message, socket }: MessageFromSocket) => {
@@ -121,9 +128,15 @@ class GameServer {
         const move = message.body.move
         if (client && this.isCharacterOfClient(move.GUID, client)) {
           const character = client.character
+          if (character.isMoving) {
+            this.updateCharacterPosition(character)
+          }
           character.movingDirection = move.movingDirection
           character.facingDirection = move.facingDirection
           character.isMoving = move.movingDirection !== Direction.None
+          if (character.isMoving) {
+            character.hasStartedMovingTime = Date.now()
+          }
           const moveFromServer = {
             GUID: move.GUID,
             facingDirection: character.facingDirection,
@@ -136,8 +149,22 @@ class GameServer {
     })
   }
 
+  sendDisconnect(character: Character) {
+    for (const client of this.socketToClient.values()) {
+      this.sendDisconnectToClient(character, client)
+    }
+  }
+
+  sendDisconnectToClient(character: Character, client: Client) {
+    client.socket.send(
+      Message.toBinary(createDisconnectMessage<Message>(Message, character)),
+    )
+  }
+
   updateCharacterPositions() {
-    for (const character of this.clients.map((client) => client.character)) {
+    for (const character of Array.from(this.socketToClient.values()).map(
+      (client) => client.character,
+    )) {
       this.updateCharacterPosition(character)
     }
   }
@@ -145,17 +172,18 @@ class GameServer {
   updateCharacterPosition(character: CharacterOnServer) {
     console.log("a", character)
     if (character.isMoving) {
+      console.log("b")
       let xFactor
       if (
         isFlagSet(character.movingDirection, Direction.Left) &&
         !isFlagSet(character.movingDirection, Direction.Right)
       ) {
-        xFactor = 1
+        xFactor = -1
       } else if (
         isFlagSet(character.movingDirection, Direction.Right) &&
         !isFlagSet(character.movingDirection, Direction.Left)
       ) {
-        xFactor = -1
+        xFactor = 1
       } else {
         xFactor = 0
       }
@@ -176,9 +204,9 @@ class GameServer {
       const time = Date.now()
       const duration =
         time - (character.positionUpdateTime || character.hasStartedMovingTime)
-      const speed = 1
-      character.x = xFactor * duration * speed
-      character.y = yFactor * duration * speed
+      const speed = 60 / 1000
+      character.x += xFactor * duration * speed
+      character.y += yFactor * duration * speed
       character.positionUpdateTime = time
     }
   }
@@ -188,7 +216,7 @@ class GameServer {
   }
 
   sendMoveFromServerToClients(moveFromServer: MoveFromServer) {
-    for (const client of this.clients) {
+    for (const client of this.socketToClient.values()) {
       this.sendMoveFromServerToClient(moveFromServer, client)
     }
   }
@@ -244,6 +272,10 @@ class GameServerWithWebSocket extends GameServer {
         webSocket.on("message", (data: Buffer) => {
           const message = Message.fromBinary(data)
           this.inStream.next({ message, socket: webSocket })
+        })
+
+        webSocket.once("close", () => {
+          this.onDisconnect.next({ socket: webSocket })
         })
 
         this.onConnect.next({ socket: webSocket })

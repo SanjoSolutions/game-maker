@@ -174,9 +174,9 @@ async function main() {
               minimum: 1,
             })
             if (amount) {
-              npc.direction = Direction.Right
+              npc.facingDirection = Direction.Right
               await game.wait(1)
-              npc.direction = Direction.Down
+              npc.facingDirection = Direction.Down
               await game.wait(1)
               await TextMessage.showMessageFrom("Vendor", "Here you go. ;-)")
               const prices = new Map([

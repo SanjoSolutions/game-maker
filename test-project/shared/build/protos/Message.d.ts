@@ -4,9 +4,10 @@ import type { BinaryReadOptions } from "@protobuf-ts/runtime";
 import type { IBinaryReader } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { SynchronizedState } from "./SynchronizedState.js";
 import { RequestMoneyFromMentorResponse } from "./RequestMoneyFromMentorResponse.js";
 import { RequestMoneyFromMentor } from "./RequestMoneyFromMentor.js";
+import { Disconnect } from "./Disconnect.js";
+import { SynchronizedState } from "./SynchronizedState.js";
 import { MoveFromServer } from "./MoveFromServer.js";
 import { Move } from "./Move.js";
 import { Character } from "./Character.js";
@@ -43,6 +44,18 @@ export interface Message {
          */
         moveFromServer: MoveFromServer;
     } | {
+        oneofKind: "synchronizedState";
+        /**
+         * @generated from protobuf field: SynchronizedState synchronizedState = 5;
+         */
+        synchronizedState: SynchronizedState;
+    } | {
+        oneofKind: "disconnect";
+        /**
+         * @generated from protobuf field: Disconnect disconnect = 6;
+         */
+        disconnect: Disconnect;
+    } | {
         oneofKind: "requestMoneyFromMentor";
         /**
          * @generated from protobuf field: RequestMoneyFromMentor requestMoneyFromMentor = 1000;
@@ -54,12 +67,6 @@ export interface Message {
          * @generated from protobuf field: RequestMoneyFromMentorResponse requestMoneyFromMentorResponse = 1001;
          */
         requestMoneyFromMentorResponse: RequestMoneyFromMentorResponse;
-    } | {
-        oneofKind: "synchronizedState";
-        /**
-         * @generated from protobuf field: SynchronizedState synchronizedState = 1002;
-         */
-        synchronizedState: SynchronizedState;
     } | {
         oneofKind: undefined;
     };

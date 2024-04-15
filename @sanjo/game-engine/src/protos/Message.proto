@@ -5,6 +5,7 @@ import "Character.proto";
 import "Move.proto";
 import "MoveFromServer.proto";
 import "SynchronizedState.proto";
+import "Disconnect.proto";
 
 message Message {
   oneof body {
@@ -13,5 +14,6 @@ message Message {
     Move move = 3;
     MoveFromServer moveFromServer = 4;
     SynchronizedState synchronizedState = 5;
+    Disconnect disconnect = 6;
   }
 }

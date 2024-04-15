@@ -26,6 +26,10 @@ export interface MoveFromServer {
      * @generated from protobuf field: uint32 movingDirection = 3;
      */
     movingDirection: number;
+    /**
+     * @generated from protobuf field: bool isMoving = 4;
+     */
+    isMoving: boolean;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class MoveFromServer$Type extends MessageType<MoveFromServer> {
@@ -33,7 +37,8 @@ class MoveFromServer$Type extends MessageType<MoveFromServer> {
         super("MoveFromServer", [
             { no: 1, name: "GUID", kind: "scalar", localName: "GUID", jsonName: "GUID", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "facingDirection", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 3, name: "movingDirection", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
+            { no: 3, name: "movingDirection", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 4, name: "isMoving", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<MoveFromServer>): MoveFromServer {
@@ -41,6 +46,7 @@ class MoveFromServer$Type extends MessageType<MoveFromServer> {
         message.GUID = "";
         message.facingDirection = 0;
         message.movingDirection = 0;
+        message.isMoving = false;
         if (value !== undefined)
             reflectionMergePartial<MoveFromServer>(this, message, value);
         return message;
@@ -58,6 +64,9 @@ class MoveFromServer$Type extends MessageType<MoveFromServer> {
                     break;
                 case /* uint32 movingDirection */ 3:
                     message.movingDirection = reader.uint32();
+                    break;
+                case /* bool isMoving */ 4:
+                    message.isMoving = reader.bool();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -80,6 +89,9 @@ class MoveFromServer$Type extends MessageType<MoveFromServer> {
         /* uint32 movingDirection = 3; */
         if (message.movingDirection !== 0)
             writer.tag(3, WireType.Varint).uint32(message.movingDirection);
+        /* bool isMoving = 4; */
+        if (message.isMoving !== false)
+            writer.tag(4, WireType.Varint).bool(message.isMoving);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

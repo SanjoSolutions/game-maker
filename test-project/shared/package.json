@@ -3,9 +3,9 @@
   "type": "module",
   "scripts": {
     "build": "npm run build:proto && tsc --project tsconfig-build.json",
-    "build:proto": "protoc --ts_opt generate_dependencies --ts_opt use_proto_field_name --ts_out src/protos --proto_path src/protos --proto_path ../../node_modules/@sanjo/game-engine/src/protos src/protos/*.proto && sed -Ei 's/(import .* from \"\\.\\/.+)(\")/\\1.js\\2/g' src/protos/*.ts",
+    "build:proto": "protoc --ts_opt generate_dependencies --ts_opt use_proto_field_name --ts_out src/protos --proto_path src/protos --proto_path ../../@sanjo/game-engine/src/protos src/protos/*.proto && sed -Ei 's/(import .* from \"\\.\\/.+)(\")/\\1.js\\2/g' src/protos/*.ts",
     "build:watch": "run-p --print-label build:watch:**",
-    "build:watch:proto": "chokidar --initial \"src/protos/*.proto\" \"../../node_modules/@sanjo/game-engine/src/protos/*.proto\" -c \"npm run build:proto\"",
+    "build:watch:proto": "chokidar --initial \"src/protos/*.proto\" \"../../@sanjo/game-engine/src/protos/*.proto\" -c \"npm run build:proto\"",
     "build:watch:typescript": "tsc --project tsconfig-build.json --watch --preserveWatchOutput"
   },
   "exports": {

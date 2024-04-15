@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 import "Error.proto";
-import "SynchronizedState.proto";
 import "Character.proto";
 import "Move.proto";
 import "MoveFromServer.proto";
 import "SynchronizedState.proto";
+import "Disconnect.proto";
 
 import "RequestMoneyFromMentor.proto";
 import "RequestMoneyFromMentorResponse.proto";
@@ -17,6 +17,7 @@ message Message {
     Move move = 3;
     MoveFromServer moveFromServer = 4;
     SynchronizedState synchronizedState = 5;
+    Disconnect disconnect = 6;
 
     RequestMoneyFromMentor requestMoneyFromMentor = 1000;
     RequestMoneyFromMentorResponse requestMoneyFromMentorResponse = 1001;

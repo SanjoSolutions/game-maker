@@ -4,7 +4,7 @@
   "scripts": {
     "start": "run-p --print-label start:**",
     "start:build": "tsc --project tsconfig-build.json --watch --preserveWatchOutput",
-    "start:server": "node --watch build/server.js",
+    "start:server": "node --watch --enable-source-maps build/server.js",
     "build": "tsc --project tsconfig-build.json"
   },
   "dependencies": {

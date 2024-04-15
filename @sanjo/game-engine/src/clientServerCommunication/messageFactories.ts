@@ -3,6 +3,7 @@ import type { Error as ErrorProto } from "../protos/Error.js"
 import { MessageType } from "./MessageType.js"
 import type { Character } from "../protos/Character.js"
 import type { MoveFromServer } from "../protos/MoveFromServer.js"
+import { convertPositionToUnsignedIntegers } from "../convertPositionToUnsignedIntegers.js"
 
 export function createError<T = Message>(message: any, error: ErrorProto): T {
   return message.create({
@@ -20,7 +21,7 @@ export function createCharacterMessage<T = Message>(
   return message.create({
     body: {
       oneofKind: MessageType.Character,
-      character,
+      character: convertPositionToUnsignedIntegers(character),
     },
   })
 }
@@ -34,6 +35,20 @@ export function createMoveFromServerMessage<T = Message>(
     body: {
       oneofKind: MessageType.MoveFromServer,
       moveFromServer: moveFromServer,
+    },
+  })
+}
+
+export function createDisconnectMessage<T = Message>(
+  message: any,
+  character: Character,
+): T {
+  return message.create({
+    body: {
+      oneofKind: MessageType.Disconnect,
+      disconnect: {
+        GUID: character.GUID,
+      },
     },
   })
 }

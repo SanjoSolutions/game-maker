@@ -4,4 +4,5 @@ export enum MessageType {
   Move = "move",
   MoveFromServer = "moveFromServer",
   SynchronizedState = "synchronizedState",
+  Disconnect = "disconnect",
 }

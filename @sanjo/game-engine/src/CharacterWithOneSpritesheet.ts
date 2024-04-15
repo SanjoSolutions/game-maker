@@ -12,6 +12,8 @@ export class CharacterWithOneSpriteSheet extends Character {
     super(container)
 
     this.#spriteSheetPath = spriteSheetPath
+
+    this._determineTextures = this._determineTextures.bind(this)
   }
 
   async loadSpriteSheet() {
@@ -25,8 +27,6 @@ export class CharacterWithOneSpriteSheet extends Character {
       )
 
       this.#hasSpriteSheetBeenLoaded = true
-
-      this._determineTextures = this._determineTextures.bind(this)
 
       this.sprite.addChild(
         createAnimatedSprite(this.#spriteSheet.animations.down),

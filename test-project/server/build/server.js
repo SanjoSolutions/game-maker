@@ -10,16 +10,17 @@ import { randomUUID } from "node:crypto";
 import { createMoveFromServerMessage } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js";
 import { isFlagSet } from "@sanjo/game-engine/isFlagSet.js";
 import { Direction } from "@sanjo/game-engine";
+import { createDisconnectMessage } from "@sanjo/game-engine/clientServerCommunication/messageFactories.js";
 class GameServer {
     money = 0;
     hasMentorGivenMoney = false;
     onConnect = new Subject();
+    onDisconnect = new Subject();
     inStream = new Subject();
-    clients = [];
     socketToClient = new Map();
     constructor() {
         this.onConnect.subscribe(({ socket }) => {
-            const otherClients = Array.from(this.clients);
+            const otherClients = Array.from(this.socketToClient.values());
             const character = {
                 GUID: randomUUID(),
                 x: 32,
@@ -34,17 +35,23 @@ class GameServer {
                 characterGUID: character.GUID,
                 character,
             };
-            this.clients.push(client);
             this.socketToClient.set(socket, client);
             this.sendCharacterToClients(character, otherClients);
             this.updateCharacterPositions();
             socket.send(Message.toBinary(createSynchronizedState({
                 money: this.money,
                 hasMentorGivenMoney: this.hasMentorGivenMoney,
-                characters: this.clients.map((client) => client.socket === socket
+                characters: Array.from(this.socketToClient.values()).map((client) => client.socket === socket
                     ? { ...client.character, isPlayed: true }
                     : client.character),
             })));
+        });
+        this.onDisconnect.subscribe(({ socket }) => {
+            const client = this.socketToClient.get(socket);
+            if (client) {
+                this.socketToClient.delete(socket);
+                this.sendDisconnect(client.character);
+            }
         });
         this.inStream.subscribe(({ message, socket }) => {
             if (message.body.oneofKind === MessageType.RequestMoneyFromMentor) {
@@ -64,9 +71,15 @@ class GameServer {
                 const move = message.body.move;
                 if (client && this.isCharacterOfClient(move.GUID, client)) {
                     const character = client.character;
+                    if (character.isMoving) {
+                        this.updateCharacterPosition(character);
+                    }
                     character.movingDirection = move.movingDirection;
                     character.facingDirection = move.facingDirection;
                     character.isMoving = move.movingDirection !== Direction.None;
+                    if (character.isMoving) {
+                        character.hasStartedMovingTime = Date.now();
+                    }
                     const moveFromServer = {
                         GUID: move.GUID,
                         facingDirection: character.facingDirection,
@@ -78,22 +91,31 @@ class GameServer {
             }
         });
     }
+    sendDisconnect(character) {
+        for (const client of this.socketToClient.values()) {
+            this.sendDisconnectToClient(character, client);
+        }
+    }
+    sendDisconnectToClient(character, client) {
+        client.socket.send(Message.toBinary(createDisconnectMessage(Message, character)));
+    }
     updateCharacterPositions() {
-        for (const character of this.clients.map((client) => client.character)) {
+        for (const character of Array.from(this.socketToClient.values()).map((client) => client.character)) {
             this.updateCharacterPosition(character);
         }
     }
     updateCharacterPosition(character) {
         console.log("a", character);
         if (character.isMoving) {
+            console.log("b");
             let xFactor;
             if (isFlagSet(character.movingDirection, Direction.Left) &&
                 !isFlagSet(character.movingDirection, Direction.Right)) {
-                xFactor = 1;
+                xFactor = -1;
             }
             else if (isFlagSet(character.movingDirection, Direction.Right) &&
                 !isFlagSet(character.movingDirection, Direction.Left)) {
-                xFactor = -1;
+                xFactor = 1;
             }
             else {
                 xFactor = 0;
@@ -112,9 +134,9 @@ class GameServer {
             }
             const time = Date.now();
             const duration = time - (character.positionUpdateTime || character.hasStartedMovingTime);
-            const speed = 1;
-            character.x = xFactor * duration * speed;
-            character.y = yFactor * duration * speed;
+            const speed = 60 / 1000;
+            character.x += xFactor * duration * speed;
+            character.y += yFactor * duration * speed;
             character.positionUpdateTime = time;
         }
     }
@@ -122,7 +144,7 @@ class GameServer {
         return GUID === client.characterGUID;
     }
     sendMoveFromServerToClients(moveFromServer) {
-        for (const client of this.clients) {
+        for (const client of this.socketToClient.values()) {
             this.sendMoveFromServerToClient(moveFromServer, client);
         }
     }
@@ -163,6 +185,9 @@ class GameServerWithWebSocket extends GameServer {
                 webSocket.on("message", (data) => {
                     const message = Message.fromBinary(data);
                     this.inStream.next({ message, socket: webSocket });
+                });
+                webSocket.once("close", () => {
+                    this.onDisconnect.next({ socket: webSocket });
                 });
                 this.onConnect.next({ socket: webSocket });
             });

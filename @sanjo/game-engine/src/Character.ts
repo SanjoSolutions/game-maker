@@ -43,13 +43,13 @@ export abstract class Character extends Object {
   protected _determineTexture(
     spritesheet: UniversalSpritesheet,
   ): Texture<Resource>[] {
-    if (hasFlag(this.direction, Direction.Up)) {
+    if (hasFlag(this.facingDirection, Direction.Up)) {
       return spritesheet.animations.up
-    } else if (hasFlag(this.direction, Direction.Down)) {
+    } else if (hasFlag(this.facingDirection, Direction.Down)) {
       return spritesheet.animations.down
-    } else if (hasFlag(this.direction, Direction.Left)) {
+    } else if (hasFlag(this.facingDirection, Direction.Left)) {
       return spritesheet.animations.left
-    } else if (hasFlag(this.direction, Direction.Right)) {
+    } else if (hasFlag(this.facingDirection, Direction.Right)) {
       return spritesheet.animations.right
     } else {
       return spritesheet.animations.down

@@ -4,7 +4,7 @@ import { updatePosition } from "./updatePosition.js"
 
 export abstract class Object {
   lastI: number | null = null
-  _direction: Direction = Direction.Down
+  _facingDirection: Direction = Direction.Down
   movingDirection: Direction = Direction.None
   protected _isMoving: boolean = false
   sprite: Sprite = new Sprite()
@@ -18,13 +18,13 @@ export abstract class Object {
     this.sprite.anchor.set(0.5, 1)
   }
 
-  get direction(): Direction {
-    return this._direction
+  get facingDirection(): Direction {
+    return this._facingDirection
   }
 
-  set direction(direction: Direction) {
-    if (direction !== this._direction) {
-      this._direction = direction
+  set facingDirection(facingDirection: Direction) {
+    if (facingDirection !== this._facingDirection) {
+      this._facingDirection = facingDirection
       this._updateTextures()
     }
   }
@@ -78,7 +78,7 @@ export abstract class Object {
         x: this.baseX,
         y: this.baseY,
         isMoving: this.isMoving,
-        direction: this.direction,
+        direction: this.facingDirection,
       }
       updatePosition(movable, Date.now() - this.whenMovingHasChanged)
       this.x = movable.x
@@ -94,7 +94,7 @@ export abstract class Object {
     this.whenMovingHasChanged = Date.now()
     this.baseX = data.x
     this.baseY = data.y
-    this.direction = data.direction
+    this.facingDirection = data.direction
     this.isMoving = data.isMoving
     this.x = data.x
     const previousY = data.y

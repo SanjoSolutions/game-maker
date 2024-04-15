@@ -19,26 +19,41 @@ export interface Character {
      */
     GUID: string;
     /**
-     * @generated from protobuf field: uint32 x = 2;
+     * @generated from protobuf field: int32 x = 2;
      */
     x: number;
     /**
-     * @generated from protobuf field: uint32 y = 3;
+     * @generated from protobuf field: int32 y = 3;
      */
     y: number;
     /**
      * @generated from protobuf field: bool isPlayed = 4;
      */
     isPlayed: boolean;
+    /**
+     * @generated from protobuf field: uint32 movingDirection = 5;
+     */
+    movingDirection: number;
+    /**
+     * @generated from protobuf field: uint32 facingDirection = 6;
+     */
+    facingDirection: number;
+    /**
+     * @generated from protobuf field: bool isMoving = 7;
+     */
+    isMoving: boolean;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Character$Type extends MessageType<Character> {
     constructor() {
         super("Character", [
             { no: 1, name: "GUID", kind: "scalar", localName: "GUID", jsonName: "GUID", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "x", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 3, name: "y", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 4, name: "isPlayed", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
+            { no: 2, name: "x", kind: "scalar", T: 5 /*ScalarType.INT32*/ },
+            { no: 3, name: "y", kind: "scalar", T: 5 /*ScalarType.INT32*/ },
+            { no: 4, name: "isPlayed", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 5, name: "movingDirection", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 6, name: "facingDirection", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 7, name: "isMoving", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<Character>): Character {
@@ -47,6 +62,9 @@ class Character$Type extends MessageType<Character> {
         message.x = 0;
         message.y = 0;
         message.isPlayed = false;
+        message.movingDirection = 0;
+        message.facingDirection = 0;
+        message.isMoving = false;
         if (value !== undefined)
             reflectionMergePartial<Character>(this, message, value);
         return message;
@@ -59,14 +77,23 @@ class Character$Type extends MessageType<Character> {
                 case /* string GUID = 1 [json_name = "GUID"];*/ 1:
                     message.GUID = reader.string();
                     break;
-                case /* uint32 x */ 2:
-                    message.x = reader.uint32();
+                case /* int32 x */ 2:
+                    message.x = reader.int32();
                     break;
-                case /* uint32 y */ 3:
-                    message.y = reader.uint32();
+                case /* int32 y */ 3:
+                    message.y = reader.int32();
                     break;
                 case /* bool isPlayed */ 4:
                     message.isPlayed = reader.bool();
+                    break;
+                case /* uint32 movingDirection */ 5:
+                    message.movingDirection = reader.uint32();
+                    break;
+                case /* uint32 facingDirection */ 6:
+                    message.facingDirection = reader.uint32();
+                    break;
+                case /* bool isMoving */ 7:
+                    message.isMoving = reader.bool();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -83,15 +110,24 @@ class Character$Type extends MessageType<Character> {
         /* string GUID = 1 [json_name = "GUID"]; */
         if (message.GUID !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.GUID);
-        /* uint32 x = 2; */
+        /* int32 x = 2; */
         if (message.x !== 0)
-            writer.tag(2, WireType.Varint).uint32(message.x);
-        /* uint32 y = 3; */
+            writer.tag(2, WireType.Varint).int32(message.x);
+        /* int32 y = 3; */
         if (message.y !== 0)
-            writer.tag(3, WireType.Varint).uint32(message.y);
+            writer.tag(3, WireType.Varint).int32(message.y);
         /* bool isPlayed = 4; */
         if (message.isPlayed !== false)
             writer.tag(4, WireType.Varint).bool(message.isPlayed);
+        /* uint32 movingDirection = 5; */
+        if (message.movingDirection !== 0)
+            writer.tag(5, WireType.Varint).uint32(message.movingDirection);
+        /* uint32 facingDirection = 6; */
+        if (message.facingDirection !== 0)
+            writer.tag(6, WireType.Varint).uint32(message.facingDirection);
+        /* bool isMoving = 7; */
+        if (message.isMoving !== false)
+            writer.tag(7, WireType.Varint).bool(message.isMoving);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

@@ -12,6 +12,7 @@ export declare const MessageType: {
     Character: EngineMessageType.Character;
     Move: EngineMessageType.Move;
     MoveFromServer: EngineMessageType.MoveFromServer;
+    Disconnect: EngineMessageType.Disconnect;
 };
 export type MessageType = EngineMessageType | ProjectMessageType;
 export {};
