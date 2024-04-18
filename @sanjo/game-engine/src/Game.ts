@@ -53,6 +53,7 @@ export class Game<T extends IGameServerAPI, M> {
   isInteracting: boolean = false
   characters: Map<GUID, CharacterWithOneSpriteSheet> = new Map()
   onMapLoaded = new Subject<string>()
+  isTeleporting: boolean = false
 
   constructor(server: T, database: Database) {
     this.server = server
@@ -183,35 +184,38 @@ export class Game<T extends IGameServerAPI, M> {
             this.updateObjectInHandPosition()
             this.updateViewport()
 
-            const previousEntityOver = this.map!.entities.find(
-              (entity) =>
-                previousPosition.x >=
-                  entity.column * this.map!.tileSize.width &&
-                previousPosition.x <
-                  entity.column * this.map!.tileSize.width +
-                    this.map!.tileSize.width &&
-                previousPosition.y >= entity.row * this.map!.tileSize.height &&
-                previousPosition.y <
-                  entity.row * this.map!.tileSize.height +
-                    this.map!.tileSize.height,
-            )
-            const entityOver = this.map!.entities.find(
-              (entity) =>
-                this.man!.x >= entity.column * this.map!.tileSize.width &&
-                this.man!.x <
-                  entity.column * this.map!.tileSize.width +
-                    this.map!.tileSize.width &&
-                this.man!.y >= entity.row * this.map!.tileSize.height &&
-                this.man!.y <
-                  entity.row * this.map!.tileSize.height +
-                    this.map!.tileSize.height,
-            )
-            if (entityOver) {
-              if (entityOver !== previousEntityOver) {
-                console.log("enter")
-                entityOver.onEnter.next(null)
+            if (!this.isTeleporting) {
+              const previousEntityOver = this.map!.entities.find(
+                (entity) =>
+                  previousPosition.x >=
+                    entity.column * this.map!.tileSize.width &&
+                  previousPosition.x <
+                    entity.column * this.map!.tileSize.width +
+                      this.map!.tileSize.width &&
+                  previousPosition.y >=
+                    entity.row * this.map!.tileSize.height &&
+                  previousPosition.y <
+                    entity.row * this.map!.tileSize.height +
+                      this.map!.tileSize.height,
+              )
+              const entityOver = this.map!.entities.find(
+                (entity) =>
+                  this.man!.x >= entity.column * this.map!.tileSize.width &&
+                  this.man!.x <
+                    entity.column * this.map!.tileSize.width +
+                      this.map!.tileSize.width &&
+                  this.man!.y >= entity.row * this.map!.tileSize.height &&
+                  this.man!.y <
+                    entity.row * this.map!.tileSize.height +
+                      this.map!.tileSize.height,
+              )
+              if (entityOver) {
+                if (entityOver !== previousEntityOver) {
+                  console.log("enter")
+                  entityOver.onEnter.next(null)
+                }
+                entityOver.onOver.next(null)
               }
-              entityOver.onOver.next(null)
             }
           }
         }
@@ -511,12 +515,14 @@ export class Game<T extends IGameServerAPI, M> {
   }
 
   public async teleport(entity: any, location: Location): Promise<void> {
+    this.isTeleporting = true
     if (location.mapID) {
       await this.loadMap(location.mapID)
     }
     entity.x = location.x
     entity.y = location.y
     this.updateViewport()
+    this.isTeleporting = false
   }
 
   public async showOptions(options: Option[]): Promise<Option> {

@@ -103,7 +103,7 @@ async function main() {
           )
         })
       game
-        .map!.findEntityByID("shopEntrance")!
+        .map!.findEntityByID("shopEntrance2")!
         .onEnter.subscribe(async function () {
           await game.teleport(
             game.man!,
@@ -128,7 +128,7 @@ async function main() {
         })
 
       {
-        const npc = new CharacterWithOpenRTPSpriteSheet(
+        const mentor = new CharacterWithOpenRTPSpriteSheet(
           "char-sets/People1.png",
           game.app.stage,
           {
@@ -136,13 +136,13 @@ async function main() {
             y: 4 * characterHeight,
           },
         )
-        npc.x = 5 * 32
-        npc.y = 5 * 32
-        await npc.loadSpriteSheet()
-        ;(npc.sprite as any).canInteractWith = function () {
+        mentor.x = 2.5 * 32
+        mentor.y = 4 * 32
+        await mentor.loadSpriteSheet()
+        ;(mentor.sprite as any).canInteractWith = function () {
           return true
         }
-        ;(npc.sprite as any).interact = async function () {
+        ;(mentor.sprite as any).interact = async function () {
           const continueDialog = await TextMessage.showMessageFrom(
             "Mentor",
             "Hi!",
@@ -171,11 +171,40 @@ async function main() {
             }
           }
         }
-        game.layers[3].addChild(npc.sprite)
+        game.layers[3].addChild(mentor.sprite)
       }
+    } else if (mapFilePath === "maps/grocery_store.map.gz") {
+      game
+        .map!.findEntityByID("entrance1")!
+        .onEnter.subscribe(async function () {
+          await game.teleport(
+            game.man!,
+            new Location("maps/starting_map.map.gz", 15.5 * 32, 4.5 * 32),
+          )
+        })
+      game
+        .map!.findEntityByID("entrance2")!
+        .onEnter.subscribe(async function () {
+          await game.teleport(
+            game.man!,
+            new Location("maps/starting_map.map.gz", 15.5 * 32, 4.5 * 32),
+          )
+        })
+      game.map!.findEntityByID("exit1")!.onEnter.subscribe(async function () {
+        await game.teleport(
+          game.man!,
+          new Location("maps/starting_map.map.gz", 7.5 * 32, 4.5 * 32),
+        )
+      })
+      game.map!.findEntityByID("exit2")!.onEnter.subscribe(async function () {
+        await game.teleport(
+          game.man!,
+          new Location("maps/starting_map.map.gz", 8.5 * 32, 4.5 * 32),
+        )
+      })
 
       {
-        const npc = new CharacterWithOpenRTPSpriteSheet(
+        const groceryStoreLady = new CharacterWithOpenRTPSpriteSheet(
           "char-sets/People1.png",
           game.app.stage,
           {
@@ -183,13 +212,14 @@ async function main() {
             y: 0 * characterHeight,
           },
         )
-        npc.x = 7.5 * 32
-        npc.y = 5 * 32
-        await npc.loadSpriteSheet()
-        ;(npc.sprite as any).canInteractWith = function () {
+        await groceryStoreLady.loadSpriteSheet()
+        groceryStoreLady.facingDirection = Direction.Right
+        groceryStoreLady.x = 0.5 * 32
+        groceryStoreLady.y = 21 * 32
+        ;(groceryStoreLady.sprite as any).canInteractWith = function () {
           return true
         }
-        ;(npc.sprite as any).interact = async function () {
+        ;(groceryStoreLady.sprite as any).interact = async function () {
           const hasPlayerDoneContinueAction = await TextMessage.showMessageFrom(
             "Vendor",
             "What would you like to buy?",
@@ -208,9 +238,9 @@ async function main() {
                   minimum: 1,
                 })
                 if (amount) {
-                  npc.facingDirection = Direction.Right
+                  groceryStoreLady.facingDirection = Direction.Right
                   await game.wait(1)
-                  npc.facingDirection = Direction.Down
+                  groceryStoreLady.facingDirection = Direction.Down
                   await game.wait(1)
                   await TextMessage.showMessageFrom(
                     "Vendor",
@@ -246,37 +276,8 @@ async function main() {
             }
           }
         }
-        game.layers[3].addChild(npc.sprite)
+        game.layers[3].addChild(groceryStoreLady.sprite)
       }
-    } else if (mapFilePath === "maps/grocery_store.map.gz") {
-      game
-        .map!.findEntityByID("entrance1")!
-        .onEnter.subscribe(async function () {
-          await game.teleport(
-            game.man!,
-            new Location("maps/starting_map.map.gz", 15.5 * 32, 4.5 * 32),
-          )
-        })
-      game
-        .map!.findEntityByID("entrance2")!
-        .onEnter.subscribe(async function () {
-          await game.teleport(
-            game.man!,
-            new Location("maps/starting_map.map.gz", 15.5 * 32, 4.5 * 32),
-          )
-        })
-      game.map!.findEntityByID("exit1")!.onEnter.subscribe(async function () {
-        await game.teleport(
-          game.man!,
-          new Location("maps/starting_map.map.gz", 15.5 * 32, 4.5 * 32),
-        )
-      })
-      game.map!.findEntityByID("exit2")!.onEnter.subscribe(async function () {
-        await game.teleport(
-          game.man!,
-          new Location("maps/starting_map.map.gz", 15.5 * 32, 4.5 * 32),
-        )
-      })
     }
   })
 
