@@ -4,12 +4,12 @@ import type { BinaryReadOptions } from "@protobuf-ts/runtime";
 import type { IBinaryReader } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { Disconnect } from "./Disconnect.js";
-import { SynchronizedState } from "./SynchronizedState.js";
-import { MoveFromServer } from "./MoveFromServer.js";
-import { Move } from "./Move.js";
-import { Character } from "./Character.js";
-import { Error } from "./Error.js";
+import { Disconnect } from "./Disconnect.js.js";
+import { SynchronizedState } from "./SynchronizedState.js.js";
+import { MoveFromServer } from "./MoveFromServer.js.js";
+import { Move } from "./Move.js.js";
+import { Character } from "./Character.js.js";
+import { Error } from "./Error.js.js";
 /**
  * @generated from protobuf message Message
  */

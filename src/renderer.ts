@@ -1216,6 +1216,7 @@ function loadMap(map: TileMap) {
 
 function migrateMapToLatestVersion(map: any): TileMap {
   if (!map.entities) {
+    console.log("migrate entities")
     map.entities = []
   }
   return map

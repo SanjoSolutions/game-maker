@@ -6,12 +6,11 @@ export interface IEntity {
   column: number
 }
 
-type OnOverCallback = () => void
-
 export class Entity {
   id: string | null = null
   row: number
   column: number
+  onEnter = new Subject()
   onOver = new Subject()
 
   constructor(row: number, column: number) {

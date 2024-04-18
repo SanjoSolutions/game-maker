@@ -8,6 +8,7 @@
     "start:game-engine": "cd @sanjo/game-engine && npm run build:watch",
     "start:test-project-shared": "cd test-project/shared && npm run build:watch",
     "start:test-project-client": "cd test-project/client && npm run start",
+    "start:game-maker": "electron-forge start",
     "build": "cd @sanjo/game-engine && npm run build && cd ../.. && cd test-project/shared && npm run build && cd ../.. && cd test-project/server && npm run build && cd ../.. && cd test-project/client && npm run build",
     "package": "electron-forge package",
     "make": "electron-forge make",

@@ -4,7 +4,7 @@ import type { BinaryReadOptions } from "@protobuf-ts/runtime";
 import type { IBinaryReader } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { Character } from "./Character.js";
+import { Character } from "./Character.js.js";
 /**
  * @generated from protobuf message SynchronizedState
  */

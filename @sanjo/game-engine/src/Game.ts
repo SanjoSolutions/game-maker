@@ -30,6 +30,8 @@ import { isFlagSet } from "./isFlagSet.js"
 import type { Character } from "./Character.js"
 import type { Message } from "./protos/Message.js"
 import type { Character as CharacterProto } from "./protos/Character.js"
+import type { Entity } from "./TileMap/Entity.js"
+import { Subject } from "rxjs"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -50,6 +52,7 @@ export class Game<T extends IGameServerAPI, M> {
   money: number = 0
   isInteracting: boolean = false
   characters: Map<GUID, CharacterWithOneSpriteSheet> = new Map()
+  onMapLoaded = new Subject<string>()
 
   constructor(server: T, database: Database) {
     this.server = server
@@ -167,6 +170,10 @@ export class Game<T extends IGameServerAPI, M> {
     this.app.ticker.add((delta) => {
       for (const character of this.characters.values()) {
         if (character.isMoving) {
+          const previousPosition = {
+            x: character.x,
+            y: character.y,
+          }
           const { hasYChanged } = this.move(character, delta)
 
           if (character === this.man) {
@@ -176,6 +183,18 @@ export class Game<T extends IGameServerAPI, M> {
             this.updateObjectInHandPosition()
             this.updateViewport()
 
+            const previousEntityOver = this.map!.entities.find(
+              (entity) =>
+                previousPosition.x >=
+                  entity.column * this.map!.tileSize.width &&
+                previousPosition.x <
+                  entity.column * this.map!.tileSize.width +
+                    this.map!.tileSize.width &&
+                previousPosition.y >= entity.row * this.map!.tileSize.height &&
+                previousPosition.y <
+                  entity.row * this.map!.tileSize.height +
+                    this.map!.tileSize.height,
+            )
             const entityOver = this.map!.entities.find(
               (entity) =>
                 this.man!.x >= entity.column * this.map!.tileSize.width &&
@@ -188,6 +207,10 @@ export class Game<T extends IGameServerAPI, M> {
                     this.map!.tileSize.height,
             )
             if (entityOver) {
+              if (entityOver !== previousEntityOver) {
+                console.log("enter")
+                entityOver.onEnter.next(null)
+              }
               entityOver.onOver.next(null)
             }
           }
@@ -428,6 +451,8 @@ export class Game<T extends IGameServerAPI, M> {
     if (this.man) {
       this.layers[3].addChild(this.man.sprite)
     }
+
+    this.onMapLoaded.next(mapFilePath)
   }
 
   private canMoveThere(from: Point2D, to: Point2D) {
