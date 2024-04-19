@@ -478,16 +478,33 @@ export class Game<T extends IGameServerAPI, M> {
       x: this.man!.x,
       y: this.man!.y,
     }
-    return findClosest(
-      manPoint,
-      this.app.stage.children
-        .concat(this.layers[3].children)
-        .filter(
-          (object) =>
-            isInteractableObject(object) &&
-            object.canInteractWith(this.man!) &&
-            calculateDistance(object, manPoint) <= close,
-        ) as InteractableObject[],
+    return (
+      findClosest(
+        manPoint,
+        this.app.stage.children
+          .concat(this.layers[3].children)
+          .filter(
+            (object) =>
+              isInteractableObject(object) && object.canInteractWith(this.man!),
+          )
+          .map((object) => ({
+            x: object.x,
+            y: object.y,
+            thing: object as any as InteractableObject,
+          }))
+          .filter((thing) => calculateDistance(thing, manPoint) <= close)
+          .concat(
+            this.map!.entities.filter((entity) =>
+              entity.canInteractWith(this.man!),
+            )
+              .map((entity) => ({
+                x: (entity.column + 0.5) * this.map!.tileSize.width,
+                y: (entity.row + 1) * this.map!.tileSize.height,
+                thing: entity as InteractableObject,
+              }))
+              .filter((thing) => calculateDistance(thing, manPoint) <= close),
+          ),
+      )?.thing ?? null
     )
   }
 

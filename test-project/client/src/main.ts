@@ -219,7 +219,7 @@ async function main() {
         ;(groceryStoreLady.sprite as any).canInteractWith = function () {
           return true
         }
-        ;(groceryStoreLady.sprite as any).interact = async function () {
+        async function interact() {
           const hasPlayerDoneContinueAction = await TextMessage.showMessageFrom(
             "Vendor",
             "What would you like to buy?",
@@ -277,6 +277,9 @@ async function main() {
           }
         }
         game.layers[3].addChild(groceryStoreLady.sprite)
+        ;(groceryStoreLady.sprite as any).interact = interact
+        game.map!.findEntityByID("groceryStoreLadyOverBar")!.onInteract =
+          interact
       }
     }
   })

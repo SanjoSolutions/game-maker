@@ -1,6 +1,4 @@
-import type { Sprite } from "pixi.js"
-
-export interface InteractableObject extends Sprite {
+export interface InteractableObject {
   canInteractWith(object: Object): boolean
   interact(interacter: any): void
 }
