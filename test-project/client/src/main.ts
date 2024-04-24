@@ -286,7 +286,9 @@ async function main() {
 
   await game.loadMap("maps/starting_map.map.gz")
   await game.initialize()
-  await serverConnection.connect("ws://localhost:8080")
+  await serverConnection.connect(
+    "ws://ec2-18-199-210-66.eu-central-1.compute.amazonaws.com",
+  )
 
   window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {
