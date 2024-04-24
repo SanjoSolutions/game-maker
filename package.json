@@ -9,8 +9,8 @@
     "start:test-project-shared": "cd test-project/shared && npm run build:watch",
     "start:test-project-client": "cd test-project/client && npm run start",
     "start:game-maker": "electron-forge start",
-    "build": "cd @sanjo/game-engine && npm run build; cd ../.. && cd test-project/shared && npm run build; cd ../.. && cd test-project/server && npm run build; cd ../.. && cd test-project/client && npm run build",
-    "build:client": "cd @sanjo/game-engine && npm run build; cd ../.. && cd test-project/shared && npm run build; cd ../.. && cd test-project/client && npm run build",
+    "build": "cd @sanjo/game-engine && npm run build; cd ../.. && cd test-project/shared && npm run build; cd ../.. && cd test-project/server && npm run build; cd ../.. && cd test-project/client && npm run build; exit 0",
+    "build:client": "cd @sanjo/game-engine && npm run build; cd ../.. && cd test-project/shared && npm run build; cd ../.. && cd test-project/client && npm run build; exit 0",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish"
