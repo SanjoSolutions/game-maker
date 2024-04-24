@@ -260,9 +260,12 @@ class GameServer {
 class GameServerWithWebSocket extends GameServer {
   async listen() {
     return new Promise((resolve, onError) => {
-      const webSocketServer = new WebSocketServer({ port: 8080 }, () => {
-        resolve(null)
-      })
+      const webSocketServer = new WebSocketServer(
+        { port: process.env.PORT ? parseInt(process.env.PORT, 10) : 80 },
+        () => {
+          resolve(null)
+        },
+      )
 
       webSocketServer.once("error", onError)
 

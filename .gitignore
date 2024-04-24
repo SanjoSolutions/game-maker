@@ -98,3 +98,4 @@ out/
 /.firebase/
 
 */**/build
+*.kra-autosave.kra

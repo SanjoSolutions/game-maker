@@ -2,10 +2,11 @@
   "name": "test-project-server",
   "type": "module",
   "scripts": {
-    "start": "run-p --print-label start:**",
-    "start:build": "tsc --project tsconfig-build.json --watch --preserveWatchOutput",
-    "start:server": "node --watch --enable-source-maps build/server.js",
-    "build": "tsc --project tsconfig-build.json"
+    "development": "run-p --print-label development:**",
+    "development:build": "tsc --project tsconfig-build.json --watch --preserveWatchOutput",
+    "development:server": "node --watch --enable-source-maps --env-file=.env build/server.js",
+    "build": "tsc --project tsconfig-build.json",
+    "start": "node --enable-source-maps --env-file=.env build/server.js"
   },
   "dependencies": {
     "@protobuf-ts/runtime": "^2.9.4",
