@@ -261,7 +261,7 @@ class GameServerWithWebSocket extends GameServer {
   async listen() {
     return new Promise((resolve, onError) => {
       const webSocketServer = new WebSocketServer(
-        { port: process.env.PORT ? parseInt(process.env.PORT, 10) : 80 },
+        { port: process.env.PORT ? parseInt(process.env.PORT, 10) : 8080 },
         () => {
           resolve(null)
         },
