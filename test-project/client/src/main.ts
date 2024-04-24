@@ -286,9 +286,7 @@ async function main() {
 
   await game.loadMap("maps/starting_map.map.gz")
   await game.initialize()
-  await serverConnection.connect(
-    "ws://ec2-18-199-210-66.eu-central-1.compute.amazonaws.com",
-  )
+  await serverConnection.connect("wss://mmo-server.sanjo-solutions.com/")
 
   window.addEventListener("keydown", function (event) {
     if (event.code === "Escape") {
