@@ -1,5 +1,7 @@
 # Game Maker
 
+**[Godot Engine](https://godotengine.org/) is recommended, in case that you look for a game maker or game engine.**
+
 ![How the app looks](image.png)
 
 ## Features
